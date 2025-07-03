@@ -5,9 +5,16 @@ import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SensorChart } from '@/components/app/SensorChart';
 import type { SensorDataPoint } from '@/lib/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function AdquisicionPage() {
   const router = useRouter();
@@ -33,6 +40,14 @@ export default function AdquisicionPage() {
     const totalSteps = config.acquisitionTime * config.samplesPerSecond;
     const intervalTime = 1000 / config.samplesPerSecond;
 
+    const generateDataPoint = (time: number): SensorDataPoint => {
+      const point: SensorDataPoint = { time: parseFloat(time.toFixed(2)) };
+      activeSensors.forEach(sensorKey => {
+        point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2));
+      });
+      return point;
+    };
+    
     const runAcquisition = () => {
       intervalRef.current = setInterval(() => {
         setElapsedTime(prev => {
@@ -51,14 +66,6 @@ export default function AdquisicionPage() {
           return newTime;
         });
       }, intervalTime);
-    };
-
-    const generateDataPoint = (time: number): SensorDataPoint => {
-      const point: SensorDataPoint = { time: parseFloat(time.toFixed(2)) };
-      activeSensors.forEach(sensorKey => {
-        point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2));
-      });
-      return point;
     };
     
     setLocalSensorData([generateDataPoint(0)]);
@@ -92,33 +99,34 @@ export default function AdquisicionPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Adquisición en Proceso</CardTitle>
-          <CardDescription>
+    <Dialog open={true}>
+      <DialogContent className="sm:max-w-7xl h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Adquisición en Proceso</DialogTitle>
+          <DialogDescription>
             Monitoreando datos de sensores en tiempo real. Tiempo restante: {(config.acquisitionTime - elapsedTime).toFixed(1)}s
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="flex-grow overflow-y-auto pr-4 space-y-6 py-4">
           <Progress value={progress} />
-          <div className="text-center">
-            <Button variant="destructive" onClick={handleStop}>Detener Adquisición</Button>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {activeSensors.map((sensorKey, index) => (
+              <SensorChart
+                key={sensorKey}
+                title={`Sensor ${index + 1}`}
+                data={localSensorData}
+                dataKey={sensorKey}
+                color={sensorColors[sensorKey]}
+              />
+            ))}
           </div>
-        </CardContent>
-      </Card>
-      
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {activeSensors.map((sensorKey, index) => (
-          <SensorChart
-            key={sensorKey}
-            title={`Sensor ${index + 1}`}
-            data={localSensorData}
-            dataKey={sensorKey}
-            color={sensorColors[sensorKey]}
-          />
-        ))}
-      </div>
-    </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="destructive" onClick={handleStop}>Detener Adquisición</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
