@@ -6,7 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { SensorChart } from '@/components/app/SensorChart';
-import type { SensorDataPoint } from '@/lib/types';
+import type { SensorDataPoint, RegimenType } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -15,10 +15,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Wind } from 'lucide-react';
 
 export default function AdquisicionPage() {
   const router = useRouter();
-  const { config, setSensorData, setAcquisitionState, acquisitionState } = useApp();
+  const { config, setSensorData, setAcquisitionState, acquisitionState, regimen, setRegimen } = useApp();
   const [progress, setProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [localSensorData, setLocalSensorData] = useState<SensorDataPoint[]>([]);
@@ -37,7 +39,6 @@ export default function AdquisicionPage() {
   }, [acquisitionState, router]);
   
   useEffect(() => {
-    const totalSteps = config.acquisitionTime * config.samplesPerSecond;
     const intervalTime = 1000 / config.samplesPerSecond;
 
     const generateDataPoint = (time: number): SensorDataPoint => {
@@ -46,6 +47,12 @@ export default function AdquisicionPage() {
         point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2));
       });
       return point;
+    };
+
+    const simulateRegimen = () => {
+      const results: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
+      const randomResult = results[Math.floor(Math.random() * results.length)];
+      setRegimen(randomResult);
     };
     
     const runAcquisition = () => {
@@ -63,6 +70,9 @@ export default function AdquisicionPage() {
 
           setLocalSensorData(prevData => [...prevData, generateDataPoint(newTime)]);
           setProgress((newTime / config.acquisitionTime) * 100);
+          
+          simulateRegimen();
+          
           return newTime;
         });
       }, intervalTime);
@@ -76,7 +86,7 @@ export default function AdquisicionPage() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [config, router, setAcquisitionState, setSensorData, activeSensors]);
+  }, [config, router, setAcquisitionState, setSensorData, activeSensors, setRegimen]);
 
   useEffect(() => {
     setSensorData(localSensorData);
@@ -120,6 +130,15 @@ export default function AdquisicionPage() {
                 color={sensorColors[sensorKey]}
               />
             ))}
+            <Card className="flex flex-col items-center justify-center min-h-[240px]">
+              <CardHeader className="flex flex-col items-center justify-center text-center p-4">
+                <Wind className="h-8 w-8 text-primary" />
+                <CardTitle className="mt-2">Régimen de Flujo</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <p className="text-2xl font-bold capitalize text-center">{regimen}</p>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
