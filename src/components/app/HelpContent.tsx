@@ -45,6 +45,10 @@ export function HelpContent() {
             <h4 className="font-semibold">{t('faqStop')}</h4>
             <p className="text-muted-foreground">{t('faqStopDesc')}</p>
           </div>
+          <div>
+            <h4 className="font-semibold">{t('faqAIPrediction')}</h4>
+            <p className="text-muted-foreground">{t('faqAIPredictionDesc')}</p>
+          </div>
         </AccordionContent>
       </AccordionItem>
     </Accordion>
