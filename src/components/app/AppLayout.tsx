@@ -43,7 +43,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: '/configuracion', icon: Settings, label: 'Configuración', states: ['configuring', 'stopped', 'completed'] },
     { href: '/adquisicion', icon: LineChart, label: 'Adquisición', states: ['running', 'stopped', 'completed'] },
-    { href: '/exportacion', icon: HardDrive, label: 'Exportación', states: ['completed', 'stopped'] },
     { href: '/historial', icon: Database, label: 'Historial', states: ['configuring', 'running', 'stopped', 'completed'] },
     { href: '/ayuda', icon: HelpCircle, label: 'Ayuda', states: ['configuring', 'running', 'stopped', 'completed'] },
   ];

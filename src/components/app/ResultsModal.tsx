@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,11 +19,11 @@ interface ResultsModalProps {
   config: Configuration;
   sensorData: SensorDataPoint[];
   regimen: RegimenType;
+  onTriggerExport: () => void;
 }
 
-export function ResultsModal({ open, onOpenChange, config, sensorData, regimen }: ResultsModalProps) {
-  const router = useRouter();
-  const { resetApp } = useApp();
+export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, onTriggerExport }: ResultsModalProps) {
+  const { resetApp, acquisitionState } = useApp();
 
   const handleNewTest = () => {
     onOpenChange(false);
@@ -32,17 +31,20 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen }
   };
   
   const handleDownload = () => {
-    onOpenChange(false);
-    router.push('/exportacion');
+    onTriggerExport();
   };
 
   const handleHistory = () => {
     onOpenChange(false);
-    router.push('/historial');
+    resetApp(); // Go to config to allow navigating to history from a clean state
   };
 
   const activeSensorsCount = Object.values(config.sensors).filter(Boolean).length;
   const finalTime = sensorData.at(-1)?.time.toFixed(2) || '0.00';
+  
+  if (acquisitionState !== 'completed' && acquisitionState !== 'stopped') {
+    return null;
+  }
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

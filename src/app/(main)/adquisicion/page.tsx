@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { SensorChart } from '@/components/app/SensorChart';
 import { ResultsModal } from '@/components/app/ResultsModal';
+import { ExportModal } from '@/components/app/ExportModal';
 import type { SensorDataPoint, RegimenType } from '@/lib/types';
 import {
   Card,
@@ -25,6 +26,7 @@ export default function AdquisicionPage() {
   const [localSensorData, setLocalSensorData] = useState<SensorDataPoint[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [chartGroups, setChartGroups] = useState<string[][]>([]);
 
   const activeSensors = useMemo(() => 
@@ -164,12 +166,17 @@ export default function AdquisicionPage() {
   };
   
   const handleDownload = () => {
-    router.push('/exportacion');
+    setIsExportModalOpen(true);
   };
 
   const handleHistory = () => {
     router.push('/historial');
   };
+  
+  const handleTriggerExport = () => {
+    setIsResultsModalOpen(false);
+    setIsExportModalOpen(true);
+  }
 
   return (
     <>
@@ -245,6 +252,12 @@ export default function AdquisicionPage() {
         config={config}
         sensorData={sensorData}
         regimen={regimen}
+        onTriggerExport={handleTriggerExport}
+      />
+      
+      <ExportModal 
+        open={isExportModalOpen}
+        onOpenChange={setIsExportModalOpen}
       />
     </>
   );
