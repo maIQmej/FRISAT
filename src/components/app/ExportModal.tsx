@@ -232,10 +232,12 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     csv += `${t('collectedData')}\n`;
     // Headers for raw data
     const dataHeaders = ['time', ...activeSensors, 'regimen'];
-    csv += `${dataHeaders.map(h => `"${h}"`).join(',')}\n`;
+    const displayHeaders = [`"${t('sampleNumber')}"`, ...dataHeaders.map(h => `"${h}"`)];
+    csv += `${displayHeaders.join(',')}\n`;
+
     // Raw data rows
-    sensorData.forEach(point => {
-      const row = dataHeaders.map(header => {
+    sensorData.forEach((point, index) => {
+      const rowData = dataHeaders.map(header => {
         const value = point[header];
         if (header === 'regimen' && typeof value === 'string') {
           return `"${t_regimen(value as RegimenType)}"`;
@@ -245,7 +247,9 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
         }
         return `"${value ?? ''}"`;
       });
-      csv += `${row.join(',')}\n`;
+      // Prepend the sample number (index + 1) to the row data
+      const fullRow = [index + 1, ...rowData];
+      csv += `${fullRow.join(',')}\n`;
     });
 
     return csv;
@@ -501,5 +505,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     </Dialog>
   );
 }
+
+    
 
     

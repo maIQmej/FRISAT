@@ -159,6 +159,7 @@ export const translations: Translations = {
     parameter: 'Parámetro',
     value: 'Valor',
     collectedData: 'Datos Recolectados',
+    sampleNumber: 'Nº de Muestra',
   },
   en: {
     welcomeTitle: 'Welcome to FRISAT',
@@ -308,6 +309,7 @@ export const translations: Translations = {
     parameter: 'Parameter',
     value: 'Value',
     collectedData: 'Collected Data',
+    sampleNumber: 'Sample No.',
   },
   fr: {
     welcomeTitle: 'Bienvenue sur FRISAT',
@@ -457,6 +459,7 @@ export const translations: Translations = {
     parameter: 'Paramètre',
     value: 'Valeur',
     collectedData: 'Données Collectées',
+    sampleNumber: 'N° d\'échantillon',
   },
   de: {
     welcomeTitle: 'Willkommen bei FRISAT',
@@ -606,5 +609,8 @@ export const translations: Translations = {
     parameter: 'Parameter',
     value: 'Wert',
     collectedData: 'Gesammelte Daten',
+    sampleNumber: 'Proben-Nr.',
   }
 };
+
+    
