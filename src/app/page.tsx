@@ -25,12 +25,13 @@ export default function WelcomePage() {
   const { t } = useTranslation();
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-secondary p-4">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+    <div className="relative flex min-h-screen items-center justify-center bg-main-background bg-cover bg-center p-4">
+      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
         <LanguageSwitcher />
         <ThemeToggle />
       </div>
-      <Card className="w-full max-w-2xl text-center shadow-2xl">
+      <Card className="relative z-10 w-full max-w-2xl text-center shadow-2xl">
         <CardHeader className="items-center p-8">
           <Logo />
           <CardTitle className="mt-4 text-4xl font-bold">{t('welcomeTitle')}</CardTitle>

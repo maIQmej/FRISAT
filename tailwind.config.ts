@@ -9,6 +9,9 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        'main-background': "url('/fondo.jpg')",
+      },
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
