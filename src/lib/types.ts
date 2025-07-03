@@ -1,4 +1,8 @@
 
+import type { Dispatch, SetStateAction } from 'react';
+
+export type RegimenType = 'flujo laminar' | 'turbulento' | 'en la frontera' | 'indeterminado';
+
 export interface Configuration {
   acquisitionTime: number;
   samplesPerSecond: number;
@@ -21,10 +25,12 @@ export type AcquisitionState = 'idle' | 'configuring' | 'running' | 'stopped' | 
 
 export type AppContextType = {
   config: Configuration;
-  setConfig: (config: Configuration) => void;
+  setConfig: Dispatch<SetStateAction<Configuration>>;
   sensorData: SensorDataPoint[];
-  setSensorData: (data: SensorDataPoint[]) => void;
+  setSensorData: Dispatch<SetStateAction<SensorDataPoint[]>>;
   acquisitionState: AcquisitionState;
-  setAcquisitionState: (state: AcquisitionState) => void;
+  setAcquisitionState: Dispatch<SetStateAction<AcquisitionState>>;
   resetApp: () => void;
+  regimen: RegimenType;
+  setRegimen: Dispatch<SetStateAction<RegimenType>>;
 };

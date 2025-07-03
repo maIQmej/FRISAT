@@ -110,7 +110,7 @@ export default function AdquisicionPage() {
         
         <div className="flex-grow overflow-y-auto pr-4 space-y-6 py-4">
           <Progress value={progress} />
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6">
             {activeSensors.map((sensorKey, index) => (
               <SensorChart
                 key={sensorKey}
