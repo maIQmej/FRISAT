@@ -26,6 +26,7 @@ export default function AdquisicionPage() {
   const { t, t_regimen } = useTranslation();
   const [progress, setProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const elapsedTimeRef = useRef(0);
   const [localSensorData, setLocalSensorData] = useState<SensorDataPoint[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
@@ -98,38 +99,41 @@ export default function AdquisicionPage() {
     };
     
     const runAcquisition = () => {
+      elapsedTimeRef.current = 0;
+      setElapsedTime(0);
+      setLocalSensorData([generateDataPoint(0)]);
+      
       intervalRef.current = setInterval(() => {
-        setElapsedTime(prev => {
-          const newTime = prev + 1 / config.samplesPerSecond;
-          if (newTime >= config.acquisitionTime) {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-            setProgress(100);
-            setLocalSensorData(prevData => {
-              const finalData = [...prevData, generateDataPoint(newTime)];
-              setSensorData(finalData);
-              return finalData;
-            });
-            setAcquisitionState('completed');
-            
-            const finalRegimenResults: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
-            const finalRandomResult = finalRegimenResults[Math.floor(Math.random() * finalRegimenResults.length)];
-            setRegimen(finalRandomResult);
-            
-            setIsResultsModalOpen(true);
-            return config.acquisitionTime;
-          }
+        const newTime = elapsedTimeRef.current + (1 / config.samplesPerSecond);
+        elapsedTimeRef.current = newTime;
 
-          setLocalSensorData(prevData => [...prevData, generateDataPoint(newTime)]);
+        if (newTime >= config.acquisitionTime) {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          
+          setElapsedTime(config.acquisitionTime);
+          setProgress(100);
+
+          setLocalSensorData(prevData => {
+            const finalData = [...prevData, generateDataPoint(config.acquisitionTime)];
+            setSensorData(finalData);
+            return finalData;
+          });
+          setAcquisitionState('completed');
+          
+          const finalRegimenResults: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
+          const finalRandomResult = finalRegimenResults[Math.floor(Math.random() * finalRegimenResults.length)];
+          setRegimen(finalRandomResult);
+          
+          setIsResultsModalOpen(true);
+        } else {
+          setElapsedTime(newTime);
           setProgress((newTime / config.acquisitionTime) * 100);
-          
+          setLocalSensorData(prevData => [...prevData, generateDataPoint(newTime)]);
           simulateRegimen();
-          
-          return newTime;
-        });
+        }
       }, intervalTime);
     };
     
-    setLocalSensorData([generateDataPoint(0)]);
     runAcquisition();
 
     return () => {
