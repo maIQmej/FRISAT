@@ -23,7 +23,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 export default function AdquisicionPage() {
   const router = useRouter();
-  const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp } = useApp();
+  const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp, startTimestamp } = useApp();
   const { t, t_regimen } = useTranslation();
   const [progress, setProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -292,6 +292,7 @@ export default function AdquisicionPage() {
         sensorData={sensorData}
         regimen={regimen}
         onTriggerExport={handleTriggerExport}
+        startTimestamp={startTimestamp}
       />
       
       <ExportModal 
@@ -300,6 +301,7 @@ export default function AdquisicionPage() {
         filesToExport={[config.fileName]}
         sensorData={sensorData}
         config={config}
+        startTimestamp={startTimestamp}
       />
 
       <DataPointModal

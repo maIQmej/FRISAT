@@ -38,4 +38,6 @@ export type AppContextType = {
   setRegimen: Dispatch<SetStateAction<RegimenType>>;
   language: Language;
   setLanguage: Dispatch<SetStateAction<Language>>;
+  startTimestamp: Date | null;
+  setStartTimestamp: Dispatch<SetStateAction<Date | null>>;
 };

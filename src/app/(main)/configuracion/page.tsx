@@ -44,7 +44,7 @@ const formSchema = z.object({
 
 export default function ConfiguracionPage() {
   const router = useRouter();
-  const { config, setConfig, setAcquisitionState, resetApp } = useApp();
+  const { config, setConfig, setAcquisitionState, resetApp, setStartTimestamp } = useApp();
   const { t } = useTranslation();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [pendingConfig, setPendingConfig] = useState<Configuration | null>(null);
@@ -62,6 +62,7 @@ export default function ConfiguracionPage() {
   const handleStartAcquisition = () => {
     if (!pendingConfig) return;
     setConfig(pendingConfig);
+    setStartTimestamp(new Date());
     setAcquisitionState('running');
     router.push('/adquisicion');
   };

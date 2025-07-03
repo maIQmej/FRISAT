@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SensorChart } from '@/components/app/SensorChart';
-import { ArrowLeft, HardDrive, Timer, Sigma, Wind, SlidersHorizontal, Home } from 'lucide-react';
+import { ArrowLeft, HardDrive, Timer, Sigma, Wind, SlidersHorizontal, Home, Clock } from 'lucide-react';
 import { ExportModal } from '@/components/app/ExportModal';
 import { DataPointModal } from '@/components/app/DataPointModal';
 import type { SensorDataPoint, RegimenType, Configuration } from '@/lib/types';
@@ -101,6 +101,8 @@ export default function HistorialDetallePage() {
     }
   };
 
+  const startTimestamp = testData ? new Date(testData.date) : null;
+
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -126,7 +128,14 @@ export default function HistorialDetallePage() {
           <CardHeader>
             <CardTitle>{t('testSummary')}</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex items-center space-x-3 rounded-md border p-4">
+              <Clock className="h-6 w-6 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('startTime')}</p>
+                <p className="font-semibold">{testData.date}</p>
+              </div>
+            </div>
             <div className="flex items-center space-x-3 rounded-md border p-4">
               <Timer className="h-6 w-6 text-primary" />
               <div>
@@ -186,6 +195,7 @@ export default function HistorialDetallePage() {
         filesToExport={[testData.fileName]}
         sensorData={sensorData}
         config={exportConfig}
+        startTimestamp={startTimestamp}
       />
       <DataPointModal
         open={isDataPointModalOpen}

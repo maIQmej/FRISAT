@@ -37,6 +37,7 @@ interface ExportModalProps {
   filesToExport?: string[];
   sensorData?: SensorDataPoint[];
   config?: Configuration;
+  startTimestamp?: Date | null;
 }
 
 const formBaseSchema = {
@@ -106,8 +107,8 @@ const UsbDetector = ({ usbStatus, onDetect, onRetry }: { usbStatus: USBStatus, o
 }
 
 
-export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData = [], config: propConfig }: ExportModalProps) {
-  const { config: appConfig } = useApp();
+export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData = [], config: propConfig, startTimestamp }: ExportModalProps) {
+  const { config: appConfig, language } = useApp();
   const config = propConfig || appConfig;
   const { t, t_regimen } = useTranslation();
   const [exportState, setExportState] = useState<ExportState>('idle');
@@ -205,31 +206,34 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     let csv = '\uFEFF';
 
     // --- Section 1: Test Summary ---
-    csv += `${t('testSummary')}\n`;
+    csv += `"${t('testSummary')}"\n`;
     // Headers for summary
     csv += `"${t('parameter')}","${t('value')}"\n`;
     // Summary data
     csv += `"${t('fileNameLabel')}","${config.fileName}.csv"\n`;
+    if (startTimestamp) {
+      csv += `"${t('startTime')}","${startTimestamp.toLocaleString(language)}"\n`;
+    }
     csv += `"${t('durationLabel')}","${sensorData.at(-1)?.time.toFixed(2) || '0'}s"\n`;
     csv += `"${t('samplesPerSecondLabel')}","${config.samplesPerSecond} Hz"\n`;
     // Spacer
     csv += '\n';
 
     // --- Section 2: Test Statistics ---
-    csv += `${t('testStatistics')}\n`;
+    csv += `"${t('testStatistics')}"\n`;
     // Headers for stats
     const statHeaders = [t('sensor'), t('statMean'), t('statStdDev'), t('statMin'), t('statMax')];
     csv += `${statHeaders.map(h => `"${h}"`).join(',')}\n`;
     // Stats data
     testStats.forEach(stat => {
-      const row = [`"${stat.label}"`, stat.mean, stat.stdDev, stat.min, stat.max];
+      const row = [`"${stat.label}"`, `"${stat.mean}"`, `"${stat.stdDev}"`, `"${stat.min}"`, `"${stat.max}"`];
       csv += `${row.join(',')}\n`;
     });
     // Spacer
     csv += '\n';
 
     // --- Section 3: Raw Data ---
-    csv += `${t('collectedData')}\n`;
+    csv += `"${t('collectedData')}"\n`;
     // Headers for raw data
     const dataHeaders = ['time', ...activeSensors, 'regimen'];
     const displayHeaders = [`"${t('sampleNumber')}"`, ...dataHeaders.map(h => `"${h}"`)];
@@ -505,7 +509,3 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     </Dialog>
   );
 }
-
-    
-
-    

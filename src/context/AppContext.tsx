@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
@@ -24,12 +25,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [acquisitionState, setAcquisitionState] = useState<AcquisitionState>('configuring');
   const [regimen, setRegimen] = useState<RegimenType>('indeterminado');
   const [language, setLanguage] = useState<Language>('es');
+  const [startTimestamp, setStartTimestamp] = useState<Date | null>(null);
 
   const resetApp = useCallback(() => {
     setConfig(initialConfig);
     setSensorData([]);
     setAcquisitionState('configuring');
     setRegimen('indeterminado');
+    setStartTimestamp(null);
     setLanguage('es');
   }, []);
 
@@ -46,6 +49,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setRegimen,
         language,
         setLanguage,
+        startTimestamp,
+        setStartTimestamp,
         resetApp,
       }}
     >

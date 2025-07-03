@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -12,7 +13,7 @@ import {
   DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog';
-import { HardDrive, RotateCw, Sigma, Timer, FileText, Wind, Database } from 'lucide-react';
+import { HardDrive, RotateCw, Sigma, Timer, FileText, Wind, Database, Clock } from 'lucide-react';
 import type { Configuration, SensorDataPoint, RegimenType } from '@/lib/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Separator } from '@/components/ui/separator';
@@ -32,11 +33,12 @@ interface ResultsModalProps {
   sensorData: SensorDataPoint[];
   regimen: RegimenType;
   onTriggerExport: () => void;
+  startTimestamp: Date | null;
 }
 
-export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, onTriggerExport }: ResultsModalProps) {
+export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, onTriggerExport, startTimestamp }: ResultsModalProps) {
   const router = useRouter();
-  const { resetApp, acquisitionState } = useApp();
+  const { resetApp, acquisitionState, language } = useApp();
   const { t, t_regimen } = useTranslation();
 
   const totalPlannedSamples = Math.floor(config.acquisitionTime * config.samplesPerSecond) + 1;
@@ -94,8 +96,6 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, 
   };
   
   const handleDownload = () => {
-    // These statistics should be included in the exported data.
-    // The current export is a mock, but in a real implementation, `testStats` would be passed to the export function.
     onTriggerExport();
   };
 
@@ -106,6 +106,7 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, 
 
   const activeSensorsCount = activeSensors.length;
   const finalTime = sensorData.at(-1)?.time.toFixed(2) || '0.00';
+  const formattedStartTime = startTimestamp ? startTimestamp.toLocaleString(language) : t('notAvailable');
   
   if (acquisitionState !== 'completed' && acquisitionState !== 'stopped') {
     return null;
@@ -113,20 +114,27 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, 
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-3xl flex flex-col" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('resultsTitle')}</DialogTitle>
           <DialogDescription>{t('resultsDesc')}</DialogDescription>
         </DialogHeader>
         
-        <div className="flex-1 relative overflow-y-auto -mx-6">
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6">
           <div className="space-y-6 py-4 px-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex items-center space-x-3 rounded-md border p-4">
+              <div className="flex items-center space-x-3 rounded-md border p-4 sm:col-span-2">
                 <FileText className="h-6 w-6 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">{t('fileNameLabel')}</p>
                   <p className="font-semibold">{config.fileName}.xlsx</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 rounded-md border p-4">
+                <Clock className="h-6 w-6 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('startTime')}</p>
+                  <p className="font-semibold">{formattedStartTime}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3 rounded-md border p-4">

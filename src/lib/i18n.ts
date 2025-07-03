@@ -58,6 +58,8 @@ export const translations: Translations = {
     totalSamplesLabel: 'Total Muestras',
     flowRegimeLabel: 'Régimen de Flujo',
     whatNext: '¿Qué desea hacer ahora?',
+    startTime: 'Hora de Inicio',
+    notAvailable: 'No disponible',
     
     exportTitle: 'Exportar Datos',
     exportDesc: 'Seleccione un método y configure los detalles para exportar la medición.',
@@ -208,6 +210,8 @@ export const translations: Translations = {
     totalSamplesLabel: 'Total Samples',
     flowRegimeLabel: 'Flow Regime',
     whatNext: 'What would you like to do now?',
+    startTime: 'Start Time',
+    notAvailable: 'Not available',
 
     exportTitle: 'Export Data',
     exportDesc: 'Select a method and configure the details to export the measurement.',
@@ -358,6 +362,8 @@ export const translations: Translations = {
     totalSamplesLabel: 'Total des Échantillons',
     flowRegimeLabel: 'Régime d\'Écoulement',
     whatNext: 'Que souhaitez-vous faire maintenant ?',
+    startTime: 'Heure de Début',
+    notAvailable: 'Non disponible',
 
     exportTitle: 'Exporter les Données',
     exportDesc: 'Sélectionnez une méthode et configurez les détails pour exporter la mesure.',
@@ -508,6 +514,8 @@ export const translations: Translations = {
     totalSamplesLabel: 'Gesamtzahl der Abtastungen',
     flowRegimeLabel: 'Strömungsregime',
     whatNext: 'Was möchten Sie jetzt tun?',
+    startTime: 'Startzeit',
+    notAvailable: 'Nicht verfügbar',
 
     exportTitle: 'Daten exportieren',
     exportDesc: 'Wählen Sie eine Methode und konfigurieren Sie die Details, um die Messung zu exportieren.',
@@ -612,5 +620,3 @@ export const translations: Translations = {
     sampleNumber: 'Proben-Nr.',
   }
 };
-
-    
