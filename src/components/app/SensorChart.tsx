@@ -16,9 +16,10 @@ interface SensorChartProps {
   colors: { [key: string]: string };
   onDrop: (sourceKey: string, targetKey: string) => void;
   onDoubleClick?: () => void;
+  onDataPointClick?: (dataPoint: SensorDataPoint) => void;
 }
 
-export function SensorChart({ title, data, dataKeys, colors, onDrop, onDoubleClick }: SensorChartProps) {
+export function SensorChart({ title, data, dataKeys, colors, onDrop, onDoubleClick, onDataPointClick }: SensorChartProps) {
   const { t } = useTranslation();
   
   const chartConfig = useMemo(() => dataKeys.reduce((config, key) => {
@@ -102,6 +103,12 @@ export function SensorChart({ title, data, dataKeys, colors, onDrop, onDoubleCli
     e.preventDefault();
     e.currentTarget.classList.remove('border-primary', 'border-2');
   };
+  
+  const handleChartClick = (chartState: any) => {
+    if (onDataPointClick && chartState && chartState.activePayload && chartState.activePayload.length > 0) {
+      onDataPointClick(chartState.activePayload[0].payload);
+    }
+  };
 
   return (
     <Card 
@@ -120,7 +127,11 @@ export function SensorChart({ title, data, dataKeys, colors, onDrop, onDoubleCli
       </CardHeader>
       <CardContent className="flex-grow flex flex-col">
         <ChartContainer config={chartConfig} className="h-[160px] w-full flex-grow">
-          <AreaChart data={data} margin={{ left: 12, right: 12, top: 12 }}>
+          <AreaChart 
+            data={data} 
+            margin={{ left: 12, right: 12, top: 12 }}
+            onClick={handleChartClick}
+          >
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="time"

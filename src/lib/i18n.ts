@@ -133,6 +133,11 @@ export const translations: Translations = {
     statStdDev: 'Desv. Est.',
     statMin: 'Mín',
     statMax: 'Máx',
+
+    dataPointModalTitle: 'Detalle del Punto de Datos',
+    dataPointModalDesc: 'Valores de los sensores en el instante de tiempo seleccionado.',
+    dataPointTime: 'Tiempo',
+    dataPointValue: 'Valor',
   },
   en: {
     welcomeTitle: 'Welcome to FRISAT',
@@ -256,6 +261,11 @@ export const translations: Translations = {
     statStdDev: 'Std. Dev.',
     statMin: 'Min',
     statMax: 'Max',
+
+    dataPointModalTitle: 'Data Point Detail',
+    dataPointModalDesc: 'Sensor values at the selected time instance.',
+    dataPointTime: 'Time',
+    dataPointValue: 'Value',
   },
   fr: {
     welcomeTitle: 'Bienvenue sur FRISAT',
@@ -379,6 +389,11 @@ export const translations: Translations = {
     statStdDev: 'Écart-type',
     statMin: 'Min',
     statMax: 'Max',
+
+    dataPointModalTitle: 'Détail du Point de Donnée',
+    dataPointModalDesc: 'Valeurs des capteurs à l\'instant sélectionné.',
+    dataPointTime: 'Temps',
+    dataPointValue: 'Valeur',
   },
   de: {
     welcomeTitle: 'Willkommen bei FRISAT',
@@ -502,5 +517,10 @@ export const translations: Translations = {
     statStdDev: 'Std.-Abw.',
     statMin: 'Min',
     statMax: 'Max',
+
+    dataPointModalTitle: 'Datenpunktdetail',
+    dataPointModalDesc: 'Sensorwerte zum ausgewählten Zeitpunkt.',
+    dataPointTime: 'Zeit',
+    dataPointValue: 'Wert',
   }
 };

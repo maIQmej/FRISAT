@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { SensorChart } from '@/components/app/SensorChart';
 import { ResultsModal } from '@/components/app/ResultsModal';
 import { ExportModal } from '@/components/app/ExportModal';
+import { DataPointModal } from '@/components/app/DataPointModal';
 import type { SensorDataPoint, RegimenType } from '@/lib/types';
 import {
   Card,
@@ -31,6 +32,8 @@ export default function AdquisicionPage() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
+  const [selectedDataPoint, setSelectedDataPoint] = useState<SensorDataPoint | null>(null);
   const [chartGroups, setChartGroups] = useState<string[][]>([]);
 
   const activeSensors = useMemo(() => 
@@ -184,6 +187,11 @@ export default function AdquisicionPage() {
     setIsExportModalOpen(true);
   }
 
+  const handleDataPointClick = (dataPoint: SensorDataPoint) => {
+    setSelectedDataPoint(dataPoint);
+    setIsDataPointModalOpen(true);
+  };
+
   return (
     <>
       <div className="flex h-full flex-col gap-4">
@@ -227,18 +235,19 @@ export default function AdquisicionPage() {
           <CardContent className="flex flex-grow flex-col gap-4">
             <Progress value={progress} />
             <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {chartGroups.map((group) => {
+              {chartGroups.map((group, groupIndex) => {
                 const primaryKey = group[0];
                 const title = group.map(key => `${t('sensor')} ${parseInt(key.replace('sensor', ''))}`).join(' & ');
                 return (
                   <SensorChart
-                    key={primaryKey}
+                    key={`${primaryKey}-${groupIndex}`}
                     title={title}
                     data={localSensorData}
                     dataKeys={group}
                     colors={sensorColors}
                     onDrop={handleDrop}
                     onDoubleClick={() => handleSeparate(group)}
+                    onDataPointClick={handleDataPointClick}
                   />
                 );
               })}
@@ -269,6 +278,13 @@ export default function AdquisicionPage() {
         open={isExportModalOpen}
         onOpenChange={setIsExportModalOpen}
         filesToExport={[config.fileName]}
+      />
+
+      <DataPointModal
+        open={isDataPointModalOpen}
+        onOpenChange={setIsDataPointModalOpen}
+        dataPoint={selectedDataPoint}
+        activeSensors={activeSensors}
       />
     </>
   );
