@@ -36,6 +36,11 @@ export default function AdquisicionPage() {
   const [selectedDataPoint, setSelectedDataPoint] = useState<SensorDataPoint | null>(null);
   const [chartGroups, setChartGroups] = useState<string[][]>([]);
 
+  const totalPlannedSamples = useMemo(
+    () => Math.floor(config.acquisitionTime * config.samplesPerSecond) + 1,
+    [config.acquisitionTime, config.samplesPerSecond]
+  );
+
   const activeSensors = useMemo(() => 
     Object.entries(config.sensors)
       .filter(([, isActive]) => isActive)
@@ -116,24 +121,25 @@ export default function AdquisicionPage() {
           clearInterval(interval);
           intervalRef.current = null;
           
-          setElapsedTime(config.acquisitionTime);
-          setProgress(100);
-
           const finalDataPoint = generateDataPoint(config.acquisitionTime);
-          setRegimen(finalDataPoint.regimen || 'indeterminado');
+          
           setLocalSensorData(prevData => {
             const finalData = [...prevData, finalDataPoint];
             setSensorData(finalData);
             return finalData;
           });
+
+          setElapsedTime(config.acquisitionTime);
+          setProgress(100);
+          setRegimen(finalDataPoint.regimen || 'indeterminado');
           setAcquisitionState('completed');
           setIsResultsModalOpen(true);
         } else {
           const newDataPoint = generateDataPoint(newTime);
+          setLocalSensorData(prevData => [...prevData, newDataPoint]);
           setElapsedTime(newTime);
           setProgress((newTime / config.acquisitionTime) * 100);
           setRegimen(newDataPoint.regimen || 'indeterminado');
-          setLocalSensorData(prevData => [...prevData, newDataPoint]);
         }
       }, intervalTime);
       intervalRef.current = interval;
@@ -268,8 +274,10 @@ export default function AdquisicionPage() {
                   <Sigma className="h-8 w-8 text-primary" />
                   <CardTitle className="mt-2">{t('totalSamplesLabel')}</CardTitle>
                 </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-2xl font-bold text-center">{localSensorData.length}</p>
+                <CardContent className="p-4 pt-0 text-center">
+                  <p className="text-2xl font-bold">
+                    {localSensorData.length} / {totalPlannedSamples}
+                  </p>
                 </CardContent>
               </Card>
             </div>

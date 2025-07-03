@@ -58,6 +58,11 @@ export default function HistorialDetallePage() {
   const testId = params.id ? parseInt(params.id as string, 10) : null;
   const testData = useMemo(() => testId ? mockHistory.find(t => t.id === testId) : null, [testId]);
   
+  const totalPlannedSamples = useMemo(() => {
+    if (!testData) return 0;
+    return testData.duration * testData.samplesPerSecond + 1;
+  }, [testData]);
+  
   useEffect(() => {
     if (testData) {
       const data = generateMockSensorData(testData.duration, testData.samplesPerSecond, testData.sensors, testData.regimen);
@@ -127,7 +132,7 @@ export default function HistorialDetallePage() {
               <Sigma className="h-6 w-6 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">{t('totalSamplesLabel')}</p>
-                <p className="font-semibold">{sensorData.length}</p>
+                <p className="font-semibold">{sensorData.length} / {totalPlannedSamples}</p>
               </div>
             </div>
              <div className="flex items-center space-x-3 rounded-md border p-4">

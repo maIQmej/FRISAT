@@ -30,6 +30,8 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, 
   const { resetApp, acquisitionState } = useApp();
   const { t, t_regimen } = useTranslation();
 
+  const totalPlannedSamples = Math.floor(config.acquisitionTime * config.samplesPerSecond) + 1;
+
   const handleNewTest = () => {
     onOpenChange(false);
     resetApp();
@@ -79,7 +81,7 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, 
               <Sigma className="h-6 w-6 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">{t('totalSamplesLabel')}</p>
-                <p className="font-semibold">{sensorData.length}</p>
+                <p className="font-semibold">{sensorData.length} / {totalPlannedSamples}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 rounded-md border p-4">
