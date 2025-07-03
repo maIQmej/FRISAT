@@ -265,6 +265,7 @@ export default function AdquisicionPage() {
       <ExportModal 
         open={isExportModalOpen}
         onOpenChange={setIsExportModalOpen}
+        filesToExport={[config.fileName]}
       />
     </>
   );

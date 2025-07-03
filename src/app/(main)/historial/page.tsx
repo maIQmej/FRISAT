@@ -22,12 +22,15 @@ const mockHistory = [
   { id: 5, fileName: 'verificacion_rapida', date: '2024-07-27 18:00', duration: '15s', sensors: 1, regimen: 'flujo laminar', samplesPerSecond: 100 },
 ] as const;
 
+type MockHistoryItem = typeof mockHistory[number];
+
 export default function HistorialPage() {
   const router = useRouter();
   const { t, t_regimen } = useTranslation();
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [filterText, setFilterText] = useState('');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [filesToExport, setFilesToExport] = useState<string[]>([]);
 
   const filteredHistory = useMemo(() => {
     return mockHistory.filter(test =>
@@ -52,6 +55,8 @@ export default function HistorialPage() {
   };
 
   const handleDownloadSelected = () => {
+    const selectedTests = mockHistory.filter(test => selectedRows.includes(test.id));
+    setFilesToExport(selectedTests.map(t => t.fileName));
     setIsExportModalOpen(true);
   };
 
@@ -155,7 +160,11 @@ export default function HistorialPage() {
           </Table>
         </CardContent>
       </Card>
-      <ExportModal open={isExportModalOpen} onOpenChange={setIsExportModalOpen} />
+      <ExportModal 
+        open={isExportModalOpen} 
+        onOpenChange={setIsExportModalOpen} 
+        filesToExport={filesToExport} 
+      />
     </div>
   );
 }

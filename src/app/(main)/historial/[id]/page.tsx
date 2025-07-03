@@ -150,7 +150,7 @@ export default function HistorialDetallePage() {
       <ExportModal 
         open={isExportModalOpen}
         onOpenChange={setIsExportModalOpen}
-        initialFileName={testData.fileName}
+        filesToExport={[testData.fileName]}
       />
     </>
   );

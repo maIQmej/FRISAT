@@ -78,6 +78,10 @@ export const translations: Translations = {
     close: 'Cerrar',
     exported: 'Exportado',
     export: 'Exportar',
+    multiExportTitle: 'Exportar Archivos Múltiples',
+    multiExportDesc: 'Se exportarán {count} archivos. Confirme la ruta de destino.',
+    filesToExport: 'Archivos a exportar',
+    exportingMultipleToastDesc: 'Exportando {count} archivos...',
     
     historyTitle: 'Historial de Pruebas',
     historyDesc: 'Explore y administre todas las mediciones realizadas anteriormente.',
@@ -90,8 +94,6 @@ export const translations: Translations = {
     filterByFileName: 'Filtrar por nombre de archivo...',
     downloadSelected: 'Descargar Selección',
     numSelected: '{count} seleccionado(s)',
-    downloadingSelectedToastTitle: 'Descarga Múltiple Iniciada',
-    downloadingSelectedToastDesc: 'Se ha iniciado la descarga de {count} archivos seleccionados.',
     noResults: 'No hay resultados.',
 
     testNotFound: 'Prueba no encontrada',
@@ -191,6 +193,10 @@ export const translations: Translations = {
     close: 'Close',
     exported: 'Exported',
     export: 'Export',
+    multiExportTitle: 'Export Multiple Files',
+    multiExportDesc: '{count} files will be exported. Please confirm the destination path.',
+    filesToExport: 'Files to export',
+    exportingMultipleToastDesc: 'Exporting {count} files...',
     
     historyTitle: 'Test History',
     historyDesc: 'Explore and manage all previously conducted measurements.',
@@ -203,8 +209,6 @@ export const translations: Translations = {
     filterByFileName: 'Filter by file name...',
     downloadSelected: 'Download Selected',
     numSelected: '{count} selected',
-    downloadingSelectedToastTitle: 'Bulk Download Started',
-    downloadingSelectedToastDesc: 'Started downloading {count} selected files.',
     noResults: 'No results.',
 
     testNotFound: 'Test Not Found',
@@ -304,6 +308,10 @@ export const translations: Translations = {
     close: 'Fermer',
     exported: 'Exporté',
     export: 'Exporter',
+    multiExportTitle: 'Exporter Plusieurs Fichiers',
+    multiExportDesc: '{count} fichiers seront exportés. Veuillez confirmer le chemin de destination.',
+    filesToExport: 'Fichiers à exporter',
+    exportingMultipleToastDesc: 'Exportation de {count} fichiers...',
     
     historyTitle: 'Historique des Tests',
     historyDesc: 'Explorez et gérez toutes les mesures effectuées précédemment.',
@@ -316,8 +324,6 @@ export const translations: Translations = {
     filterByFileName: 'Filtrer par nom de fichier...',
     downloadSelected: 'Télécharger la sélection',
     numSelected: '{count} sélectionné(s)',
-    downloadingSelectedToastTitle: 'Téléchargement groupé démarré',
-    downloadingSelectedToastDesc: 'Le téléchargement de {count} fichiers sélectionnés a commencé.',
     noResults: 'Aucun résultat.',
 
     testNotFound: 'Test Non Trouvé',
@@ -417,6 +423,10 @@ export const translations: Translations = {
     close: 'Schließen',
     exported: 'Exportiert',
     export: 'Exportieren',
+    multiExportTitle: 'Mehrere Dateien exportieren',
+    multiExportDesc: '{count} Dateien werden exportiert. Bitte bestätigen Sie den Zielpfad.',
+    filesToExport: 'Zu exportierende Dateien',
+    exportingMultipleToastDesc: 'Exportiere {count} Dateien...',
     
     historyTitle: 'Testverlauf',
     historyDesc: 'Erkunden und verwalten Sie alle zuvor durchgeführten Messungen.',
@@ -429,8 +439,6 @@ export const translations: Translations = {
     filterByFileName: 'Nach Dateinamen filtern...',
     downloadSelected: 'Auswahl herunterladen',
     numSelected: '{count} ausgewählt',
-    downloadingSelectedToastTitle: 'Massen-Download gestartet',
-    downloadingSelectedToastDesc: 'Der Download von {count} ausgewählten Dateien wurde gestartet.',
     noResults: 'Keine Ergebnisse.',
 
     testNotFound: 'Test nicht gefunden',

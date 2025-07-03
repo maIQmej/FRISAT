@@ -21,57 +21,79 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Wifi, Usb, HardDrive, Loader2, CheckCircle, FileText } from 'lucide-react';
+import { Wifi, Usb, HardDrive, Loader2, CheckCircle, FileText, FileSpreadsheet } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Separator } from '../ui/separator';
+import { ScrollArea } from '../ui/scroll-area';
 
 type ExportState = 'idle' | 'exporting' | 'success' | 'error';
 
 interface ExportModalProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialFileName?: string;
+  onOpencha
+nge: (open: boolean) => void;
+  filesToExport?: string[];
 }
 
-const formSchema = z.object({
+const singleFileFormSchema = z.object({
   exportMethod: z.enum(['wifi', 'usb']),
   fileName: z.string().min(1, 'El nombre es requerido').regex(/^[a-zA-Z0-9_-]+$/, 'Solo letras, números, guiones y guiones bajos'),
   includeDate: z.boolean(),
   exportPath: z.string().min(1, 'La ruta es requerida'),
 });
 
-type ExportFormValues = z.infer<typeof formSchema>;
+type SingleFileFormValues = z.infer<typeof singleFileFormSchema>;
 
-export function ExportModal({ open, onOpenChange, initialFileName }: ExportModalProps) {
+const multiFileFormSchema = z.object({
+  exportPath: z.string().min(1, 'La ruta es requerida'),
+});
+
+type MultiFileFormValues = z.infer<typeof multiFileFormSchema>;
+
+
+export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportModalProps) {
   const { config } = useApp();
   const { t } = useTranslation();
   const [exportState, setExportState] = useState<ExportState>('idle');
   const { toast } = useToast();
 
-  const form = useForm<ExportFormValues>({
-    resolver: zodResolver(formSchema),
+  const isMultiExport = filesToExport.length > 1;
+  const singleFileName = filesToExport.length > 0 ? filesToExport[0] : config.fileName;
+
+  const singleFileForm = useForm<SingleFileFormValues>({
+    resolver: zodResolver(singleFileFormSchema),
     defaultValues: {
       exportMethod: 'wifi',
-      fileName: initialFileName || config.fileName,
+      fileName: singleFileName,
       includeDate: true,
       exportPath: '/mediciones/',
     },
   });
 
+  const multiFileForm = useForm<MultiFileFormValues>({
+    resolver: zodResolver(multiFileFormSchema),
+    defaultValues: {
+      exportPath: '/mediciones/exportacion_masiva/',
+    },
+  });
+
   useEffect(() => {
     if (open) {
-      form.reset({
+      singleFileForm.reset({
         exportMethod: 'wifi',
-        fileName: initialFileName || config.fileName,
+        fileName: singleFileName,
         includeDate: true,
         exportPath: '/mediciones/',
       });
+      multiFileForm.reset({
+        exportPath: '/mediciones/exportacion_masiva/',
+      });
       setExportState('idle');
     }
-  }, [open, config.fileName, form, initialFileName]);
+  }, [open, singleFileName, filesToExport, singleFileForm, multiFileForm]);
   
-  const watchedFileName = form.watch('fileName');
-  const watchedIncludeDate = form.watch('includeDate');
+  const watchedFileName = singleFileForm.watch('fileName');
+  const watchedIncludeDate = singleFileForm.watch('includeDate');
 
   const getFinalFilename = () => {
     let finalName = watchedFileName || config.fileName;
@@ -83,14 +105,26 @@ export function ExportModal({ open, onOpenChange, initialFileName }: ExportModal
     return `${finalName}.xlsx`;
   };
 
-  const handleExport = (values: ExportFormValues) => {
+  const handleSingleExport = (values: SingleFileFormValues) => {
     setExportState('exporting');
     const finalFileName = getFinalFilename();
     toast({
       title: t('exportingToastTitle'),
       description: `${t('exportingToastDesc')} "${finalFileName}" via ${values.exportMethod === 'wifi' ? 'WiFi' : 'USB'}.`,
     });
+    simulateExport();
+  };
 
+  const handleMultiExport = (values: MultiFileFormValues) => {
+    setExportState('exporting');
+    toast({
+      title: t('exportingToastTitle'),
+      description: t('exportingMultipleToastDesc').replace('{count}', filesToExport.length.toString()),
+    });
+    simulateExport();
+  };
+  
+  const simulateExport = () => {
     setTimeout(() => {
       const isSuccess = Math.random() > 0.2; // 80% success rate
       if (isSuccess) {
@@ -116,22 +150,83 @@ export function ExportModal({ open, onOpenChange, initialFileName }: ExportModal
     }
   };
 
+  if (isMultiExport) {
+    return (
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-md" onInteractOutside={(e) => { if (exportState === 'exporting') e.preventDefault(); }}>
+          <DialogHeader>
+            <DialogTitle>{t('multiExportTitle')}</DialogTitle>
+            <DialogDescription>{t('multiExportDesc').replace('{count}', filesToExport.length.toString())}</DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <Label>{t('filesToExport')}</Label>
+            <ScrollArea className="h-32 w-full rounded-md border p-2">
+              <ul className="space-y-1">
+                {filesToExport.map((file, index) => (
+                  <li key={index} className="text-sm font-mono truncate flex items-center gap-2">
+                    <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
+                    {file}.xlsx
+                  </li>
+                ))}
+              </ul>
+            </ScrollArea>
+            <Form {...multiFileForm}>
+              <form id="multi-export-form" onSubmit={multiFileForm.handleSubmit(handleMultiExport)}>
+                <FormField
+                  control={multiFileForm.control}
+                  name="exportPath"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('destinationPath')}</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={exportState !== 'idle'} />
+                      </FormControl>
+                      <FormMessage/>
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
+          </div>
+
+          {exportState !== 'idle' && (
+              <div className="rounded-lg border p-4 text-center min-h-[80px] flex items-center justify-center">
+                {exportState === 'exporting' && <div className="flex items-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary" /><p>{t('exporting')}</p></div>}
+                {exportState === 'success' && <div className="flex items-center gap-2"><CheckCircle className="h-6 w-6 text-green-500" /><p>{t('exportedSuccess')}</p></div>}
+                {exportState === 'error' && <p className="text-destructive">{t('exportError')}</p>}
+              </div>
+            )}
+
+          <DialogFooter className="sm:justify-between gap-2 pt-4">
+              {exportState === 'success' || exportState === 'error' ? (
+                  <Button variant="outline" onClick={handleClose}>
+                      {t('close')}
+                  </Button>
+              ) : <Button type="button" variant="ghost" onClick={handleClose}>{t('cancel')}</Button>}
+              <Button form="multi-export-form" type="submit" disabled={exportState === 'exporting' || exportState === 'success'}>
+                  {exportState === 'exporting' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {exportState === 'success' ? <CheckCircle className="mr-2 h-4 w-4" /> : <HardDrive className="mr-2 h-4 w-4" />}
+                  {exportState === 'success' ? t('exported') : t('export')}
+              </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent onInteractOutside={(e) => {
-        if (exportState === 'exporting') {
-          e.preventDefault();
-        }
-      }}>
+      <DialogContent onInteractOutside={(e) => { if (exportState === 'exporting') e.preventDefault(); }}>
         <DialogHeader>
           <DialogTitle>{t('exportTitle')}</DialogTitle>
           <DialogDescription>{t('exportDesc')}</DialogDescription>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleExport)} className="space-y-6">
+        <Form {...singleFileForm}>
+          <form onSubmit={singleFileForm.handleSubmit(handleSingleExport)} className="space-y-6">
             <FormField
-              control={form.control}
+              control={singleFileForm.control}
               name="exportMethod"
               render={({ field }) => (
                 <FormItem>
@@ -171,7 +266,7 @@ export function ExportModal({ open, onOpenChange, initialFileName }: ExportModal
             
             <div className="space-y-4">
               <FormField
-                control={form.control}
+                control={singleFileForm.control}
                 name="fileName"
                 render={({ field }) => (
                   <FormItem>
@@ -184,7 +279,7 @@ export function ExportModal({ open, onOpenChange, initialFileName }: ExportModal
                 )}
               />
               <FormField
-                control={form.control}
+                control={singleFileForm.control}
                 name="includeDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center space-x-3 space-y-0">
@@ -200,7 +295,7 @@ export function ExportModal({ open, onOpenChange, initialFileName }: ExportModal
                 )}
               />
                <FormField
-                control={form.control}
+                control={singleFileForm.control}
                 name="exportPath"
                 render={({ field }) => (
                   <FormItem>
