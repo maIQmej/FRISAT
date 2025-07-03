@@ -1,4 +1,3 @@
-import type { AnalyzeSensorDataOutput } from "@/ai/flows/analyze-sensor-data";
 
 export interface Configuration {
   acquisitionTime: number;
@@ -20,8 +19,6 @@ export type SensorDataPoint = {
 
 export type AcquisitionState = 'idle' | 'configuring' | 'running' | 'stopped' | 'completed';
 
-export type AnalysisState = 'idle' | 'loading' | 'success' | 'error';
-
 export type AppContextType = {
   config: Configuration;
   setConfig: (config: Configuration) => void;
@@ -29,9 +26,5 @@ export type AppContextType = {
   setSensorData: (data: SensorDataPoint[]) => void;
   acquisitionState: AcquisitionState;
   setAcquisitionState: (state: AcquisitionState) => void;
-  analysisResult: AnalyzeSensorDataOutput | null;
-  setAnalysisResult: (result: AnalyzeSensorDataOutput | null) => void;
-  analysisState: AnalysisState;
-  setAnalysisState: (state: AnalysisState) => void;
   resetApp: () => void;
 };

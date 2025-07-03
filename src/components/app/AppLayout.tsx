@@ -16,7 +16,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Settings, BrainCircuit, HelpCircle, HardDrive, LineChart, TestTube, FileText, Bot } from 'lucide-react';
+import { Settings, HelpCircle, HardDrive, LineChart, TestTube } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -44,8 +44,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { href: '/configuracion', icon: Settings, label: 'Configuración', states: ['configuring', 'stopped', 'completed'] },
     { href: '/adquisicion', icon: LineChart, label: 'Adquisición', states: ['running'] },
     { href: '/post-test', icon: TestTube, label: 'Resultados', states: ['stopped', 'completed'] },
-    { href: '/analisis', icon: BrainCircuit, label: 'Análisis IA', states: ['configuring', 'stopped', 'completed'] },
-    { href: '/exportacion', icon: HardDrive, label: 'Exportación', states: ['completed'] },
+    { href: '/exportacion', icon: HardDrive, label: 'Exportación', states: ['completed', 'stopped'] },
     { href: '/ayuda', icon: HelpCircle, label: 'Ayuda', states: ['configuring', 'running', 'stopped', 'completed'] },
   ];
 
@@ -84,10 +83,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Bot className="h-5 w-5" />
-              <span className="sr-only">AI Assistant</span>
-            </Button>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>

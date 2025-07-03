@@ -24,16 +24,13 @@ export function HelpContent() {
               <strong>Configuración:</strong> Vaya a la pestaña 'Configuración'. Establezca el tiempo de adquisición, las muestras por segundo, un nombre para el archivo y seleccione los sensores que desea usar.
             </li>
             <li>
-              <strong>Asistente IA:</strong> Si no está seguro de los parámetros, use el botón 'Sugerir con IA'. Describa su experimento y la IA le dará una configuración recomendada.
-            </li>
-            <li>
               <strong>Adquisición:</strong> Presione 'Iniciar Adquisición'. Será llevado a la pantalla de monitoreo donde verá los datos de los sensores en gráficos en tiempo real.
             </li>
             <li>
-              <strong>Post-Test:</strong> Una vez finalizada la adquisición, verá un resumen. Desde aquí puede optar por analizar los datos con IA, exportarlos o iniciar una nueva configuración.
+              <strong>Post-Test:</strong> Una vez finalizada la adquisición, verá un resumen. Desde aquí puede optar por exportar los datos o iniciar una nueva configuración.
             </li>
             <li>
-              <strong>Análisis y Exportación:</strong> Use las pestañas correspondientes para analizar los datos con IA o para exportarlos en formato Excel a través de WiFi o USB.
+              <strong>Exportación:</strong> Use la pestaña correspondiente para exportar los datos en formato Excel a través de WiFi o USB.
             </li>
           </ol>
         </AccordionContent>

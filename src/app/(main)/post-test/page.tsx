@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { BrainCircuit, HardDrive, RotateCw, Sigma, Timer, FileText } from 'lucide-react';
+import { HardDrive, RotateCw, Sigma, Timer, FileText } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function PostTestPage() {
@@ -65,12 +65,9 @@ export default function PostTestPage() {
             <p className="text-lg">¿Qué desea hacer ahora?</p>
           </div>
         </CardContent>
-        <CardFooter className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <CardFooter className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <Button variant="outline" onClick={resetApp}>
             <RotateCw className="mr-2 h-4 w-4" /> Nueva Configuración
-          </Button>
-          <Button onClick={() => router.push('/analisis')}>
-            <BrainCircuit className="mr-2 h-4 w-4" /> Analizar con IA
           </Button>
           <Button onClick={() => router.push('/exportacion')}>
             <HardDrive className="mr-2 h-4 w-4" /> Exportar Datos

@@ -13,8 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Bot } from 'lucide-react';
-import { AIAssistDialog } from '@/components/app/AIAssistDialog';
 import {FormProvider} from 'react-hook-form';
 
 const formSchema = z.object({
@@ -36,7 +34,6 @@ const formSchema = z.object({
 export default function ConfiguracionPage() {
   const router = useRouter();
   const { config, setConfig, setAcquisitionState, resetApp } = useApp();
-  const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
   
   const form = useForm<Configuration>({
     resolver: zodResolver(formSchema),
@@ -64,7 +61,7 @@ export default function ConfiguracionPage() {
               <CardHeader>
                 <CardTitle>Configuración de la Adquisición</CardTitle>
                 <CardDescription>
-                  Defina los parámetros para la nueva medición. Puede usar la IA para obtener sugerencias.
+                  Defina los parámetros para la nueva medición.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
@@ -140,17 +137,12 @@ export default function ConfiguracionPage() {
                   Reiniciar
                 </Button>
                 <div className="flex gap-2">
-                  <Button type="button" variant="secondary" onClick={() => setIsAiDialogOpen(true)}>
-                    <Bot className="mr-2 h-4 w-4" />
-                    Sugerir con IA
-                  </Button>
                   <Button type="submit">Iniciar Adquisición</Button>
                 </div>
               </CardFooter>
             </Card>
           </form>
         </Form>
-        <AIAssistDialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen} />
       </div>
     </FormProvider>
   );
