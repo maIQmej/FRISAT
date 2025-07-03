@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlayCircle, History, HelpCircle } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { ThemeToggle } from '@/components/app/ThemeToggle';
+import { LanguageSwitcher } from '@/components/app/LanguageSwitcher';
 
 const Logo = () => (
     <div className="flex items-center justify-center gap-2 p-2">
@@ -23,7 +25,11 @@ export default function WelcomePage() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-secondary p-4">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <LanguageSwitcher />
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-2xl text-center shadow-2xl">
         <CardHeader className="items-center p-8">
           <Logo />
