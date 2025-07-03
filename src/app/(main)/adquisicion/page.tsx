@@ -15,11 +15,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Wind } from 'lucide-react';
+import { Wind, RotateCw, HardDrive, Database } from 'lucide-react';
 
 export default function AdquisicionPage() {
   const router = useRouter();
-  const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen } = useApp();
+  const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp } = useApp();
   const [progress, setProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [localSensorData, setLocalSensorData] = useState<SensorDataPoint[]>([]);
@@ -157,6 +157,19 @@ export default function AdquisicionPage() {
   };
 
   const isAcquisitionFinished = acquisitionState === 'completed' || acquisitionState === 'stopped';
+  
+  const handleNewTest = () => {
+    resetApp();
+    router.push('/configuracion');
+  };
+  
+  const handleDownload = () => {
+    router.push('/exportacion');
+  };
+
+  const handleHistory = () => {
+    router.push('/historial');
+  };
 
   return (
     <>
@@ -173,9 +186,25 @@ export default function AdquisicionPage() {
                   }
                 </CardDescription>
               </div>
-              <Button variant="destructive" onClick={handleStop} disabled={isAcquisitionFinished}>
-                Detener Adquisición
-              </Button>
+              <div className="flex items-center gap-2">
+                {isAcquisitionFinished ? (
+                  <>
+                    <Button variant="outline" onClick={handleNewTest}>
+                      <RotateCw className="mr-2 h-4 w-4" /> Nueva Prueba
+                    </Button>
+                    <Button variant="secondary" onClick={handleHistory}>
+                      <Database className="mr-2 h-4 w-4" /> Ver Historial
+                    </Button>
+                    <Button onClick={handleDownload}>
+                      <HardDrive className="mr-2 h-4 w-4" /> Descargar Datos
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="destructive" onClick={handleStop}>
+                    Detener Adquisición
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="flex flex-grow flex-col gap-4">
