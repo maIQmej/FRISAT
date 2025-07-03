@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,11 +24,13 @@ interface ResultsModalProps {
 }
 
 export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, onTriggerExport }: ResultsModalProps) {
+  const router = useRouter();
   const { resetApp, acquisitionState } = useApp();
 
   const handleNewTest = () => {
     onOpenChange(false);
     resetApp();
+    router.push('/configuracion');
   };
   
   const handleDownload = () => {
@@ -36,7 +39,7 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, 
 
   const handleHistory = () => {
     onOpenChange(false);
-    resetApp(); // Go to config to allow navigating to history from a clean state
+    router.push('/historial');
   };
 
   const activeSensorsCount = Object.values(config.sensors).filter(Boolean).length;
