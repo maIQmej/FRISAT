@@ -6,6 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { SensorChart } from '@/components/app/SensorChart';
+import { ResultsModal } from '@/components/app/ResultsModal';
 import type { SensorDataPoint, RegimenType } from '@/lib/types';
 import {
   Card,
@@ -18,11 +19,12 @@ import { Wind } from 'lucide-react';
 
 export default function AdquisicionPage() {
   const router = useRouter();
-  const { config, setSensorData, setAcquisitionState, acquisitionState, regimen, setRegimen } = useApp();
+  const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen } = useApp();
   const [progress, setProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [localSensorData, setLocalSensorData] = useState<SensorDataPoint[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
 
   const activeSensors = useMemo(() => 
     Object.entries(config.sensors)
@@ -31,12 +33,16 @@ export default function AdquisicionPage() {
   [config.sensors]);
 
   useEffect(() => {
-    if (acquisitionState !== 'running') {
+    if (acquisitionState !== 'running' && acquisitionState !== 'completed' && acquisitionState !== 'stopped') {
       router.replace('/configuracion');
     }
   }, [acquisitionState, router]);
   
   useEffect(() => {
+    if (acquisitionState !== 'running') {
+      return;
+    }
+
     const intervalTime = 1000 / config.samplesPerSecond;
 
     const generateDataPoint = (time: number): SensorDataPoint => {
@@ -60,9 +66,18 @@ export default function AdquisicionPage() {
           if (newTime >= config.acquisitionTime) {
             if (intervalRef.current) clearInterval(intervalRef.current);
             setProgress(100);
+            setLocalSensorData(prevData => {
+              const finalData = [...prevData, generateDataPoint(newTime)];
+              setSensorData(finalData);
+              return finalData;
+            });
             setAcquisitionState('completed');
-            setSensorData(prevData => [...prevData, generateDataPoint(newTime)]);
-            router.push('/post-test');
+            
+            const finalRegimenResults: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
+            const finalRandomResult = finalRegimenResults[Math.floor(Math.random() * finalRegimenResults.length)];
+            setRegimen(finalRandomResult);
+            
+            setIsResultsModalOpen(true);
             return config.acquisitionTime;
           }
 
@@ -84,10 +99,12 @@ export default function AdquisicionPage() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [config, router, setAcquisitionState, setSensorData, activeSensors, setRegimen]);
+  }, [acquisitionState, config, activeSensors, setAcquisitionState, setRegimen, setSensorData]);
 
   useEffect(() => {
-    setSensorData(localSensorData);
+    if (localSensorData.length > 0) {
+      setSensorData(localSensorData);
+    }
   }, [localSensorData, setSensorData]);
 
   const handleStop = () => {
@@ -95,7 +112,7 @@ export default function AdquisicionPage() {
       clearInterval(intervalRef.current);
     }
     setAcquisitionState('stopped');
-    router.push('/post-test');
+    setIsResultsModalOpen(true);
   };
 
   const sensorColors: { [key: string]: string } = {
@@ -106,44 +123,61 @@ export default function AdquisicionPage() {
     sensor5: 'chart-5',
   };
 
+  const isAcquisitionFinished = acquisitionState === 'completed' || acquisitionState === 'stopped';
+
   return (
-    <div className="flex h-full flex-col gap-4">
-      <Card className="flex flex-grow flex-col">
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <CardTitle>Adquisición en Proceso</CardTitle>
-              <CardDescription>
-                Monitoreando datos de sensores en tiempo real. Tiempo restante: {(config.acquisitionTime - elapsedTime).toFixed(1)}s
-              </CardDescription>
+    <>
+      <div className="flex h-full flex-col gap-4">
+        <Card className="flex flex-grow flex-col">
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardTitle>{isAcquisitionFinished ? 'Adquisición Finalizada' : 'Adquisición en Proceso'}</CardTitle>
+                <CardDescription>
+                  {isAcquisitionFinished 
+                    ? 'La recolección de datos ha terminado.'
+                    : `Monitoreando datos de sensores en tiempo real. Tiempo restante: ${(config.acquisitionTime - elapsedTime).toFixed(1)}s`
+                  }
+                </CardDescription>
+              </div>
+              <Button variant="destructive" onClick={handleStop} disabled={isAcquisitionFinished}>
+                Detener Adquisición
+              </Button>
             </div>
-            <Button variant="destructive" onClick={handleStop}>Detener Adquisición</Button>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-grow flex-col gap-4">
-          <Progress value={progress} />
-          <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {activeSensors.map((sensorKey, index) => (
-              <SensorChart
-                key={sensorKey}
-                title={`Sensor ${index + 1}`}
-                data={localSensorData}
-                dataKey={sensorKey}
-                color={sensorColors[sensorKey]}
-              />
-            ))}
-            <Card className="flex flex-col items-center justify-center min-h-[240px]">
-              <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
-                <Wind className="h-8 w-8 text-primary" />
-                <CardTitle className="mt-2">Régimen de Flujo</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <p className="text-2xl font-bold capitalize text-center">{regimen}</p>
-              </CardContent>
-            </Card>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardHeader>
+          <CardContent className="flex flex-grow flex-col gap-4">
+            <Progress value={progress} />
+            <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {activeSensors.map((sensorKey, index) => (
+                <SensorChart
+                  key={sensorKey}
+                  title={`Sensor ${index + 1}`}
+                  data={localSensorData}
+                  dataKey={sensorKey}
+                  color={sensorColors[sensorKey]}
+                />
+              ))}
+              <Card className="flex flex-col items-center justify-center min-h-[240px]">
+                <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
+                  <Wind className="h-8 w-8 text-primary" />
+                  <CardTitle className="mt-2">Régimen de Flujo</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <p className="text-2xl font-bold capitalize text-center">{regimen}</p>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <ResultsModal
+        open={isResultsModalOpen}
+        onOpenChange={setIsResultsModalOpen}
+        config={config}
+        sensorData={sensorData}
+        regimen={regimen}
+      />
+    </>
   );
 }

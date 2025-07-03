@@ -16,7 +16,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Settings, HelpCircle, HardDrive, LineChart, TestTube } from 'lucide-react';
+import { Settings, HelpCircle, HardDrive, LineChart } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -42,8 +42,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { href: '/configuracion', icon: Settings, label: 'Configuración', states: ['configuring', 'stopped', 'completed'] },
-    { href: '/adquisicion', icon: LineChart, label: 'Adquisición', states: ['running'] },
-    { href: '/post-test', icon: TestTube, label: 'Resultados', states: ['stopped', 'completed'] },
+    { href: '/adquisicion', icon: LineChart, label: 'Adquisición', states: ['running', 'stopped', 'completed'] },
     { href: '/exportacion', icon: HardDrive, label: 'Exportación', states: ['completed', 'stopped'] },
     { href: '/ayuda', icon: HelpCircle, label: 'Ayuda', states: ['configuring', 'running', 'stopped', 'completed'] },
   ];
