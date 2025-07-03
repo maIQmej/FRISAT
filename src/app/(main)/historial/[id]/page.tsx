@@ -17,6 +17,7 @@ const mockHistory = [
   { id: 2, fileName: 'test_flujo_laminar_01', date: '2024-07-29 09:15', duration: 30, sensors: ['sensor1', 'sensor2'], regimen: 'flujo laminar', samplesPerSecond: 5 },
   { id: 3, fileName: 'medicion_valvula_fria', date: '2024-07-28 15:00', duration: 120, sensors: ['sensor1', 'sensor2', 'sensor3', 'sensor4', 'sensor5'], regimen: 'en la frontera', samplesPerSecond: 20 },
   { id: 4, fileName: 'ensayo_largo_duracion', date: '2024-07-28 11:45', duration: 300, sensors: ['sensor1', 'sensor2', 'sensor3', 'sensor4'], regimen: 'turbulento', samplesPerSecond: 50 },
+  { id: 5, fileName: 'verificacion_rapida', date: '2024-07-27 18:00', duration: 15, sensors: ['sensor1'], regimen: 'flujo laminar', samplesPerSecond: 100 },
 ] as const;
 
 const sensorColors: { [key: string]: string } = {
@@ -27,7 +28,7 @@ const sensorColors: { [key: string]: string } = {
   sensor5: 'chart-5',
 };
 
-const generateMockSensorData = (duration: number, samplesPerSecond: number, sensors: string[]): SensorDataPoint[] => {
+const generateMockSensorData = (duration: number, samplesPerSecond: number, sensors: readonly string[]): SensorDataPoint[] => {
   const data: SensorDataPoint[] = [];
   const totalSamples = duration * samplesPerSecond;
   for (let i = 0; i <= totalSamples; i++) {
