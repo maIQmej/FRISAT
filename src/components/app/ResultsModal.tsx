@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ResultsModalProps {
   open: boolean;
@@ -114,84 +115,86 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, 
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('resultsTitle')}</DialogTitle>
           <DialogDescription>{t('resultsDesc')}</DialogDescription>
         </DialogHeader>
-        <div className="space-y-6 py-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex items-center space-x-3 rounded-md border p-4">
-              <FileText className="h-6 w-6 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('fileNameLabel')}</p>
-                <p className="font-semibold">{config.fileName}.xlsx</p>
+        <ScrollArea className="flex-grow pr-6 -mr-6">
+          <div className="space-y-6 py-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex items-center space-x-3 rounded-md border p-4">
+                <FileText className="h-6 w-6 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('fileNameLabel')}</p>
+                  <p className="font-semibold">{config.fileName}.xlsx</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 rounded-md border p-4">
+                <Timer className="h-6 w-6 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('durationLabel')}</p>
+                  <p className="font-semibold">{finalTime}s / {config.acquisitionTime}s</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 rounded-md border p-4">
+                <Sigma className="h-6 w-6 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('totalSamplesLabel')}</p>
+                  <p className="font-semibold">{sensorData.length * activeSensorsCount} / {totalPlannedSamples * activeSensorsCount}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 rounded-md border p-4">
+                <Timer className="h-6 w-6 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('activeSensorsLabel')}</p>
+                  <p className="font-semibold">{activeSensorsCount}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 rounded-md border p-4 sm:col-span-2">
+                <Wind className="h-6 w-6 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('flowRegimeLabel')}</p>
+                  <p className="font-semibold capitalize">{t_regimen(regimen)}</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center space-x-3 rounded-md border p-4">
-              <Timer className="h-6 w-6 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('durationLabel')}</p>
-                <p className="font-semibold">{finalTime}s / {config.acquisitionTime}s</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 rounded-md border p-4">
-              <Sigma className="h-6 w-6 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('totalSamplesLabel')}</p>
-                <p className="font-semibold">{sensorData.length * activeSensorsCount} / {totalPlannedSamples * activeSensorsCount}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 rounded-md border p-4">
-              <Timer className="h-6 w-6 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('activeSensorsLabel')}</p>
-                <p className="font-semibold">{activeSensorsCount}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 rounded-md border p-4 sm:col-span-2">
-              <Wind className="h-6 w-6 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('flowRegimeLabel')}</p>
-                <p className="font-semibold capitalize">{t_regimen(regimen)}</p>
-              </div>
-            </div>
-          </div>
-          
-          <Separator />
+            
+            <Separator />
 
-          <div>
-            <h3 className="text-lg font-medium">{t('testStatistics')}</h3>
-            <p className="text-sm text-muted-foreground">{t('testStatisticsDesc')}</p>
-            <Table className="mt-4">
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>{t('sensor')}</TableHead>
-                        <TableHead className="text-right">{t('statMean')}</TableHead>
-                        <TableHead className="text-right">{t('statStdDev')}</TableHead>
-                        <TableHead className="text-right">{t('statMin')}</TableHead>
-                        <TableHead className="text-right">{t('statMax')}</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {testStats.map((stat) => (
-                        <TableRow key={stat.key}>
-                            <TableCell className="font-medium">{stat.label}</TableCell>
-                            <TableCell className="text-right font-mono">{stat.mean}</TableCell>
-                            <TableCell className="text-right font-mono">{stat.stdDev}</TableCell>
-                            <TableCell className="text-right font-mono">{stat.min}</TableCell>
-                            <TableCell className="text-right font-mono">{stat.max}</TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-          </div>
+            <div>
+              <h3 className="text-lg font-medium">{t('testStatistics')}</h3>
+              <p className="text-sm text-muted-foreground">{t('testStatisticsDesc')}</p>
+              <Table className="mt-4">
+                  <TableHeader>
+                      <TableRow>
+                          <TableHead>{t('sensor')}</TableHead>
+                          <TableHead className="text-right">{t('statMean')}</TableHead>
+                          <TableHead className="text-right">{t('statStdDev')}</TableHead>
+                          <TableHead className="text-right">{t('statMin')}</TableHead>
+                          <TableHead className="text-right">{t('statMax')}</TableHead>
+                      </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                      {testStats.map((stat) => (
+                          <TableRow key={stat.key}>
+                              <TableCell className="font-medium">{stat.label}</TableCell>
+                              <TableCell className="text-right font-mono">{stat.mean}</TableCell>
+                              <TableCell className="text-right font-mono">{stat.stdDev}</TableCell>
+                              <TableCell className="text-right font-mono">{stat.min}</TableCell>
+                              <TableCell className="text-right font-mono">{stat.max}</TableCell>
+                          </TableRow>
+                      ))}
+                  </TableBody>
+              </Table>
+            </div>
 
-          <div className="text-center pt-4">
-            <p className="text-lg">{t('whatNext')}</p>
+            <div className="text-center pt-4">
+              <p className="text-lg">{t('whatNext')}</p>
+            </div>
           </div>
-        </div>
-        <DialogFooter className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        </ScrollArea>
+        <DialogFooter className="grid grid-cols-1 gap-2 sm:grid-cols-3 shrink-0 pt-4">
           <Button variant="outline" onClick={handleNewTest}>
             <RotateCw className="mr-2 h-4 w-4" /> {t('newTest')}
           </Button>
