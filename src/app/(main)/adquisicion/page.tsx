@@ -87,11 +87,14 @@ export default function AdquisicionPage() {
 
     const intervalTime = 1000 / config.samplesPerSecond;
 
-    const generateDataPoint = (time: number, currentRegimen: RegimenType): SensorDataPoint => {
+    const generateDataPoint = (time: number): SensorDataPoint => {
       const point: SensorDataPoint = {
         time: parseFloat(time.toFixed(2)),
-        regimen: currentRegimen,
       };
+
+      const results: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
+      point.regimen = results[Math.floor(Math.random() * results.length)];
+
       activeSensors.forEach(sensorKey => {
         point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2));
       });
@@ -101,17 +104,13 @@ export default function AdquisicionPage() {
     const runAcquisition = () => {
       elapsedTimeRef.current = 0;
       setElapsedTime(0);
-      const initialRegimen = 'indeterminado';
-      setRegimen(initialRegimen);
-      setLocalSensorData([generateDataPoint(0, initialRegimen)]);
+      const initialDataPoint = generateDataPoint(0);
+      setLocalSensorData([initialDataPoint]);
+      setRegimen(initialDataPoint.regimen || 'indeterminado');
       
       const interval = setInterval(() => {
         const newTime = elapsedTimeRef.current + (1 / config.samplesPerSecond);
         elapsedTimeRef.current = newTime;
-
-        let currentRegimen: RegimenType;
-        const results: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
-        currentRegimen = results[Math.floor(Math.random() * results.length)];
 
         if (newTime >= config.acquisitionTime) {
           clearInterval(interval);
@@ -119,10 +118,11 @@ export default function AdquisicionPage() {
           
           setElapsedTime(config.acquisitionTime);
           setProgress(100);
-          setRegimen(currentRegimen);
 
+          const finalDataPoint = generateDataPoint(config.acquisitionTime);
+          setRegimen(finalDataPoint.regimen || 'indeterminado');
           setLocalSensorData(prevData => {
-            const finalData = [...prevData, generateDataPoint(config.acquisitionTime, currentRegimen)];
+            const finalData = [...prevData, finalDataPoint];
             setSensorData(finalData);
             return finalData;
           });
@@ -131,8 +131,9 @@ export default function AdquisicionPage() {
         } else {
           setElapsedTime(newTime);
           setProgress((newTime / config.acquisitionTime) * 100);
-          setLocalSensorData(prevData => [...prevData, generateDataPoint(newTime, currentRegimen)]);
-          setRegimen(currentRegimen);
+          const newDataPoint = generateDataPoint(newTime);
+          setRegimen(newDataPoint.regimen || 'indeterminado');
+          setLocalSensorData(prevData => [...prevData, newDataPoint]);
         }
       }, intervalTime);
       intervalRef.current = interval;
