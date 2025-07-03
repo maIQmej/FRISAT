@@ -132,7 +132,7 @@ export default function HistorialDetallePage() {
               <Sigma className="h-6 w-6 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">{t('totalSamplesLabel')}</p>
-                <p className="font-semibold">{sensorData.length} / {totalPlannedSamples}</p>
+                <p className="font-semibold">{sensorData.length * testData.sensors.length} / {totalPlannedSamples * testData.sensors.length}</p>
               </div>
             </div>
              <div className="flex items-center space-x-3 rounded-md border p-4">

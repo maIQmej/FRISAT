@@ -276,7 +276,7 @@ export default function AdquisicionPage() {
                 </CardHeader>
                 <CardContent className="p-4 pt-0 text-center">
                   <p className="text-2xl font-bold">
-                    {localSensorData.length} / {totalPlannedSamples}
+                    {localSensorData.length * activeSensors.length} / {totalPlannedSamples * activeSensors.length}
                   </p>
                 </CardContent>
               </Card>
