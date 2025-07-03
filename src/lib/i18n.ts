@@ -127,6 +127,12 @@ export const translations: Translations = {
     regimenTurbulento: 'Turbulento',
     regimenFrontera: 'En la frontera',
     regimenIndeterminado: 'Indeterminado',
+
+    statistics: 'Estadísticas',
+    statMean: 'Media',
+    statStdDev: 'Desv. Est.',
+    statMin: 'Mín',
+    statMax: 'Máx',
   },
   en: {
     welcomeTitle: 'Welcome to FRISAT',
@@ -244,6 +250,12 @@ export const translations: Translations = {
     regimenTurbulento: 'Turbulent',
     regimenFrontera: 'On the border',
     regimenIndeterminado: 'Undetermined',
+
+    statistics: 'Statistics',
+    statMean: 'Mean',
+    statStdDev: 'Std. Dev.',
+    statMin: 'Min',
+    statMax: 'Max',
   },
   fr: {
     welcomeTitle: 'Bienvenue sur FRISAT',
@@ -361,6 +373,12 @@ export const translations: Translations = {
     regimenTurbulento: 'Turbulent',
     regimenFrontera: 'À la frontière',
     regimenIndeterminado: 'Indéterminé',
+
+    statistics: 'Statistiques',
+    statMean: 'Moyenne',
+    statStdDev: 'Écart-type',
+    statMin: 'Min',
+    statMax: 'Max',
   },
   de: {
     welcomeTitle: 'Willkommen bei FRISAT',
@@ -478,5 +496,11 @@ export const translations: Translations = {
     regimenTurbulento: 'Turbulent',
     regimenFrontera: 'An der Grenze',
     regimenIndeterminado: 'Unbestimmt',
+
+    statistics: 'Statistiken',
+    statMean: 'Mittelwert',
+    statStdDev: 'Std.-Abw.',
+    statMin: 'Min',
+    statMax: 'Max',
   }
 };
