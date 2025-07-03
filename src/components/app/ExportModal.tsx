@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -10,12 +11,12 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Wifi, Usb, HardDrive, Loader2, CheckCircle, X } from 'lucide-react';
+import { Wifi, Usb, HardDrive, Loader2, CheckCircle } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type ExportState = 'idle' | 'exporting' | 'success' | 'error';
 
@@ -26,6 +27,7 @@ interface ExportModalProps {
 
 export function ExportModal({ open, onOpenChange }: ExportModalProps) {
   const { config } = useApp();
+  const { t } = useTranslation();
   const [exportMethod, setExportMethod] = useState<'wifi' | 'usb'>('wifi');
   const [exportState, setExportState] = useState<ExportState>('idle');
   const { toast } = useToast();
@@ -33,24 +35,23 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
   const handleExport = () => {
     setExportState('exporting');
     toast({
-      title: 'Exportando Datos',
-      description: `Iniciando exportación como "${config.fileName}.xlsx" vía ${exportMethod === 'wifi' ? 'WiFi' : 'USB'}.`,
+      title: t('exportingToastTitle'),
+      description: `${t('exportingToastDesc')} "${config.fileName}.xlsx" via ${exportMethod === 'wifi' ? 'WiFi' : 'USB'}.`,
     });
 
-    // Mock export process
     setTimeout(() => {
       const isSuccess = Math.random() > 0.2; // 80% success rate
       if (isSuccess) {
         setExportState('success');
         toast({
-          title: 'Exportación Exitosa',
-          description: 'Los datos han sido exportados correctamente.',
+          title: t('exportSuccessToastTitle'),
+          description: t('exportSuccessToastDesc'),
         });
       } else {
         setExportState('error');
         toast({
-          title: 'Error de Exportación',
-          description: `No se pudo exportar vía ${exportMethod}. Verifique la conexión.`,
+          title: t('exportErrorToastTitle'),
+          description: t('exportErrorToastDesc'),
           variant: 'destructive',
         });
       }
@@ -60,7 +61,6 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
   const handleClose = () => {
     if (exportState !== 'exporting') {
       onOpenChange(false);
-      // Reset state after closing animation
       setTimeout(() => {
         setExportState('idle');
       }, 300);
@@ -75,14 +75,12 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
         }
       }}>
         <DialogHeader>
-          <DialogTitle>Exportar Datos</DialogTitle>
-          <DialogDescription>
-            Seleccione un método para exportar los datos de la medición en formato Excel.
-          </DialogDescription>
+          <DialogTitle>{t('exportTitle')}</DialogTitle>
+          <DialogDescription>{t('exportDesc')}</DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-4">
           <div>
-            <Label className="text-base">Método de Exportación</Label>
+            <Label className="text-base">{t('exportMethod')}</Label>
             <RadioGroup
               value={exportMethod}
               onValueChange={(value: 'wifi' | 'usb') => setExportMethod(value)}
@@ -109,22 +107,22 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
           </div>
           {exportState !== 'idle' && (
              <div className="rounded-lg border p-4 text-center min-h-[80px] flex items-center justify-center">
-              {exportState === 'exporting' && <div className="flex items-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary" /><p>Exportando...</p></div>}
-              {exportState === 'success' && <div className="flex items-center gap-2"><CheckCircle className="h-6 w-6 text-green-500" /><p>¡Exportado con éxito!</p></div>}
-              {exportState === 'error' && <p className="text-destructive">Error en la exportación. Intente de nuevo.</p>}
+              {exportState === 'exporting' && <div className="flex items-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary" /><p>{t('exporting')}</p></div>}
+              {exportState === 'success' && <div className="flex items-center gap-2"><CheckCircle className="h-6 w-6 text-green-500" /><p>{t('exportedSuccess')}</p></div>}
+              {exportState === 'error' && <p className="text-destructive">{t('exportError')}</p>}
              </div>
           )}
         </div>
         <DialogFooter className="sm:justify-between gap-2">
             {exportState === 'success' || exportState === 'error' ? (
                 <Button variant="outline" onClick={handleClose}>
-                    Cerrar
+                    {t('close')}
                 </Button>
             ) : <div/>}
             <Button onClick={handleExport} disabled={exportState === 'exporting' || exportState === 'success'}>
                 {exportState === 'exporting' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {exportState === 'success' ? <CheckCircle className="mr-2 h-4 w-4" /> : <HardDrive className="mr-2 h-4 w-4" />}
-                {exportState === 'success' ? 'Exportado' : 'Exportar'}
+                {exportState === 'success' ? t('exported') : t('export')}
             </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useRef, useMemo } from 'react';
@@ -17,10 +18,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Wind, RotateCw, HardDrive, Database, Home } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function AdquisicionPage() {
   const router = useRouter();
   const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp } = useApp();
+  const { t, t_regimen } = useTranslation();
   const [progress, setProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [localSensorData, setLocalSensorData] = useState<SensorDataPoint[]>([]);
@@ -185,11 +188,11 @@ export default function AdquisicionPage() {
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <CardTitle>{isAcquisitionFinished ? 'Adquisición Finalizada' : 'Adquisición en Proceso'}</CardTitle>
+                <CardTitle>{isAcquisitionFinished ? t('acqFinished') : t('acqInProgress')}</CardTitle>
                 <CardDescription>
                   {isAcquisitionFinished 
-                    ? 'La recolección de datos ha terminado.'
-                    : `Monitoreando datos de sensores en tiempo real. Tiempo restante: ${(config.acquisitionTime - elapsedTime).toFixed(1)}s`
+                    ? t('acqFinishedDesc')
+                    : `${t('acqInProgressDesc')} ${(config.acquisitionTime - elapsedTime).toFixed(1)}s`
                   }
                 </CardDescription>
               </div>
@@ -197,22 +200,22 @@ export default function AdquisicionPage() {
                 {isAcquisitionFinished ? (
                   <>
                     <Button variant="outline" onClick={handleNewTest}>
-                      <RotateCw className="mr-2 h-4 w-4" /> Nueva Prueba
+                      <RotateCw className="mr-2 h-4 w-4" /> {t('newTest')}
                     </Button>
                     <Button variant="secondary" onClick={handleHistory}>
-                      <Database className="mr-2 h-4 w-4" /> Ver Historial
+                      <Database className="mr-2 h-4 w-4" /> {t('viewHistory')}
                     </Button>
                     <Button onClick={handleDownload}>
-                      <HardDrive className="mr-2 h-4 w-4" /> Descargar Datos
+                      <HardDrive className="mr-2 h-4 w-4" /> {t('downloadData')}
                     </Button>
                      <Button variant="ghost" size="icon" onClick={() => router.push('/')}>
                         <Home className="h-4 w-4" />
-                        <span className="sr-only">Inicio</span>
+                        <span className="sr-only">{t('home')}</span>
                       </Button>
                   </>
                 ) : (
                   <Button variant="destructive" onClick={handleStop}>
-                    Detener Adquisición
+                    {t('stopAcq')}
                   </Button>
                 )}
               </div>
@@ -223,7 +226,7 @@ export default function AdquisicionPage() {
             <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {chartGroups.map((group) => {
                 const primaryKey = group[0];
-                const title = group.map(key => `Sensor ${parseInt(key.replace('sensor', ''))}`).join(' & ');
+                const title = group.map(key => `${t('sensor')} ${parseInt(key.replace('sensor', ''))}`).join(' & ');
                 return (
                   <SensorChart
                     key={primaryKey}
@@ -239,10 +242,10 @@ export default function AdquisicionPage() {
               <Card className="flex flex-col items-center justify-center min-h-[240px]">
                 <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
                   <Wind className="h-8 w-8 text-primary" />
-                  <CardTitle className="mt-2">Régimen de Flujo</CardTitle>
+                  <CardTitle className="mt-2">{t('flowRegime')}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                  <p className="text-2xl font-bold capitalize text-center">{regimen}</p>
+                  <p className="text-2xl font-bold capitalize text-center">{t_regimen(regimen)}</p>
                 </CardContent>
               </Card>
             </div>

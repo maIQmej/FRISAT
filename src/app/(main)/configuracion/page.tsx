@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -23,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const formSchema = z.object({
   acquisitionTime: z.coerce.number().min(1, 'Debe ser al menos 1 segundo').max(3600, 'No puede exceder 1 hora'),
@@ -43,6 +45,7 @@ const formSchema = z.object({
 export default function ConfiguracionPage() {
   const router = useRouter();
   const { config, setConfig, setAcquisitionState, resetApp } = useApp();
+  const { t } = useTranslation();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [pendingConfig, setPendingConfig] = useState<Configuration | null>(null);
 
@@ -72,7 +75,7 @@ export default function ConfiguracionPage() {
   const activeSensorsText = pendingConfig
     ? Object.entries(pendingConfig.sensors)
         .filter(([, isActive]) => isActive)
-        .map(([key]) => `Sensor ${parseInt(key.replace('sensor', ''), 10)}`)
+        .map(([key]) => `${t('sensor')} ${parseInt(key.replace('sensor', ''), 10)}`)
         .join(', ')
     : '';
 
@@ -83,10 +86,8 @@ export default function ConfiguracionPage() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <Card>
               <CardHeader>
-                <CardTitle>Configuración de la Adquisición</CardTitle>
-                <CardDescription>
-                  Defina los parámetros para la nueva medición.
-                </CardDescription>
+                <CardTitle>{t('configTitle')}</CardTitle>
+                <CardDescription>{t('configDescription')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -95,7 +96,7 @@ export default function ConfiguracionPage() {
                     name="acquisitionTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tiempo de adquisición (s)</FormLabel>
+                        <FormLabel>{t('acqTime')}</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="Ej: 60" {...field} />
                         </FormControl>
@@ -108,7 +109,7 @@ export default function ConfiguracionPage() {
                     name="samplesPerSecond"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Muestras por segundo (Hz)</FormLabel>
+                        <FormLabel>{t('samplesPerSecond')}</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="Ej: 10" {...field} />
                         </FormControl>
@@ -122,7 +123,7 @@ export default function ConfiguracionPage() {
                   name="fileName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nombre del archivo</FormLabel>
+                      <FormLabel>{t('fileName')}</FormLabel>
                       <FormControl>
                         <Input placeholder="Ej: prueba_motor_caliente" {...field} />
                       </FormControl>
@@ -132,8 +133,8 @@ export default function ConfiguracionPage() {
                 />
                 <Separator />
                 <div>
-                  <h3 className="text-lg font-medium">Selección de Sensores</h3>
-                  <p className="text-sm text-muted-foreground">Active los sensores que desea monitorear.</p>
+                  <h3 className="text-lg font-medium">{t('sensorSelection')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('sensorSelectionDesc')}</p>
                   <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
                     {(Object.keys(config.sensors) as Array<keyof typeof config.sensors>).map((sensorKey, index) => (
                       <FormField
@@ -146,7 +147,7 @@ export default function ConfiguracionPage() {
                                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                              </FormControl>
                              <div className="space-y-1 leading-none">
-                                <FormLabel>Sensor {index + 1}</FormLabel>
+                                <FormLabel>{t('sensor')} {index + 1}</FormLabel>
                              </div>
                            </FormItem>
                         )}
@@ -158,13 +159,13 @@ export default function ConfiguracionPage() {
               </CardContent>
               <CardFooter className="flex justify-between">
                 <Button type="button" variant="outline" onClick={() => router.push('/')}>
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Volver al Inicio
+                  <ArrowLeft className="mr-2 h-4 w-4" /> {t('backToHome')}
                 </Button>
                 <div className="flex gap-2">
                   <Button type="button" variant="secondary" onClick={handleReset}>
-                    Reiniciar
+                    {t('reset')}
                   </Button>
-                  <Button type="submit">Iniciar Adquisición</Button>
+                  <Button type="submit">{t('startAcq')}</Button>
                 </div>
               </CardFooter>
             </Card>
@@ -175,34 +176,32 @@ export default function ConfiguracionPage() {
       <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle>Confirmar Parámetros de la Prueba</DialogTitle>
-            <DialogDescription>
-              Por favor, verifique que los datos son correctos antes de iniciar.
-            </DialogDescription>
+            <DialogTitle>{t('confirmParamsTitle')}</DialogTitle>
+            <DialogDescription>{t('confirmParamsDesc')}</DialogDescription>
           </DialogHeader>
           {pendingConfig && (
             <div className="grid gap-4 py-4 text-sm">
               <div className="grid grid-cols-[1fr,auto] items-center gap-4">
-                <Label className="text-muted-foreground">Tiempo de adquisición</Label>
-                <p className="font-semibold">{pendingConfig.acquisitionTime} segundos</p>
+                <Label className="text-muted-foreground">{t('acqTimeLabel')}</Label>
+                <p className="font-semibold">{pendingConfig.acquisitionTime} {t('seconds')}</p>
               </div>
               <div className="grid grid-cols-[1fr,auto] items-center gap-4">
-                <Label className="text-muted-foreground">Muestras por segundo</Label>
+                <Label className="text-muted-foreground">{t('samplesPerSecondLabel')}</Label>
                 <p className="font-semibold">{pendingConfig.samplesPerSecond} Hz</p>
               </div>
               <div className="grid grid-cols-[1fr,auto] items-center gap-4">
-                <Label className="text-muted-foreground">Nombre del archivo</Label>
+                <Label className="text-muted-foreground">{t('fileNameLabel')}</Label>
                 <p className="font-semibold truncate">{pendingConfig.fileName}.xlsx</p>
               </div>
               <div className="grid grid-cols-[1fr,auto] items-start gap-4">
-                <Label className="text-muted-foreground">Sensores Activos</Label>
-                <p className="font-semibold text-right">{activeSensorsText || 'Ninguno'}</p>
+                <Label className="text-muted-foreground">{t('activeSensorsLabel')}</Label>
+                <p className="font-semibold text-right">{activeSensorsText || t('none')}</p>
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleStartAcquisition}>Confirmar e Iniciar</Button>
+            <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>{t('cancel')}</Button>
+            <Button onClick={handleStartAcquisition}>{t('confirmAndStart')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

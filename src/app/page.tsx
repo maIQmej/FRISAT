@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlayCircle, History, HelpCircle } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const Logo = () => (
     <div className="flex items-center justify-center gap-2 p-2">
@@ -19,33 +20,35 @@ const Logo = () => (
   );
 
 export default function WelcomePage() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
       <Card className="w-full max-w-2xl text-center shadow-2xl">
         <CardHeader className="items-center p-8">
           <Logo />
-          <CardTitle className="mt-4 text-4xl font-bold">Bienvenido a SensorSync</CardTitle>
+          <CardTitle className="mt-4 text-4xl font-bold">{t('welcomeTitle')}</CardTitle>
           <CardDescription className="max-w-lg pt-2 text-base text-muted-foreground">
-            Su solución integral para la adquisición y análisis de datos de sensores en planta. Inicie una nueva prueba, revise mediciones anteriores o consulte la ayuda.
+            {t('welcomeDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 p-8 pt-0 sm:grid-cols-3">
           <Link href="/configuracion" passHref legacyBehavior>
             <Button size="lg" className="h-24 w-full flex-col text-lg">
               <PlayCircle className="mb-2 h-7 w-7" />
-              <span>Nueva Prueba</span>
+              <span>{t('newTest')}</span>
             </Button>
           </Link>
           <Link href="/historial" passHref legacyBehavior>
             <Button size="lg" variant="secondary" className="h-24 w-full flex-col text-lg">
               <History className="mb-2 h-7 w-7" />
-              <span>Historial</span>
+              <span>{t('history')}</span>
             </Button>
           </Link>
           <Link href="/ayuda" passHref legacyBehavior>
             <Button size="lg" variant="secondary" className="h-24 w-full flex-col text-lg">
               <HelpCircle className="mb-2 h-7 w-7" />
-              <span>Ayuda</span>
+              <span>{t('help')}</span>
             </Button>
           </Link>
         </CardContent>

@@ -1,22 +1,23 @@
+
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SensorChart } from '@/components/app/SensorChart';
 import { ArrowLeft, HardDrive, Timer, Sigma, Wind, SlidersHorizontal, Home } from 'lucide-react';
 import { ExportModal } from '@/components/app/ExportModal';
-import type { SensorDataPoint, RegimenType } from '@/lib/types';
+import type { SensorDataPoint } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const mockHistory = [
   { id: 1, fileName: 'prueba_motor_caliente', date: '2024-07-29 10:30', duration: 60, sensors: ['sensor1', 'sensor2', 'sensor3'], regimen: 'turbulento', samplesPerSecond: 10 },
   { id: 2, fileName: 'test_flujo_laminar_01', date: '2024-07-29 09:15', duration: 30, sensors: ['sensor1', 'sensor2'], regimen: 'flujo laminar', samplesPerSecond: 5 },
   { id: 3, fileName: 'medicion_valvula_fria', date: '2024-07-28 15:00', duration: 120, sensors: ['sensor1', 'sensor2', 'sensor3', 'sensor4', 'sensor5'], regimen: 'en la frontera', samplesPerSecond: 20 },
   { id: 4, fileName: 'ensayo_largo_duracion', date: '2024-07-28 11:45', duration: 300, sensors: ['sensor1', 'sensor2', 'sensor3', 'sensor4'], regimen: 'turbulento', samplesPerSecond: 50 },
-];
+] as const;
 
 const sensorColors: { [key: string]: string } = {
   sensor1: 'chart-1',
@@ -43,6 +44,7 @@ const generateMockSensorData = (duration: number, samplesPerSecond: number, sens
 export default function HistorialDetallePage() {
   const params = useParams();
   const router = useRouter();
+  const { t, t_regimen } = useTranslation();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const testId = params.id ? parseInt(params.id as string, 10) : null;
@@ -56,11 +58,11 @@ export default function HistorialDetallePage() {
   if (!testData) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
-        <CardTitle>Prueba no encontrada</CardTitle>
-        <p className="text-muted-foreground mt-2">No se encontró el registro para el ID proporcionado.</p>
+        <CardTitle>{t('testNotFound')}</CardTitle>
+        <p className="text-muted-foreground mt-2">{t('testNotFoundDesc')}</p>
         <Button onClick={() => router.push('/historial')} className="mt-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver al Historial
+          {t('backToHistory')}
         </Button>
       </div>
     );
@@ -80,61 +82,61 @@ export default function HistorialDetallePage() {
           </div>
           <div className='flex items-center gap-2'>
             <Button variant="outline" onClick={() => router.push('/')}>
-              <Home className="mr-2 h-4 w-4" /> Inicio
+              <Home className="mr-2 h-4 w-4" /> {t('home')}
             </Button>
             <Button onClick={() => setIsExportModalOpen(true)}>
-              <HardDrive className="mr-2 h-4 w-4" /> Descargar Datos
+              <HardDrive className="mr-2 h-4 w-4" /> {t('downloadData')}
             </Button>
           </div>
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Resumen de la Prueba</CardTitle>
+            <CardTitle>{t('testSummary')}</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="flex items-center space-x-3 rounded-md border p-4">
               <Timer className="h-6 w-6 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Duración</p>
+                <p className="text-sm text-muted-foreground">{t('duration')}</p>
                 <p className="font-semibold">{testData.duration}s</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 rounded-md border p-4">
               <SlidersHorizontal className="h-6 w-6 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Muestreo</p>
+                <p className="text-sm text-muted-foreground">{t('sampling')}</p>
                 <p className="font-semibold">{testData.samplesPerSecond} Hz</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 rounded-md border p-4">
               <Sigma className="h-6 w-6 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Total Muestras</p>
+                <p className="text-sm text-muted-foreground">{t('totalSamplesLabel')}</p>
                 <p className="font-semibold">{sensorData.length}</p>
               </div>
             </div>
              <div className="flex items-center space-x-3 rounded-md border p-4">
               <Wind className="h-6 w-6 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Régimen Detectado</p>
+                <p className="text-sm text-muted-foreground">{t('detectedRegime')}</p>
                 <Badge variant={
                   testData.regimen === 'flujo laminar' ? 'default' : 
                   testData.regimen === 'turbulento' ? 'destructive' : 'secondary'
-                } className="capitalize text-base">{testData.regimen}</Badge>
+                } className="capitalize text-base">{t_regimen(testData.regimen)}</Badge>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Datos de Sensores</CardTitle>
-            <CardDescription>Visualización de los datos recolectados durante la prueba.</CardDescription>
+            <CardTitle>{t('sensorData')}</CardTitle>
+            <CardDescription>{t('sensorDataDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4">
             {testData.sensors.map(sensorKey => (
               <SensorChart
                 key={sensorKey}
-                title={`Sensor ${parseInt(sensorKey.replace('sensor', ''))}`}
+                title={`${t('sensor')} ${parseInt(sensorKey.replace('sensor', ''))}`}
                 data={sensorData}
                 dataKeys={[sensorKey]}
                 colors={sensorColors}

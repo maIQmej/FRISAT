@@ -1,6 +1,8 @@
 
 import type { Dispatch, SetStateAction } from 'react';
 
+export type Language = 'es' | 'en' | 'fr' | 'de';
+
 export type RegimenType = 'flujo laminar' | 'turbulento' | 'en la frontera' | 'indeterminado';
 
 export interface Configuration {
@@ -33,4 +35,6 @@ export type AppContextType = {
   resetApp: () => void;
   regimen: RegimenType;
   setRegimen: Dispatch<SetStateAction<RegimenType>>;
+  language: Language;
+  setLanguage: Dispatch<SetStateAction<Language>>;
 };

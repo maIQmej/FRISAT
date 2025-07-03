@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,16 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Eye, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const mockHistory = [
   { id: 1, fileName: 'prueba_motor_caliente', date: '2024-07-29 10:30', duration: '60s', sensors: 3, regimen: 'turbulento', samplesPerSecond: 10 },
   { id: 2, fileName: 'test_flujo_laminar_01', date: '2024-07-29 09:15', duration: '30s', sensors: 2, regimen: 'flujo laminar', samplesPerSecond: 5 },
   { id: 3, fileName: 'medicion_valvula_fria', date: '2024-07-28 15:00', duration: '120s', sensors: 5, regimen: 'en la frontera', samplesPerSecond: 20 },
   { id: 4, fileName: 'ensayo_largo_duracion', date: '2024-07-28 11:45', duration: '300s', sensors: 4, regimen: 'turbulento', samplesPerSecond: 50 },
-];
+] as const;
 
 export default function HistorialPage() {
   const router = useRouter();
+  const { t, t_regimen } = useTranslation();
 
   return (
     <div className="container mx-auto max-w-6xl">
@@ -24,13 +27,11 @@ export default function HistorialPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Historial de Pruebas</CardTitle>
-              <CardDescription>
-                Explore y administre todas las mediciones realizadas anteriormente.
-              </CardDescription>
+              <CardTitle>{t('historyTitle')}</CardTitle>
+              <CardDescription>{t('historyDesc')}</CardDescription>
             </div>
             <Button variant="outline" onClick={() => router.push('/')}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Volver al Inicio
+              <ArrowLeft className="mr-2 h-4 w-4" /> {t('backToHome')}
             </Button>
           </div>
         </CardHeader>
@@ -38,12 +39,12 @@ export default function HistorialPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre del Archivo</TableHead>
-                <TableHead>Fecha y Hora</TableHead>
-                <TableHead>Duración</TableHead>
-                <TableHead className="text-center">Sensores</TableHead>
-                <TableHead>Régimen Detectado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead>{t('fileName')}</TableHead>
+                <TableHead>{t('dateAndTime')}</TableHead>
+                <TableHead>{t('duration')}</TableHead>
+                <TableHead className="text-center">{t('sensors')}</TableHead>
+                <TableHead>{t('detectedRegime')}</TableHead>
+                <TableHead className="text-right">{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -57,14 +58,14 @@ export default function HistorialPage() {
                     <Badge variant={
                       test.regimen === 'flujo laminar' ? 'default' : 
                       test.regimen === 'turbulento' ? 'destructive' : 'secondary'
-                    } className="capitalize">{test.regimen}</Badge>
+                    } className="capitalize">{t_regimen(test.regimen)}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <Link href={`/historial/${test.id}`} passHref>
                       <Button variant="ghost" size="icon" asChild>
                         <a>
                           <Eye className="h-4 w-4" />
-                          <span className="sr-only">Ver detalles</span>
+                          <span className="sr-only">{t('viewDetails')}</span>
                         </a>
                       </Button>
                     </Link>

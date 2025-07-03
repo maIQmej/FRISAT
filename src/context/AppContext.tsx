@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import type { Configuration, SensorDataPoint, AcquisitionState, AppContextType, RegimenType } from '@/lib/types';
+import type { Configuration, SensorDataPoint, AcquisitionState, AppContextType, RegimenType, Language } from '@/lib/types';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -23,12 +23,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [sensorData, setSensorData] = useState<SensorDataPoint[]>([]);
   const [acquisitionState, setAcquisitionState] = useState<AcquisitionState>('configuring');
   const [regimen, setRegimen] = useState<RegimenType>('indeterminado');
+  const [language, setLanguage] = useState<Language>('es');
 
   const resetApp = useCallback(() => {
     setConfig(initialConfig);
     setSensorData([]);
     setAcquisitionState('configuring');
     setRegimen('indeterminado');
+    setLanguage('es');
   }, []);
 
   return (
@@ -42,6 +44,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setAcquisitionState,
         regimen,
         setRegimen,
+        language,
+        setLanguage,
         resetApp,
       }}
     >
