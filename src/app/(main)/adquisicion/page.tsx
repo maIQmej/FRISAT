@@ -8,14 +8,12 @@ import { Button } from '@/components/ui/button';
 import { SensorChart } from '@/components/app/SensorChart';
 import type { SensorDataPoint, RegimenType } from '@/lib/types';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Wind } from 'lucide-react';
 
 export default function AdquisicionPage() {
@@ -109,18 +107,22 @@ export default function AdquisicionPage() {
   };
 
   return (
-    <Dialog open={true}>
-      <DialogContent className="sm:max-w-7xl h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Adquisición en Proceso</DialogTitle>
-          <DialogDescription>
-            Monitoreando datos de sensores en tiempo real. Tiempo restante: {(config.acquisitionTime - elapsedTime).toFixed(1)}s
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="flex-grow overflow-y-auto pr-4 space-y-4 py-4">
+    <div className="flex h-full flex-col gap-4">
+      <Card className="flex flex-grow flex-col">
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle>Adquisición en Proceso</CardTitle>
+              <CardDescription>
+                Monitoreando datos de sensores en tiempo real. Tiempo restante: {(config.acquisitionTime - elapsedTime).toFixed(1)}s
+              </CardDescription>
+            </div>
+            <Button variant="destructive" onClick={handleStop}>Detener Adquisición</Button>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-grow flex-col gap-4">
           <Progress value={progress} />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {activeSensors.map((sensorKey, index) => (
               <SensorChart
                 key={sensorKey}
@@ -131,7 +133,7 @@ export default function AdquisicionPage() {
               />
             ))}
             <Card className="flex flex-col items-center justify-center min-h-[240px]">
-              <CardHeader className="flex flex-col items-center justify-center text-center p-4">
+              <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
                 <Wind className="h-8 w-8 text-primary" />
                 <CardTitle className="mt-2">Régimen de Flujo</CardTitle>
               </CardHeader>
@@ -140,12 +142,8 @@ export default function AdquisicionPage() {
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="destructive" onClick={handleStop}>Detener Adquisición</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
