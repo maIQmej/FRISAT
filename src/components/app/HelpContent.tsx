@@ -16,7 +16,20 @@ export function HelpContent() {
       <AccordionItem value="item-1">
         <AccordionTrigger>{t('whatIsSensorSync')}</AccordionTrigger>
         <AccordionContent>
-          {t('whatIsSensorSyncDesc')}
+          <div className="w-full overflow-hidden rounded-lg">
+            <video
+              src="/FRISAT.mp4"
+              width="100%"
+              controls
+              muted
+              autoPlay
+              loop
+              className="aspect-video"
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <p className="mt-4">{t('whatIsSensorSyncDesc')}</p>
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="item-2">
