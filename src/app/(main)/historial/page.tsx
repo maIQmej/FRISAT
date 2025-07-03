@@ -12,7 +12,7 @@ import { Eye, ArrowLeft, Download, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useToast } from '@/hooks/use-toast';
+import { ExportModal } from '@/components/app/ExportModal';
 
 const mockHistory = [
   { id: 1, fileName: 'prueba_motor_caliente', date: '2024-07-29 10:30', duration: '60s', sensors: 3, regimen: 'turbulento', samplesPerSecond: 10 },
@@ -25,9 +25,9 @@ const mockHistory = [
 export default function HistorialPage() {
   const router = useRouter();
   const { t, t_regimen } = useTranslation();
-  const { toast } = useToast();
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [filterText, setFilterText] = useState('');
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const filteredHistory = useMemo(() => {
     return mockHistory.filter(test =>
@@ -52,13 +52,7 @@ export default function HistorialPage() {
   };
 
   const handleDownloadSelected = () => {
-    toast({
-      title: t('downloadingSelectedToastTitle'),
-      description: t('downloadingSelectedToastDesc').replace('{count}', selectedRows.length.toString()),
-    });
-    // Placeholder for actual download logic
-    console.log('Downloading files with IDs:', selectedRows);
-    setSelectedRows([]);
+    setIsExportModalOpen(true);
   };
 
   const numSelected = selectedRows.length;
@@ -161,6 +155,7 @@ export default function HistorialPage() {
           </Table>
         </CardContent>
       </Card>
+      <ExportModal open={isExportModalOpen} onOpenChange={setIsExportModalOpen} />
     </div>
   );
 }

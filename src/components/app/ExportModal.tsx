@@ -30,6 +30,7 @@ type ExportState = 'idle' | 'exporting' | 'success' | 'error';
 interface ExportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialFileName?: string;
 }
 
 const formSchema = z.object({
@@ -41,7 +42,7 @@ const formSchema = z.object({
 
 type ExportFormValues = z.infer<typeof formSchema>;
 
-export function ExportModal({ open, onOpenChange }: ExportModalProps) {
+export function ExportModal({ open, onOpenChange, initialFileName }: ExportModalProps) {
   const { config } = useApp();
   const { t } = useTranslation();
   const [exportState, setExportState] = useState<ExportState>('idle');
@@ -51,7 +52,7 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       exportMethod: 'wifi',
-      fileName: config.fileName,
+      fileName: initialFileName || config.fileName,
       includeDate: true,
       exportPath: '/mediciones/',
     },
@@ -61,13 +62,13 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
     if (open) {
       form.reset({
         exportMethod: 'wifi',
-        fileName: config.fileName,
+        fileName: initialFileName || config.fileName,
         includeDate: true,
         exportPath: '/mediciones/',
       });
       setExportState('idle');
     }
-  }, [open, config.fileName, form]);
+  }, [open, config.fileName, form, initialFileName]);
   
   const watchedFileName = form.watch('fileName');
   const watchedIncludeDate = form.watch('includeDate');
