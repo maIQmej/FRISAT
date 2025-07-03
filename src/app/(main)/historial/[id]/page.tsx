@@ -9,7 +9,7 @@ import { SensorChart } from '@/components/app/SensorChart';
 import { ArrowLeft, HardDrive, Timer, Sigma, Wind, SlidersHorizontal, Home } from 'lucide-react';
 import { ExportModal } from '@/components/app/ExportModal';
 import { DataPointModal } from '@/components/app/DataPointModal';
-import type { SensorDataPoint, RegimenType } from '@/lib/types';
+import type { SensorDataPoint, RegimenType, Configuration } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -87,6 +87,19 @@ export default function HistorialDetallePage() {
       </div>
     );
   }
+  
+  const exportConfig: Configuration = {
+    fileName: testData.fileName,
+    acquisitionTime: testData.duration,
+    samplesPerSecond: testData.samplesPerSecond,
+    sensors: {
+      sensor1: testData.sensors.includes('sensor1'),
+      sensor2: testData.sensors.includes('sensor2'),
+      sensor3: testData.sensors.includes('sensor3'),
+      sensor4: testData.sensors.includes('sensor4'),
+      sensor5: testData.sensors.includes('sensor5'),
+    }
+  };
 
   return (
     <>
@@ -171,6 +184,8 @@ export default function HistorialDetallePage() {
         open={isExportModalOpen}
         onOpenChange={setIsExportModalOpen}
         filesToExport={[testData.fileName]}
+        sensorData={sensorData}
+        config={exportConfig}
       />
       <DataPointModal
         open={isDataPointModalOpen}

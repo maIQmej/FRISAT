@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -21,11 +21,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Wifi, Usb, HardDrive, Loader2, CheckCircle, FileText, FileSpreadsheet, Search, XCircle } from 'lucide-react';
+import { Wifi, Usb, HardDrive, Loader2, CheckCircle, FileText, FileSpreadsheet, Search, XCircle, Download } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Separator } from '../ui/separator';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
+import type { Configuration, SensorDataPoint } from '@/lib/types';
 
 type ExportState = 'idle' | 'exporting' | 'success' | 'error';
 type USBStatus = 'idle' | 'checking' | 'found' | 'not_found';
@@ -34,10 +35,12 @@ interface ExportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   filesToExport?: string[];
+  sensorData?: SensorDataPoint[];
+  config?: Configuration;
 }
 
 const formBaseSchema = {
-  exportMethod: z.enum(['wifi', 'usb']),
+  exportMethod: z.enum(['wifi', 'usb', 'direct']),
   exportPath: z.string().optional(),
 };
 
@@ -103,8 +106,9 @@ const UsbDetector = ({ usbStatus, onDetect, onRetry }: { usbStatus: USBStatus, o
 }
 
 
-export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportModalProps) {
-  const { config } = useApp();
+export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData = [], config: propConfig }: ExportModalProps) {
+  const { config: appConfig } = useApp();
+  const config = propConfig || appConfig;
   const { t } = useTranslation();
   const [exportState, setExportState] = useState<ExportState>('idle');
   const [usbStatus, setUsbStatus] = useState<USBStatus>('idle');
@@ -116,7 +120,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportMo
   const singleFileForm = useForm<SingleFileFormValues>({
     resolver: zodResolver(singleFileFormSchema),
     defaultValues: {
-      exportMethod: 'wifi',
+      exportMethod: 'direct',
       fileName: singleFileName,
       includeDate: true,
       exportPath: '/mediciones/wifi/',
@@ -137,7 +141,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportMo
   useEffect(() => {
     if (open) {
       singleFileForm.reset({
-        exportMethod: 'wifi',
+        exportMethod: isMultiExport ? 'wifi' : 'direct',
         fileName: singleFileName,
         includeDate: true,
         exportPath: '/mediciones/wifi/',
@@ -149,7 +153,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportMo
       setExportState('idle');
       setUsbStatus('idle');
     }
-  }, [open, singleFileName, filesToExport, singleFileForm, multiFileForm]);
+  }, [open, singleFileName, filesToExport, singleFileForm, multiFileForm, isMultiExport]);
 
   useEffect(() => {
     setUsbStatus('idle');
@@ -158,15 +162,90 @@ export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportMo
   const watchedFileName = singleFileForm.watch('fileName');
   const watchedIncludeDate = singleFileForm.watch('includeDate');
 
-  const getFinalFilename = () => {
+  const getFinalFilename = (extension: 'xlsx' | 'csv' = 'xlsx') => {
     let finalName = watchedFileName || config.fileName;
     if (watchedIncludeDate) {
       const now = new Date();
       const dateString = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
       finalName = `${finalName}_${dateString}`;
     }
-    return `${finalName}.xlsx`;
+    return `${finalName}.${extension}`;
   };
+
+  const activeSensors = useMemo(() => 
+    Object.entries(config.sensors)
+      .filter(([, isActive]) => isActive)
+      .map(([key]) => key), 
+  [config.sensors]);
+
+  const testStats = useMemo(() => {
+    if (!sensorData || sensorData.length < 2) {
+      return [];
+    }
+    
+    return activeSensors.map((key) => {
+      const values = sensorData.map(p => p[key]).filter((v): v is number => typeof v === 'number' && isFinite(v));
+
+      if (values.length < 2) {
+        return { key, label: `${t('sensor')} ${parseInt(key.replace('sensor', ''))}`, mean: "N/A", stdDev: "N/A", min: "N/A", max: "N/A" };
+      }
+
+      const count = values.length;
+      const sum = values.reduce((a, b) => a + b, 0);
+      const mean = sum / count;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const stdDev = Math.sqrt(values.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / (count > 1 ? count - 1 : 1));
+
+      return { key, label: `${t('sensor')} ${parseInt(key.replace('sensor', ''))}`, mean: mean.toFixed(2), stdDev: stdDev.toFixed(2), min: min.toFixed(2), max: max.toFixed(2) };
+    });
+  }, [sensorData, activeSensors, t]);
+
+  const generateCsvContent = () => {
+    let csv = '';
+    csv += `# ${t('testSummary')}\n`;
+    csv += `# ${t('fileNameLabel')}:,${config.fileName}\n`;
+    csv += `# ${t('durationLabel')}:,${sensorData.at(-1)?.time.toFixed(2) || '0'}s\n`;
+    csv += `# ${t('samplesPerSecondLabel')}:,${config.samplesPerSecond} Hz\n`;
+    csv += '\n';
+
+    csv += `# ${t('testStatistics')}\n`;
+    const statHeaders = [t('sensor'), t('statMean'), t('statStdDev'), t('statMin'), t('statMax')];
+    csv += `# ${statHeaders.join(',')}\n`;
+    testStats.forEach(stat => {
+      const row = [stat.label, stat.mean, stat.stdDev, stat.min, stat.max];
+      csv += `# ${row.join(',')}\n`;
+    });
+    csv += '\n';
+
+    const dataHeaders = ['time', ...activeSensors, 'regimen'];
+    csv += dataHeaders.join(',') + '\n';
+
+    sensorData.forEach(point => {
+      const row = dataHeaders.map(header => point[header] ?? '');
+      csv += row.join(',') + '\n';
+    });
+    
+    return csv;
+  };
+
+  const handleDirectDownload = () => {
+    const fileName = getFinalFilename('csv');
+    const csvContent = generateCsvContent();
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
+
 
   const handleDetectUsb = () => {
     setUsbStatus('checking');
@@ -176,6 +255,13 @@ export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportMo
   };
 
   const handleExport = (values: SingleFileFormValues | MultiFileFormValues) => {
+    if (values.exportMethod === 'direct') {
+      handleDirectDownload();
+      toast({ title: t('exportSuccessToastTitle'), description: `${t('downloadedFile')} "${getFinalFilename('csv')}"` });
+      onOpenChange(false);
+      return;
+    }
+    
     if (values.exportMethod === 'usb' && usbStatus !== 'found') {
       toast({ title: t('exportErrorToastTitle'), description: t('exportErrorUSB'), variant: 'destructive' });
       return;
@@ -243,26 +329,13 @@ export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportMo
        )
     }
 
+    const finalNameExt = watchedExportMethod === 'direct' ? 'csv' : 'xlsx';
+
     return (
         <div className="space-y-4">
-            {watchedExportMethod === 'wifi' && (
+            {watchedExportMethod !== 'direct' && watchedExportMethod !== 'usb' && (
               <>
-                <FormField control={form.control} name="fileName" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('fileName')}</FormLabel>
-                      <FormControl><Input {...field} disabled={exportState !== 'idle'} /></FormControl>
-                      <FormMessage/>
-                    </FormItem>
-                  )}
-                />
-                <FormField control={form.control} name="includeDate" render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={exportState !== 'idle'} /></FormControl>
-                      <FormLabel className="font-normal">{t('includeDate')}</FormLabel>
-                    </FormItem>
-                  )}
-                />
-                 <FormField control={form.control} name="exportPath" render={({ field }) => (
+                <FormField control={form.control} name="exportPath" render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('networkPath')}</FormLabel>
                       <FormControl><Input {...field} disabled={exportState !== 'idle'} /></FormControl>
@@ -270,34 +343,45 @@ export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportMo
                     </FormItem>
                   )}
                 />
-                <div className="flex items-center gap-2 rounded-md border bg-muted p-3">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{t('finalFileName')}:</span>
-                  <span className="text-sm font-mono truncate">{getFinalFilename()}</span>
-                </div>
               </>
             )}
-            {watchedExportMethod === 'usb' && (
-                 <>
-                    <FormField control={form.control} name="fileName" render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>{t('fileName')}</FormLabel>
-                        <FormControl><Input {...field} disabled={exportState !== 'idle' || usbStatus !== 'found'} /></FormControl>
-                        <FormMessage/>
-                        </FormItem>
-                    )}
-                    />
-                    <FormField control={form.control} name="includeDate" render={({ field }) => (
-                        <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={exportState !== 'idle' || usbStatus !== 'found'} /></FormControl>
-                        <FormLabel className="font-normal">{t('includeDate')}</FormLabel>
-                        </FormItem>
-                    )}
-                    />
-                 </>
+
+            {(watchedExportMethod === 'direct' || watchedExportMethod === 'usb' || watchedExportMethod === 'wifi') && (
+              <>
+                <FormField control={form.control} name="fileName" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('fileName')}</FormLabel>
+                      <FormControl><Input {...field} disabled={exportState !== 'idle' || (watchedExportMethod === 'usb' && usbStatus !== 'found')} /></FormControl>
+                      <FormMessage/>
+                    </FormItem>
+                  )}
+                />
+                <FormField control={form.control} name="includeDate" render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={exportState !== 'idle' || (watchedExportMethod === 'usb' && usbStatus !== 'found')} /></FormControl>
+                      <FormLabel className="font-normal">{t('includeDate')}</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </>
             )}
+
+            <div className="flex items-center gap-2 rounded-md border bg-muted p-3">
+              <FileText className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">{t('finalFileName')}:</span>
+              <span className="text-sm font-mono truncate">{getFinalFilename(finalNameExt)}</span>
+            </div>
         </div>
     )
+  }
+
+  const getExportButtonText = () => {
+    switch (watchedExportMethod) {
+      case 'direct': return t('exportToDirect');
+      case 'usb': return t('exportToUSB');
+      case 'wifi': return t('exportToWifi');
+      default: return t('export');
+    }
   }
 
   return (
@@ -323,9 +407,20 @@ export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportMo
                       <RadioGroup
                         onValueChange={field.onChange}
                         defaultValue={field.value}
-                        className="grid grid-cols-2 gap-4"
+                        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
                         disabled={exportState !== 'idle'}
                       >
+                        <Label
+                          htmlFor="direct"
+                          className={cn(
+                            "flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary",
+                            (exportState !== 'idle' || isMultiExport) && "cursor-not-allowed opacity-50"
+                          )}
+                        >
+                          <RadioGroupItem value="direct" id="direct" className="sr-only" disabled={isMultiExport} />
+                          <Download className="h-5 w-5" />
+                          {t('directExportMethod')}
+                        </Label>
                         <Label
                           htmlFor="wifi"
                           className={cn("flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary", exportState !== 'idle' && "cursor-not-allowed opacity-50")}
@@ -377,7 +472,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [] }: ExportMo
             <Button form="export-form" type="submit" disabled={exportState !== 'idle' || (watchedExportMethod === 'usb' && usbStatus !== 'found')}>
                 {exportState === 'exporting' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {exportState === 'success' ? <CheckCircle className="mr-2 h-4 w-4" /> : <HardDrive className="mr-2 h-4 w-4" />}
-                {exportState === 'success' ? t('exported') : (watchedExportMethod === 'usb' ? t('exportToUSB') : t('exportToWifi'))}
+                {exportState === 'success' ? t('exported') : getExportButtonText()}
             </Button>
         </DialogFooter>
       </DialogContent>

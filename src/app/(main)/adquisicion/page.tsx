@@ -298,6 +298,8 @@ export default function AdquisicionPage() {
         open={isExportModalOpen}
         onOpenChange={setIsExportModalOpen}
         filesToExport={[config.fileName]}
+        sensorData={sensorData}
+        config={config}
       />
 
       <DataPointModal
