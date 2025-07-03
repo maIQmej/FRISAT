@@ -80,7 +80,7 @@ export default function AdquisicionPage() {
       return;
     }
     
-    setChartGroups(activeSensors.map(key => [key]));
+    setChartGroups(activeSensors.length > 0 ? [activeSensors] : []);
 
     const intervalTime = 1000 / config.samplesPerSecond;
 
@@ -92,23 +92,18 @@ export default function AdquisicionPage() {
       return point;
     };
 
-    const simulateRegimen = () => {
-      const results: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
-      const randomResult = results[Math.floor(Math.random() * results.length)];
-      setRegimen(randomResult);
-    };
-    
     const runAcquisition = () => {
       elapsedTimeRef.current = 0;
       setElapsedTime(0);
       setLocalSensorData([generateDataPoint(0)]);
       
-      intervalRef.current = setInterval(() => {
+      const interval = setInterval(() => {
         const newTime = elapsedTimeRef.current + (1 / config.samplesPerSecond);
         elapsedTimeRef.current = newTime;
 
         if (newTime >= config.acquisitionTime) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
+          clearInterval(interval);
+          intervalRef.current = null;
           
           setElapsedTime(config.acquisitionTime);
           setProgress(100);
@@ -126,12 +121,16 @@ export default function AdquisicionPage() {
           
           setIsResultsModalOpen(true);
         } else {
+          const results: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
+          const randomResult = results[Math.floor(Math.random() * results.length)];
+
           setElapsedTime(newTime);
           setProgress((newTime / config.acquisitionTime) * 100);
           setLocalSensorData(prevData => [...prevData, generateDataPoint(newTime)]);
-          simulateRegimen();
+          setRegimen(randomResult);
         }
       }, intervalTime);
+      intervalRef.current = interval;
     };
     
     runAcquisition();
