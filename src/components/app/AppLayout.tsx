@@ -8,7 +8,6 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const Logo = () => {
-    const { t } = useTranslation();
     return (
         <div className="flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="h-8 w-8 text-primary">
