@@ -202,7 +202,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
   }, [sensorData, activeSensors, t]);
 
   const generateCsvContent = () => {
-    let csv = '';
+    let csv = '\uFEFF';
 
     // --- Section 1: Test Summary ---
     csv += `${t('testSummary')}\n`;
@@ -501,3 +501,5 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     </Dialog>
   );
 }
+
+    
