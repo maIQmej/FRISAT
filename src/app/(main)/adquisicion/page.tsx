@@ -18,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Wind, RotateCw, HardDrive, Database, Home } from 'lucide-react';
+import { Wind, RotateCw, HardDrive, Database, Home, Sigma } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function AdquisicionPage() {
@@ -129,9 +129,9 @@ export default function AdquisicionPage() {
           setAcquisitionState('completed');
           setIsResultsModalOpen(true);
         } else {
+          const newDataPoint = generateDataPoint(newTime);
           setElapsedTime(newTime);
           setProgress((newTime / config.acquisitionTime) * 100);
-          const newDataPoint = generateDataPoint(newTime);
           setRegimen(newDataPoint.regimen || 'indeterminado');
           setLocalSensorData(prevData => [...prevData, newDataPoint]);
         }
@@ -237,7 +237,7 @@ export default function AdquisicionPage() {
           </CardHeader>
           <CardContent className="flex flex-grow flex-col gap-4">
             <Progress value={progress} />
-            <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               {chartGroups.map((group, groupIndex) => {
                 const primaryKey = group[0];
                 const title = group.length > 1 ? t('sensorSelection') : `${t('sensor')} ${parseInt(primaryKey.replace('sensor', ''))}`;
@@ -261,6 +261,15 @@ export default function AdquisicionPage() {
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                   <p className="text-2xl font-bold capitalize text-center">{t_regimen(regimen)}</p>
+                </CardContent>
+              </Card>
+              <Card className="flex flex-col items-center justify-center min-h-[240px]">
+                <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
+                  <Sigma className="h-8 w-8 text-primary" />
+                  <CardTitle className="mt-2">{t('totalSamplesLabel')}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <p className="text-2xl font-bold text-center">{localSensorData.length}</p>
                 </CardContent>
               </Card>
             </div>
