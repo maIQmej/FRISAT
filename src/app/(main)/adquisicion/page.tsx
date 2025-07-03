@@ -25,6 +25,7 @@ export default function AdquisicionPage() {
   const [localSensorData, setLocalSensorData] = useState<SensorDataPoint[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
+  const [chartGroups, setChartGroups] = useState<string[][]>([]);
 
   const activeSensors = useMemo(() => 
     Object.entries(config.sensors)
@@ -38,10 +39,32 @@ export default function AdquisicionPage() {
     }
   }, [acquisitionState, router]);
   
+  const handleDrop = (sourceKey: string, targetKey: string) => {
+    setChartGroups(prevGroups => {
+      const sourceGroup = prevGroups.find(g => g.includes(sourceKey));
+      const targetGroup = prevGroups.find(g => g.includes(targetKey));
+  
+      if (!sourceGroup || !targetGroup || sourceGroup === targetGroup) {
+        return prevGroups;
+      }
+  
+      const nextGroups = prevGroups.filter(g => g !== sourceGroup);
+  
+      return nextGroups.map(g => {
+        if (g === targetGroup) {
+          return [...g, ...sourceGroup];
+        }
+        return g;
+      });
+    });
+  };
+
   useEffect(() => {
     if (acquisitionState !== 'running') {
       return;
     }
+    
+    setChartGroups(activeSensors.map(key => [key]));
 
     const intervalTime = 1000 / config.samplesPerSecond;
 
@@ -148,15 +171,20 @@ export default function AdquisicionPage() {
           <CardContent className="flex flex-grow flex-col gap-4">
             <Progress value={progress} />
             <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {activeSensors.map((sensorKey, index) => (
-                <SensorChart
-                  key={sensorKey}
-                  title={`Sensor ${index + 1}`}
-                  data={localSensorData}
-                  dataKey={sensorKey}
-                  color={sensorColors[sensorKey]}
-                />
-              ))}
+              {chartGroups.map((group) => {
+                const primaryKey = group[0];
+                const title = group.map(key => `Sensor ${parseInt(key.replace('sensor', ''))}`).join(' & ');
+                return (
+                  <SensorChart
+                    key={primaryKey}
+                    title={title}
+                    data={localSensorData}
+                    dataKeys={group}
+                    colors={sensorColors}
+                    onDrop={handleDrop}
+                  />
+                );
+              })}
               <Card className="flex flex-col items-center justify-center min-h-[240px]">
                 <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
                   <Wind className="h-8 w-8 text-primary" />
