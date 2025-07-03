@@ -13,6 +13,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ExportModal } from '@/components/app/ExportModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { RegimenType } from '@/lib/types';
 
 const mockHistory = [
   { id: 1, fileName: 'prueba_motor_caliente', date: '2024-07-29 10:30', duration: '60s', sensors: 3, regimen: 'turbulento', samplesPerSecond: 10 },
@@ -23,20 +25,26 @@ const mockHistory = [
 ] as const;
 
 type MockHistoryItem = typeof mockHistory[number];
+const regimenTypes: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera', 'indeterminado'];
 
 export default function HistorialPage() {
   const router = useRouter();
   const { t, t_regimen } = useTranslation();
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [filterText, setFilterText] = useState('');
+  const [regimeFilter, setRegimeFilter] = useState('all');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [filesToExport, setFilesToExport] = useState<string[]>([]);
 
   const filteredHistory = useMemo(() => {
-    return mockHistory.filter(test =>
-      test.fileName.toLowerCase().includes(filterText.toLowerCase())
-    );
-  }, [filterText]);
+    return mockHistory
+      .filter(test =>
+        test.fileName.toLowerCase().includes(filterText.toLowerCase())
+      )
+      .filter(test => 
+        regimeFilter === 'all' || test.regimen === regimeFilter
+      );
+  }, [filterText, regimeFilter]);
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
@@ -76,18 +84,33 @@ export default function HistorialPage() {
               <ArrowLeft className="mr-2 h-4 w-4" /> {t('backToHome')}
             </Button>
           </div>
-          <div className="mt-4 flex items-center justify-between gap-4">
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('filterByFileName')}
-                value={filterText}
-                onChange={e => setFilterText(e.target.value)}
-                className="pl-10"
-              />
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex w-full flex-col sm:flex-row sm:w-auto sm:flex-grow gap-4">
+              <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t('filterByFileName')}
+                  value={filterText}
+                  onChange={e => setFilterText(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="w-full sm:w-[240px]">
+                <Select value={regimeFilter} onValueChange={setRegimeFilter}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t('filterByRegime')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('allRegimes')}</SelectItem>
+                    {regimenTypes.map(regimen => (
+                        <SelectItem key={regimen} value={regimen}>{t_regimen(regimen)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             {numSelected > 0 && (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 shrink-0">
                 <span className="text-sm text-muted-foreground">
                   {t('numSelected').replace('{count}', numSelected.toString())}
                 </span>

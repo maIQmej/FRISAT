@@ -95,6 +95,8 @@ export const translations: Translations = {
     downloadSelected: 'Descargar Selección',
     numSelected: '{count} seleccionado(s)',
     noResults: 'No hay resultados.',
+    filterByRegime: 'Filtrar por régimen',
+    allRegimes: 'Todos los regímenes',
 
     testNotFound: 'Prueba no encontrada',
     testNotFoundDesc: 'No se encontró el registro para el ID proporcionado.',
@@ -210,6 +212,8 @@ export const translations: Translations = {
     downloadSelected: 'Download Selected',
     numSelected: '{count} selected',
     noResults: 'No results.',
+    filterByRegime: 'Filter by regime',
+    allRegimes: 'All Regimes',
 
     testNotFound: 'Test Not Found',
     testNotFoundDesc: 'The record for the provided ID was not found.',
@@ -325,6 +329,8 @@ export const translations: Translations = {
     downloadSelected: 'Télécharger la sélection',
     numSelected: '{count} sélectionné(s)',
     noResults: 'Aucun résultat.',
+    filterByRegime: 'Filtrer par régime',
+    allRegimes: 'Tous les régimes',
 
     testNotFound: 'Test Non Trouvé',
     testNotFoundDesc: 'L\'enregistrement pour l\'ID fourni n\'a pas été trouvé.',
@@ -440,6 +446,8 @@ export const translations: Translations = {
     downloadSelected: 'Auswahl herunterladen',
     numSelected: '{count} ausgewählt',
     noResults: 'Keine Ergebnisse.',
+    filterByRegime: 'Nach Regime filtern',
+    allRegimes: 'Alle Regime',
 
     testNotFound: 'Test nicht gefunden',
     testNotFoundDesc: 'Der Datensatz für die angegebene ID wurde nicht gefunden.',
