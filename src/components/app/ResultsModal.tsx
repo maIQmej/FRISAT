@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -114,14 +113,14 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, 
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl flex flex-col" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
+      <DialogContent className="max-w-3xl flex flex-col max-h-[90vh] p-0" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle className="text-2xl">{t('resultsTitle')}</DialogTitle>
           <DialogDescription>{t('resultsDesc')}</DialogDescription>
         </DialogHeader>
         
-        <div className="flex-1 min-h-0 overflow-y-auto -mx-6">
-          <div className="space-y-6 py-4 px-6">
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="space-y-6 p-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="flex items-center space-x-3 rounded-md border p-4 sm:col-span-2">
                 <FileText className="h-6 w-6 text-primary" />
@@ -201,7 +200,7 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen, 
             </div>
           </div>
         </div>
-        <DialogFooter className="grid grid-cols-1 gap-2 sm:grid-cols-3 shrink-0 pt-4">
+        <DialogFooter className="grid grid-cols-1 gap-2 sm:grid-cols-3 shrink-0 p-6 border-t">
           <Button variant="outline" onClick={handleNewTest}>
             <RotateCw className="mr-2 h-4 w-4" /> {t('newTest')}
           </Button>
