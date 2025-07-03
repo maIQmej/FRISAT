@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Settings, BrainCircuit, HelpCircle, HardDrive, LineChart, TestTube, FileText, Bot } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { ThemeToggle } from './ThemeToggle';
 
 const Logo = () => (
   <div className="flex items-center gap-2 p-2">
@@ -75,14 +76,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset className="flex flex-col">
         <header className="flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
-          <SidebarTrigger />
-          <h1 className="text-lg font-semibold md:text-xl">
-            {navItems.find(item => item.href === pathname)?.label || 'SensorSync'}
-          </h1>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Bot className="h-5 w-5" />
-            <span className="sr-only">AI Assistant</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <SidebarTrigger />
+            <h1 className="text-lg font-semibold md:text-xl">
+              {navItems.find(item => item.href === pathname)?.label || 'SensorSync'}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <Bot className="h-5 w-5" />
+              <span className="sr-only">AI Assistant</span>
+            </Button>
+          </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </SidebarInset>
