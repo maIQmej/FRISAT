@@ -145,6 +145,8 @@ export const translations: Translations = {
     statStdDev: 'Desv. Est.',
     statMin: 'Mín',
     statMax: 'Máx',
+    testStatistics: 'Estadísticas de la Prueba',
+    testStatisticsDesc: 'Resumen estadístico para cada sensor activo.',
 
     dataPointModalTitle: 'Detalle del Punto de Datos',
     dataPointModalDesc: 'Valores de los sensores en el instante de tiempo seleccionado.',
@@ -286,6 +288,8 @@ export const translations: Translations = {
     statStdDev: 'Std. Dev.',
     statMin: 'Min',
     statMax: 'Max',
+    testStatistics: 'Test Statistics',
+    testStatisticsDesc: 'Statistical summary for each active sensor.',
 
     dataPointModalTitle: 'Data Point Detail',
     dataPointModalDesc: 'Sensor values at the selected time instance.',
@@ -427,6 +431,8 @@ export const translations: Translations = {
     statStdDev: 'Écart-type',
     statMin: 'Min',
     statMax: 'Max',
+    testStatistics: 'Statistiques du Test',
+    testStatisticsDesc: 'Résumé statistique pour chaque capteur actif.',
 
     dataPointModalTitle: 'Détail du Point de Donnée',
     dataPointModalDesc: 'Valeurs des capteurs à l\'instant sélectionné.',
@@ -568,6 +574,8 @@ export const translations: Translations = {
     statStdDev: 'Std.-Abw.',
     statMin: 'Min',
     statMax: 'Max',
+    testStatistics: 'Test-Statistiken',
+    testStatisticsDesc: 'Statistische Zusammenfassung für jeden aktiven Sensor.',
 
     dataPointModalTitle: 'Datenpunktdetail',
     dataPointModalDesc: 'Sensorwerte zum ausgewählten Zeitpunkt.',
