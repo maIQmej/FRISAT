@@ -11,9 +11,10 @@ interface SensorChartProps {
   dataKeys: string[];
   colors: { [key: string]: string };
   onDrop: (sourceKey: string, targetKey: string) => void;
+  onDoubleClick?: () => void;
 }
 
-export function SensorChart({ title, data, dataKeys, colors, onDrop }: SensorChartProps) {
+export function SensorChart({ title, data, dataKeys, colors, onDrop, onDoubleClick }: SensorChartProps) {
   const chartConfig = dataKeys.reduce((config, key) => {
     config[key] = {
       label: `Sensor ${parseInt(key.replace('sensor', ''))}`,
@@ -65,6 +66,7 @@ export function SensorChart({ title, data, dataKeys, colors, onDrop }: SensorCha
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onDoubleClick={onDoubleClick}
       className="cursor-grab active:cursor-grabbing transition-all border-2 border-transparent"
     >
       <CardHeader>

@@ -59,6 +59,16 @@ export default function AdquisicionPage() {
     });
   };
 
+  const handleSeparate = (groupToSeparate: string[]) => {
+    if (groupToSeparate.length <= 1) return;
+
+    setChartGroups(prevGroups => {
+      const otherGroups = prevGroups.filter(g => g !== groupToSeparate);
+      const newSingleGroups = groupToSeparate.map(key => [key]);
+      return [...otherGroups, ...newSingleGroups];
+    });
+  };
+
   useEffect(() => {
     if (acquisitionState !== 'running') {
       return;
@@ -182,6 +192,7 @@ export default function AdquisicionPage() {
                     dataKeys={group}
                     colors={sensorColors}
                     onDrop={handleDrop}
+                    onDoubleClick={() => handleSeparate(group)}
                   />
                 );
               })}
