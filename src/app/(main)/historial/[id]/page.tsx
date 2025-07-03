@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SensorChart } from '@/components/app/SensorChart';
-import { ArrowLeft, HardDrive, Timer, Sigma, Wind, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, HardDrive, Timer, Sigma, Wind, SlidersHorizontal, Home } from 'lucide-react';
 import { ExportModal } from '@/components/app/ExportModal';
 import type { SensorDataPoint, RegimenType } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -78,9 +78,14 @@ export default function HistorialDetallePage() {
             <h1 className="text-2xl font-bold">{testData.fileName}</h1>
             <p className="text-muted-foreground">{testData.date}</p>
           </div>
-          <Button onClick={() => setIsExportModalOpen(true)}>
-            <HardDrive className="mr-2 h-4 w-4" /> Descargar Datos
-          </Button>
+          <div className='flex items-center gap-2'>
+            <Button variant="outline" onClick={() => router.push('/')}>
+              <Home className="mr-2 h-4 w-4" /> Inicio
+            </Button>
+            <Button onClick={() => setIsExportModalOpen(true)}>
+              <HardDrive className="mr-2 h-4 w-4" /> Descargar Datos
+            </Button>
+          </div>
         </div>
         <Card>
           <CardHeader>

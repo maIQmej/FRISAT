@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Wind, RotateCw, HardDrive, Database } from 'lucide-react';
+import { Wind, RotateCw, HardDrive, Database, Home } from 'lucide-react';
 
 export default function AdquisicionPage() {
   const router = useRouter();
@@ -205,6 +205,10 @@ export default function AdquisicionPage() {
                     <Button onClick={handleDownload}>
                       <HardDrive className="mr-2 h-4 w-4" /> Descargar Datos
                     </Button>
+                     <Button variant="ghost" size="icon" onClick={() => router.push('/')}>
+                        <Home className="h-4 w-4" />
+                        <span className="sr-only">Inicio</span>
+                      </Button>
                   </>
                 ) : (
                   <Button variant="destructive" onClick={handleStop}>

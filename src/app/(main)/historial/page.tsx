@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
+import { Eye, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const mockHistory = [
   { id: 1, fileName: 'prueba_motor_caliente', date: '2024-07-29 10:30', duration: '60s', sensors: 3, regimen: 'turbulento', samplesPerSecond: 10 },
@@ -15,14 +16,23 @@ const mockHistory = [
 ];
 
 export default function HistorialPage() {
+  const router = useRouter();
+
   return (
     <div className="container mx-auto max-w-6xl">
       <Card>
         <CardHeader>
-          <CardTitle>Historial de Pruebas</CardTitle>
-          <CardDescription>
-            Explore y administre todas las mediciones realizadas anteriormente.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Historial de Pruebas</CardTitle>
+              <CardDescription>
+                Explore y administre todas las mediciones realizadas anteriormente.
+              </CardDescription>
+            </div>
+            <Button variant="outline" onClick={() => router.push('/')}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Volver al Inicio
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>

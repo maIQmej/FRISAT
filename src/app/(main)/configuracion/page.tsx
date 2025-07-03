@@ -22,6 +22,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { ArrowLeft } from 'lucide-react';
 
 const formSchema = z.object({
   acquisitionTime: z.coerce.number().min(1, 'Debe ser al menos 1 segundo').max(3600, 'No puede exceder 1 hora'),
@@ -156,10 +157,13 @@ export default function ConfiguracionPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button type="button" variant="outline" onClick={handleReset}>
-                  Reiniciar
+                <Button type="button" variant="outline" onClick={() => router.push('/')}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Volver al Inicio
                 </Button>
                 <div className="flex gap-2">
+                  <Button type="button" variant="secondary" onClick={handleReset}>
+                    Reiniciar
+                  </Button>
                   <Button type="submit">Iniciar Adquisición</Button>
                 </div>
               </CardFooter>
