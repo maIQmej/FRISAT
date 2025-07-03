@@ -156,6 +156,9 @@ export const translations: Translations = {
     dataPointTime: 'Tiempo',
     dataPointValue: 'Valor',
     dataPointRegime: 'Régimen en este punto',
+    parameter: 'Parámetro',
+    value: 'Valor',
+    collectedData: 'Datos Recolectados',
   },
   en: {
     welcomeTitle: 'Welcome to FRISAT',
@@ -302,6 +305,9 @@ export const translations: Translations = {
     dataPointTime: 'Time',
     dataPointValue: 'Value',
     dataPointRegime: 'Regime at this point',
+    parameter: 'Parameter',
+    value: 'Value',
+    collectedData: 'Collected Data',
   },
   fr: {
     welcomeTitle: 'Bienvenue sur FRISAT',
@@ -448,6 +454,9 @@ export const translations: Translations = {
     dataPointTime: 'Temps',
     dataPointValue: 'Valeur',
     dataPointRegime: 'Régime à ce point',
+    parameter: 'Paramètre',
+    value: 'Valeur',
+    collectedData: 'Données Collectées',
   },
   de: {
     welcomeTitle: 'Willkommen bei FRISAT',
@@ -594,5 +603,8 @@ export const translations: Translations = {
     dataPointTime: 'Zeit',
     dataPointValue: 'Wert',
     dataPointRegime: 'Regime zu diesem Zeitpunkt',
+    parameter: 'Parameter',
+    value: 'Wert',
+    collectedData: 'Gesammelte Daten',
   }
 };
