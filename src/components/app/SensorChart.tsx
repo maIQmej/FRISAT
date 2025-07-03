@@ -21,45 +21,55 @@ interface SensorChartProps {
 export function SensorChart({ title, data, dataKeys, colors, onDrop, onDoubleClick }: SensorChartProps) {
   const { t } = useTranslation();
   
-  const chartConfig = dataKeys.reduce((config, key) => {
+  const chartConfig = useMemo(() => dataKeys.reduce((config, key) => {
     config[key] = {
       label: `${t('sensor')} ${parseInt(key.replace('sensor', ''))}`,
       color: `hsl(var(--${colors[key]}))`,
     };
     return config;
-  }, {} as any);
+  }, {} as any), [dataKeys, colors, t]);
   
   const primaryKey = dataKeys[0];
 
   const stats = useMemo(() => {
-    if (!data || data.length < 2 || dataKeys.length !== 1) {
-      return null;
+    if (!data || data.length < 2) {
+      return [];
     }
-    const key = dataKeys[0];
-    const values = data.map(p => p[key]).filter((v): v is number => typeof v === 'number' && isFinite(v));
-
-    if (values.length < 2) {
-      return null;
-    }
-
-    const count = values.length;
-    const sum = values.reduce((a, b) => a + b, 0);
-    const mean = sum / count;
-    const min = Math.min(...values);
-    const max = Math.max(...values);
     
-    // Sample standard deviation
-    const stdDev = Math.sqrt(
-      values.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / (count - 1)
-    );
+    return dataKeys.map((key) => {
+      const values = data.map(p => p[key]).filter((v): v is number => typeof v === 'number' && isFinite(v));
 
-    return {
-      mean: mean.toFixed(2),
-      stdDev: stdDev.toFixed(2),
-      min: min.toFixed(2),
-      max: max.toFixed(2),
-    };
-  }, [data, dataKeys]);
+      if (values.length < 2) {
+        return {
+          key,
+          label: chartConfig[key]?.label || key,
+          mean: "N/A",
+          stdDev: "N/A",
+          min: "N/A",
+          max: "N/A",
+        };
+      }
+
+      const count = values.length;
+      const sum = values.reduce((a, b) => a + b, 0);
+      const mean = sum / count;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      
+      const stdDev = Math.sqrt(
+        values.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / (count - 1)
+      );
+
+      return {
+        key,
+        label: chartConfig[key]?.label,
+        mean: mean.toFixed(2),
+        stdDev: stdDev.toFixed(2),
+        min: min.toFixed(2),
+        max: max.toFixed(2),
+      };
+    });
+  }, [data, dataKeys, chartConfig]);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData('sourceKey', primaryKey);
@@ -141,16 +151,26 @@ export function SensorChart({ title, data, dataKeys, colors, onDrop, onDoubleCli
           </AreaChart>
         </ChartContainer>
 
-        {stats && (
+        {stats && stats.length > 0 && (
           <>
             <Separator className="my-4" />
-            <div className="space-y-1 text-sm">
+            <div className="space-y-4 text-sm">
                 <h4 className="font-medium text-muted-foreground">{t('statistics')}</h4>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                    <div className="flex justify-between"><span>{t('statMean')}:</span> <span className="font-semibold tabular-nums">{stats.mean}</span></div>
-                    <div className="flex justify-between"><span>{t('statStdDev')}:</span> <span className="font-semibold tabular-nums">{stats.stdDev}</span></div>
-                    <div className="flex justify-between"><span>{t('statMin')}:</span> <span className="font-semibold tabular-nums">{stats.min}</span></div>
-                    <div className="flex justify-between"><span>{t('statMax')}:</span> <span className="font-semibold tabular-nums">{stats.max}</span></div>
+                <div className="space-y-3">
+                  {stats.map((stat) => (
+                    <div key={stat.key}>
+                      <h5 className="font-semibold flex items-center gap-2" style={{ color: chartConfig[stat.key]?.color }}>
+                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: chartConfig[stat.key]?.color }} />
+                        {stat.label}
+                      </h5>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 pl-4 text-xs">
+                          <div className="flex justify-between text-muted-foreground"><span>{t('statMean')}:</span> <span className="font-semibold tabular-nums text-foreground">{stat.mean}</span></div>
+                          <div className="flex justify-between text-muted-foreground"><span>{t('statStdDev')}:</span> <span className="font-semibold tabular-nums text-foreground">{stat.stdDev}</span></div>
+                          <div className="flex justify-between text-muted-foreground"><span>{t('statMin')}:</span> <span className="font-semibold tabular-nums text-foreground">{stat.min}</span></div>
+                          <div className="flex justify-between text-muted-foreground"><span>{t('statMax')}:</span> <span className="font-semibold tabular-nums text-foreground">{stat.max}</span></div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
             </div>
           </>
