@@ -7,13 +7,21 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import type { Configuration } from '@/lib/types';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import {FormProvider} from 'react-hook-form';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
   acquisitionTime: z.coerce.number().min(1, 'Debe ser al menos 1 segundo').max(3600, 'No puede exceder 1 hora'),
@@ -27,21 +35,29 @@ const formSchema = z.object({
     sensor5: z.boolean(),
   }).refine(data => Object.values(data).some(v => v), {
     message: 'Debe seleccionar al menos un sensor.',
-    path: ['sensor1'], // path to show error
+    path: ['sensor1'],
   }),
 });
 
 export default function ConfiguracionPage() {
   const router = useRouter();
   const { config, setConfig, setAcquisitionState, resetApp } = useApp();
-  
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [pendingConfig, setPendingConfig] = useState<Configuration | null>(null);
+
   const form = useForm<Configuration>({
     resolver: zodResolver(formSchema),
     defaultValues: config,
   });
 
   const onSubmit = (values: Configuration) => {
-    setConfig(values);
+    setPendingConfig(values);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleStartAcquisition = () => {
+    if (!pendingConfig) return;
+    setConfig(pendingConfig);
     setAcquisitionState('running');
     router.push('/adquisicion');
   };
@@ -50,10 +66,17 @@ export default function ConfiguracionPage() {
     resetApp();
     form.reset(config);
     router.push('/configuracion');
-  }
+  };
+
+  const activeSensorsText = pendingConfig
+    ? Object.entries(pendingConfig.sensors)
+        .filter(([, isActive]) => isActive)
+        .map(([key]) => `Sensor ${parseInt(key.replace('sensor', ''), 10)}`)
+        .join(', ')
+    : '';
 
   return (
-    <FormProvider {...form}>
+    <>
       <div className="container mx-auto max-w-4xl">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -144,6 +167,41 @@ export default function ConfiguracionPage() {
           </form>
         </Form>
       </div>
-    </FormProvider>
+
+      <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Confirmar Parámetros de la Prueba</DialogTitle>
+            <DialogDescription>
+              Por favor, verifique que los datos son correctos antes de iniciar.
+            </DialogDescription>
+          </DialogHeader>
+          {pendingConfig && (
+            <div className="grid gap-4 py-4 text-sm">
+              <div className="grid grid-cols-[1fr,auto] items-center gap-4">
+                <Label className="text-muted-foreground">Tiempo de adquisición</Label>
+                <p className="font-semibold">{pendingConfig.acquisitionTime} segundos</p>
+              </div>
+              <div className="grid grid-cols-[1fr,auto] items-center gap-4">
+                <Label className="text-muted-foreground">Muestras por segundo</Label>
+                <p className="font-semibold">{pendingConfig.samplesPerSecond} Hz</p>
+              </div>
+              <div className="grid grid-cols-[1fr,auto] items-center gap-4">
+                <Label className="text-muted-foreground">Nombre del archivo</Label>
+                <p className="font-semibold truncate">{pendingConfig.fileName}.xlsx</p>
+              </div>
+              <div className="grid grid-cols-[1fr,auto] items-start gap-4">
+                <Label className="text-muted-foreground">Sensores Activos</Label>
+                <p className="font-semibold text-right">{activeSensorsText || 'Ninguno'}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleStartAcquisition}>Confirmar e Iniciar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
