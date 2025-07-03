@@ -77,8 +77,10 @@ export const translations: Translations = {
     exportToUSB: 'Exportar a USB',
     exportToWifi: 'Exportar a Red',
     exportToDirect: 'Descargar Archivo',
+    exportToZip: 'Descargar ZIP',
     exportErrorUSB: 'Primero debe detectar un dispositivo USB.',
     downloadedFile: 'Se descargó el archivo',
+    multiExportDownloadToastDesc: 'Se ha iniciado la descarga de un archivo ZIP con {count} mediciones.',
 
     includeDate: 'Incluir fecha y hora en el nombre del archivo',
     finalFileName: 'Nombre final del archivo',
@@ -229,8 +231,10 @@ export const translations: Translations = {
     exportToUSB: 'Export to USB',
     exportToWifi: 'Export to Network',
     exportToDirect: 'Download File',
+    exportToZip: 'Download ZIP',
     exportErrorUSB: 'You must detect a USB device first.',
     downloadedFile: 'The file has been downloaded',
+    multiExportDownloadToastDesc: 'A ZIP file download with {count} measurements has started.',
 
     includeDate: 'Include date and time in filename',
     finalFileName: 'Final filename',
@@ -381,8 +385,10 @@ export const translations: Translations = {
     exportToUSB: 'Exporter vers USB',
     exportToWifi: 'Exporter vers le réseau',
     exportToDirect: 'Télécharger le Fichier',
+    exportToZip: 'Télécharger ZIP',
     exportErrorUSB: 'Vous devez d\'abord détecter un périphérique USB.',
     downloadedFile: 'Le fichier a été téléchargé',
+    multiExportDownloadToastDesc: 'Un téléchargement de fichier ZIP avec {count} mesures a commencé.',
     
     includeDate: "Inclure la date et l'heure dans le nom du fichier",
     finalFileName: "Nom final du fichier",
@@ -533,8 +539,10 @@ export const translations: Translations = {
     exportToUSB: 'Auf USB exportieren',
     exportToWifi: 'Ins Netzwerk exportieren',
     exportToDirect: 'Datei herunterladen',
+    exportToZip: 'ZIP herunterladen',
     exportErrorUSB: 'Sie müssen zuerst ein USB-Gerät erkennen.',
     downloadedFile: 'Die Datei wurde heruntergeladen',
+    multiExportDownloadToastDesc: 'Ein ZIP-Datei-Download mit {count} Messungen wurde gestartet.',
 
     includeDate: 'Datum und Uhrzeit in den Dateinamen aufnehmen',
     finalFileName: 'Endgültiger Dateiname',
