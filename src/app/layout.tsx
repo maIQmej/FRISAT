@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/app/ThemeProvider';
 
 export const metadata: Metadata = {
-  title: 'SensorSync',
+  title: 'FRISAT',
   description: 'Sistema de adquisición de datos',
 };
 

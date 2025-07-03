@@ -20,7 +20,7 @@ const Logo = () => {
               <path d="M208,88H184a32,32,0,0,0,0,64h24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path>
           </svg>
           <h1 className="text-xl font-bold font-headline">
-              SensorSync
+              FRISAT
           </h1>
         </div>
     );
