@@ -98,7 +98,7 @@ export default function ConfiguracionPage() {
                       <FormItem>
                         <FormLabel>{t('acqTime')}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="Ej: 60" {...field} />
+                          <Input type="number" inputMode="numeric" placeholder="Ej: 60" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -111,7 +111,7 @@ export default function ConfiguracionPage() {
                       <FormItem>
                         <FormLabel>{t('samplesPerSecond')}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="Ej: 10" {...field} />
+                          <Input type="number" inputMode="numeric" placeholder="Ej: 10" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -125,7 +125,7 @@ export default function ConfiguracionPage() {
                     <FormItem>
                       <FormLabel>{t('fileName')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ej: prueba_motor_caliente" {...field} />
+                        <Input placeholder="Ej: prueba_motor_caliente" inputMode="text" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
