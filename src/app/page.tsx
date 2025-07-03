@@ -39,19 +39,19 @@ export default function WelcomePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 p-8 pt-0 sm:grid-cols-3">
-          <Link href="/configuracion" passHref legacyBehavior>
+          <Link href="/configuracion" asChild>
             <Button size="lg" className="h-24 w-full flex-col text-lg">
               <PlayCircle className="mb-2 h-7 w-7" />
               <span>{t('newTest')}</span>
             </Button>
           </Link>
-          <Link href="/historial" passHref legacyBehavior>
+          <Link href="/historial" asChild>
             <Button size="lg" variant="secondary" className="h-24 w-full flex-col text-lg">
               <History className="mb-2 h-7 w-7" />
               <span>{t('history')}</span>
             </Button>
           </Link>
-          <Link href="/ayuda" passHref legacyBehavior>
+          <Link href="/ayuda" asChild>
             <Button size="lg" variant="secondary" className="h-24 w-full flex-col text-lg">
               <HelpCircle className="mb-2 h-7 w-7" />
               <span>{t('help')}</span>
