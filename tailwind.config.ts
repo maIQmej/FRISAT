@@ -10,7 +10,7 @@ export default {
   theme: {
     extend: {
       backgroundImage: {
-        'main-background': "url('/fondo.png')",
+        'main-background': "url('/fondo1.gif')",
       },
       fontFamily: {
         body: ['Inter', 'sans-serif'],
