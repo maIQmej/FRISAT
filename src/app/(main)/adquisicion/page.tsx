@@ -108,9 +108,9 @@ export default function AdquisicionPage() {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex-grow overflow-y-auto pr-4 space-y-6 py-4">
+        <div className="flex-grow overflow-y-auto pr-4 space-y-4 py-4">
           <Progress value={progress} />
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {activeSensors.map((sensorKey, index) => (
               <SensorChart
                 key={sensorKey}

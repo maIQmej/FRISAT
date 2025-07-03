@@ -26,7 +26,7 @@ export function SensorChart({ title, data, dataKey, color }: SensorChartProps) {
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[200px] w-full">
+        <ChartContainer config={chartConfig} className="h-[160px] w-full">
           <AreaChart data={data} margin={{ left: 12, right: 12, top: 12 }}>
             <CartesianGrid vertical={false} />
             <XAxis
