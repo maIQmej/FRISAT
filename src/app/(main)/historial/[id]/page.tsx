@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,13 +47,16 @@ export default function HistorialDetallePage() {
   const router = useRouter();
   const { t, t_regimen } = useTranslation();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [sensorData, setSensorData] = useState<SensorDataPoint[]>([]);
 
   const testId = params.id ? parseInt(params.id as string, 10) : null;
   const testData = useMemo(() => testId ? mockHistory.find(t => t.id === testId) : null, [testId]);
   
-  const sensorData = useMemo(() => {
-    if (!testData) return [];
-    return generateMockSensorData(testData.duration, testData.samplesPerSecond, testData.sensors);
+  useEffect(() => {
+    if (testData) {
+      const data = generateMockSensorData(testData.duration, testData.samplesPerSecond, testData.sensors);
+      setSensorData(data);
+    }
   }, [testData]);
 
   if (!testData) {
