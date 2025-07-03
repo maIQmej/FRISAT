@@ -87,8 +87,11 @@ export default function AdquisicionPage() {
 
     const intervalTime = 1000 / config.samplesPerSecond;
 
-    const generateDataPoint = (time: number): SensorDataPoint => {
-      const point: SensorDataPoint = { time: parseFloat(time.toFixed(2)) };
+    const generateDataPoint = (time: number, currentRegimen: RegimenType): SensorDataPoint => {
+      const point: SensorDataPoint = {
+        time: parseFloat(time.toFixed(2)),
+        regimen: currentRegimen,
+      };
       activeSensors.forEach(sensorKey => {
         point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2));
       });
@@ -98,11 +101,17 @@ export default function AdquisicionPage() {
     const runAcquisition = () => {
       elapsedTimeRef.current = 0;
       setElapsedTime(0);
-      setLocalSensorData([generateDataPoint(0)]);
+      const initialRegimen = 'indeterminado';
+      setRegimen(initialRegimen);
+      setLocalSensorData([generateDataPoint(0, initialRegimen)]);
       
       const interval = setInterval(() => {
         const newTime = elapsedTimeRef.current + (1 / config.samplesPerSecond);
         elapsedTimeRef.current = newTime;
+
+        let currentRegimen: RegimenType;
+        const results: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
+        currentRegimen = results[Math.floor(Math.random() * results.length)];
 
         if (newTime >= config.acquisitionTime) {
           clearInterval(interval);
@@ -110,27 +119,20 @@ export default function AdquisicionPage() {
           
           setElapsedTime(config.acquisitionTime);
           setProgress(100);
+          setRegimen(currentRegimen);
 
           setLocalSensorData(prevData => {
-            const finalData = [...prevData, generateDataPoint(config.acquisitionTime)];
+            const finalData = [...prevData, generateDataPoint(config.acquisitionTime, currentRegimen)];
             setSensorData(finalData);
             return finalData;
           });
           setAcquisitionState('completed');
-          
-          const finalRegimenResults: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
-          const finalRandomResult = finalRegimenResults[Math.floor(Math.random() * finalRegimenResults.length)];
-          setRegimen(finalRandomResult);
-          
           setIsResultsModalOpen(true);
         } else {
-          const results: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
-          const randomResult = results[Math.floor(Math.random() * results.length)];
-
           setElapsedTime(newTime);
           setProgress((newTime / config.acquisitionTime) * 100);
-          setLocalSensorData(prevData => [...prevData, generateDataPoint(newTime)]);
-          setRegimen(randomResult);
+          setLocalSensorData(prevData => [...prevData, generateDataPoint(newTime, currentRegimen)]);
+          setRegimen(currentRegimen);
         }
       }, intervalTime);
       intervalRef.current = interval;
@@ -237,7 +239,7 @@ export default function AdquisicionPage() {
             <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {chartGroups.map((group, groupIndex) => {
                 const primaryKey = group[0];
-                const title = group.map(key => `${t('sensor')} ${parseInt(key.replace('sensor', ''))}`).join(' & ');
+                const title = group.length > 1 ? t('sensorSelection') : `${t('sensor')} ${parseInt(primaryKey.replace('sensor', ''))}`;
                 return (
                   <SensorChart
                     key={`${primaryKey}-${groupIndex}`}

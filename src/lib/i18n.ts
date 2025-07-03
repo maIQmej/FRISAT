@@ -138,6 +138,7 @@ export const translations: Translations = {
     dataPointModalDesc: 'Valores de los sensores en el instante de tiempo seleccionado.',
     dataPointTime: 'Tiempo',
     dataPointValue: 'Valor',
+    dataPointRegime: 'Régimen en este punto',
   },
   en: {
     welcomeTitle: 'Welcome to FRISAT',
@@ -266,6 +267,7 @@ export const translations: Translations = {
     dataPointModalDesc: 'Sensor values at the selected time instance.',
     dataPointTime: 'Time',
     dataPointValue: 'Value',
+    dataPointRegime: 'Regime at this point',
   },
   fr: {
     welcomeTitle: 'Bienvenue sur FRISAT',
@@ -394,6 +396,7 @@ export const translations: Translations = {
     dataPointModalDesc: 'Valeurs des capteurs à l\'instant sélectionné.',
     dataPointTime: 'Temps',
     dataPointValue: 'Valeur',
+    dataPointRegime: 'Régime à ce point',
   },
   de: {
     welcomeTitle: 'Willkommen bei FRISAT',
@@ -522,5 +525,6 @@ export const translations: Translations = {
     dataPointModalDesc: 'Sensorwerte zum ausgewählten Zeitpunkt.',
     dataPointTime: 'Zeit',
     dataPointValue: 'Wert',
+    dataPointRegime: 'Regime zu diesem Zeitpunkt',
   }
 };

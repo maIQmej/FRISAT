@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { SensorChart } from '@/components/app/SensorChart';
 import { ArrowLeft, HardDrive, Timer, Sigma, Wind, SlidersHorizontal, Home } from 'lucide-react';
 import { ExportModal } from '@/components/app/ExportModal';
-import type { SensorDataPoint } from '@/lib/types';
+import { DataPointModal } from '@/components/app/DataPointModal';
+import type { SensorDataPoint, RegimenType } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -28,12 +29,15 @@ const sensorColors: { [key: string]: string } = {
   sensor5: 'chart-5',
 };
 
-const generateMockSensorData = (duration: number, samplesPerSecond: number, sensors: readonly string[]): SensorDataPoint[] => {
+const generateMockSensorData = (duration: number, samplesPerSecond: number, sensors: readonly string[], overallRegimen: RegimenType): SensorDataPoint[] => {
   const data: SensorDataPoint[] = [];
   const totalSamples = duration * samplesPerSecond;
   for (let i = 0; i <= totalSamples; i++) {
     const time = i / samplesPerSecond;
-    const point: SensorDataPoint = { time: parseFloat(time.toFixed(2)) };
+    const point: SensorDataPoint = {
+      time: parseFloat(time.toFixed(2)),
+      regimen: overallRegimen, // For mock data, use the overall test regimen for each point
+    };
     sensors.forEach((sensorKey, index) => {
       point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (index + 1) * 0.5)).toFixed(2));
     });
@@ -48,16 +52,23 @@ export default function HistorialDetallePage() {
   const { t, t_regimen } = useTranslation();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [sensorData, setSensorData] = useState<SensorDataPoint[]>([]);
+  const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
+  const [selectedDataPoint, setSelectedDataPoint] = useState<SensorDataPoint | null>(null);
 
   const testId = params.id ? parseInt(params.id as string, 10) : null;
   const testData = useMemo(() => testId ? mockHistory.find(t => t.id === testId) : null, [testId]);
   
   useEffect(() => {
     if (testData) {
-      const data = generateMockSensorData(testData.duration, testData.samplesPerSecond, testData.sensors);
+      const data = generateMockSensorData(testData.duration, testData.samplesPerSecond, testData.sensors, testData.regimen);
       setSensorData(data);
     }
   }, [testData]);
+  
+  const handleDataPointClick = (dataPoint: SensorDataPoint) => {
+    setSelectedDataPoint(dataPoint);
+    setIsDataPointModalOpen(true);
+  };
 
   if (!testData) {
     return (
@@ -145,6 +156,7 @@ export default function HistorialDetallePage() {
                 dataKeys={[sensorKey]}
                 colors={sensorColors}
                 onDrop={() => {}} // No-op for historical view
+                onDataPointClick={handleDataPointClick}
               />
             ))}
           </CardContent>
@@ -154,6 +166,12 @@ export default function HistorialDetallePage() {
         open={isExportModalOpen}
         onOpenChange={setIsExportModalOpen}
         filesToExport={[testData.fileName]}
+      />
+      <DataPointModal
+        open={isDataPointModalOpen}
+        onOpenChange={setIsDataPointModalOpen}
+        dataPoint={selectedDataPoint}
+        activeSensors={testData.sensors as string[]}
       />
     </>
   );
