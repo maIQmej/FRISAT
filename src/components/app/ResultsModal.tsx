@@ -11,7 +11,7 @@ import {
   DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog';
-import { HardDrive, RotateCw, Sigma, Timer, FileText, Wind } from 'lucide-react';
+import { HardDrive, RotateCw, Sigma, Timer, FileText, Wind, Database } from 'lucide-react';
 import type { Configuration, SensorDataPoint, RegimenType } from '@/lib/types';
 
 interface ResultsModalProps {
@@ -26,14 +26,19 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen }
   const router = useRouter();
   const { resetApp } = useApp();
 
-  const handleNewConfiguration = () => {
+  const handleNewTest = () => {
     onOpenChange(false);
     resetApp();
   };
   
-  const handleExport = () => {
+  const handleDownload = () => {
     onOpenChange(false);
     router.push('/exportacion');
+  };
+
+  const handleHistory = () => {
+    onOpenChange(false);
+    router.push('/historial');
   };
 
   const activeSensorsCount = Object.values(config.sensors).filter(Boolean).length;
@@ -88,12 +93,15 @@ export function ResultsModal({ open, onOpenChange, config, sensorData, regimen }
             <p className="text-lg">¿Qué desea hacer ahora?</p>
           </div>
         </div>
-        <DialogFooter className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <Button variant="outline" onClick={handleNewConfiguration}>
-            <RotateCw className="mr-2 h-4 w-4" /> Nueva Configuración
+        <DialogFooter className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <Button variant="outline" onClick={handleNewTest}>
+            <RotateCw className="mr-2 h-4 w-4" /> Nueva Prueba
           </Button>
-          <Button onClick={handleExport}>
-            <HardDrive className="mr-2 h-4 w-4" /> Exportar Datos
+          <Button variant="secondary" onClick={handleHistory}>
+            <Database className="mr-2 h-4 w-4" /> Ver Historial
+          </Button>
+          <Button onClick={handleDownload}>
+            <HardDrive className="mr-2 h-4 w-4" /> Descargar Datos
           </Button>
         </DialogFooter>
       </DialogContent>
