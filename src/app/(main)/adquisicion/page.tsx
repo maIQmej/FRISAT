@@ -97,7 +97,7 @@ export default function AdquisicionPage() {
         time: parseFloat(time.toFixed(2)),
       };
 
-      const results: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera'];
+      const results: RegimenType[] = ['flujo laminar', 'turbulento'];
       point.regimen = results[Math.floor(Math.random() * results.length)];
 
       activeSensors.forEach(sensorKey => {

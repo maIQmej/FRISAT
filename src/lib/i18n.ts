@@ -142,11 +142,10 @@ export const translations: Translations = {
     faqStop: '¿Puedo detener una adquisición antes de que termine?',
     faqStopDesc: 'Sí, en la pantalla de \'Adquisición\', puede presionar el botón \'Detener Adquisición\' en cualquier momento. Los datos recolectados hasta ese punto se guardarán y podrá proceder a la pantalla de post-test.',
     faqAIPrediction: '¿Cómo funciona la predicción de régimen en tiempo real?',
-    faqAIPredictionDesc: 'Actualmente, la identificación del régimen de flujo se basa en un modelo simulado. En futuras versiones, FRISAT se integrará con un potente backend de análisis escrito en Python. Este sistema utilizará los datos de los sensores en tiempo real para alimentar un modelo de inteligencia artificial (IA) que predecirá con alta precisión el régimen de flujo (laminar, en la frontera o turbulento), proporcionando insights más rápidos y fiables durante sus pruebas.',
+    faqAIPredictionDesc: 'Actualmente, la identificación del régimen de flujo se basa en un modelo simulado. En futuras versiones, FRISAT se integrará con un potente backend de análisis escrito en Python. Este sistema utilizará los datos de los sensores en tiempo real para alimentar un modelo de inteligencia artificial (IA) que predecirá con alta precisión el régimen de flujo (laminar o turbulento), proporcionando insights más rápidos y fiables durante sus pruebas.',
 
     regimenLaminar: 'Flujo laminar',
     regimenTurbulento: 'Turbulento',
-    regimenFrontera: 'En la frontera',
     regimenIndeterminado: 'Indeterminado',
 
     statistics: 'Estadísticas',
@@ -298,11 +297,10 @@ export const translations: Translations = {
     faqStop: 'Can I stop an acquisition before it finishes?',
     faqStopDesc: 'Yes, on the \'Acquisition\' screen, you can press the \'Stop Acquisition\' button at any time. The data collected up to that point will be saved and you can proceed to the post-test screen.',
     faqAIPrediction: 'How does real-time regime prediction work?',
-    faqAIPredictionDesc: 'Currently, flow regime identification is based on a simulated model. In future versions, FRISAT will integrate with a powerful analysis backend written in Python. This system will use real-time sensor data to feed an artificial intelligence (AI) model that will predict the flow regime (laminar, on the border, or turbulent) with high accuracy, providing faster and more reliable insights during your tests.',
+    faqAIPredictionDesc: 'Currently, flow regime identification is based on a simulated model. In future versions, FRISAT will integrate with a powerful analysis backend written in Python. This system will use real-time sensor data to feed an artificial intelligence (AI) model that will predict the flow regime (laminar or turbulent) with high accuracy, providing faster and more reliable insights during your tests.',
 
     regimenLaminar: 'Laminar Flow',
     regimenTurbulento: 'Turbulent',
-    regimenFrontera: 'On the border',
     regimenIndeterminado: 'Undetermined',
 
     statistics: 'Statistics',
@@ -454,11 +452,10 @@ export const translations: Translations = {
     faqStop: 'Puis-je arrêter une acquisition avant qu\'elle ne se termine ?',
     faqStopDesc: 'Oui, sur l\'écran \'Acquisition\', vous pouvez appuyer sur le bouton \'Arrêter l\'Acquisition\' à tout moment. Les données collectées jusqu\'à ce point seront sauvegardées et vous pourrez passer à l\'écran post-test.',
     faqAIPrediction: 'Comment fonctionne la prédiction de régime en temps réel ?',
-    faqAIPredictionDesc: "Actuellement, l'identification du régime d'écoulement est basée sur un modèle simulé. Dans les versions futures, FRISAT s'intégrera à un puissant backend d'analyse écrit en Python. Ce système utilisera les données des capteurs en temps réel pour alimenter un modèle d'intelligence artificielle (IA) qui prédira avec une grande précision le régime d'écoulement (laminaire, à la frontière ou turbulent), fournissant des informations plus rapides et plus fiables lors de vos tests.",
+    faqAIPredictionDesc: "Actuellement, l'identification du régime d'écoulement est basée sur un modèle simulé. Dans les versions futures, FRISAT s'intégrera à un puissant backend d'analyse écrit en Python. Ce système utilisera les données des capteurs en temps réel pour alimenter un modèle d'intelligence artificielle (IA) qui prédira avec une grande précision le régime d'écoulement (laminaire ou turbulent), fournissant des informations plus rapides et plus fiables lors de vos tests.",
 
     regimenLaminar: 'Écoulement laminaire',
     regimenTurbulento: 'Turbulent',
-    regimenFrontera: 'À la frontière',
     regimenIndeterminado: 'Indéterminé',
 
     statistics: 'Statistiques',
@@ -610,11 +607,10 @@ export const translations: Translations = {
     faqStop: 'Kann ich eine Erfassung abbrechen, bevor sie abgeschlossen ist?',
     faqStopDesc: 'Ja, auf dem Bildschirm \'Erfassung\' können Sie jederzeit die Schaltfläche \'Erfassung stoppen\' drücken. Die bis zu diesem Zeitpunkt gesammelten Daten werden gespeichert und Sie können zum Nach-Test-Bildschirm übergehen.',
     faqAIPrediction: 'Wie funktioniert die Echtzeit-Regime-Vorhersage?',
-    faqAIPredictionDesc: 'Derzeit basiert die Identifizierung des Strömungsregimes auf einem simulierten Modell. In zukünftigen Versionen wird FRISAT in ein leistungsstarkes Analyse-Backend integriert, das in Python geschrieben ist. Dieses System wird Echtzeit-Sensordaten verwenden, um ein künstliches Intelligenz (KI)-Modell zu füttern, das das Strömungsregime (laminar, an der Grenze oder turbulent) mit hoher Genauigkeit vorhersagt und so schnellere und zuverlässigere Einblicke während Ihrer Tests liefert.',
+    faqAIPredictionDesc: 'Derzeit basiert die Identifizierung des Strömungsregimes auf einem simulierten Modell. In zukünftigen Versionen wird FRISAT in ein leistungsstarkes Analyse-Backend integriert, das in Python geschrieben ist. Dieses System wird Echtzeit-Sensordaten verwenden, um ein künstliches Intelligenz (KI)-Modell zu füttern, das das Strömungsregime (laminar oder turbulent) mit hoher Genauigkeit vorhersagt und so schnellere und zuverlässigere Einblicke während Ihrer Tests liefert.',
 
     regimenLaminar: 'Laminare Strömung',
     regimenTurbulento: 'Turbulent',
-    regimenFrontera: 'An der Grenze',
     regimenIndeterminado: 'Unbestimmt',
 
     statistics: 'Statistiken',

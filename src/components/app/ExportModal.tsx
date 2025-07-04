@@ -122,7 +122,7 @@ const generateMockDataForFileName = (fileName: string) => {
     const samplesPerSecond = [5, 10, 20, 50][Math.floor(Math.random() * 4)];
     const numSensors = 1 + Math.floor(Math.random() * 5);
     const sensorKeys = Array.from({ length: numSensors }, (_, i) => `sensor${i + 1}`);
-    const regimen = ['flujo laminar', 'turbulento', 'en la frontera'][Math.floor(Math.random() * 3)] as RegimenType;
+    const regimen = (['flujo laminar', 'turbulento'] as const)[Math.floor(Math.random() * 2)];
     
     const config: Configuration = {
         fileName,

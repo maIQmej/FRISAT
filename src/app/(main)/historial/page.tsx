@@ -18,7 +18,7 @@ import type { RegimenType } from '@/lib/types';
 import { getHistory, type HistoryEntry } from '@/actions/getHistory';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const regimenTypes: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera', 'indeterminado'];
+const regimenTypes: RegimenType[] = ['flujo laminar', 'turbulento', 'indeterminado'];
 
 export default function HistorialPage() {
   const router = useRouter();

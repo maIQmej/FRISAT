@@ -15,7 +15,6 @@ export const useTranslation = () => {
     const keyMap: { [key in RegimenType]: string } = {
       'flujo laminar': 'regimenLaminar',
       'turbulento': 'regimenTurbulento',
-      'en la frontera': 'regimenFrontera',
       'indeterminado': 'regimenIndeterminado'
     };
     const key = keyMap[regimen];
