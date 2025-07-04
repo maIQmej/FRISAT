@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useRef, useMemo } from 'next/navigation';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { Progress } from '@/components/ui/progress';
