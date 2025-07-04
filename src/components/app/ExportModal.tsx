@@ -21,15 +21,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Wifi, Usb, HardDrive, Loader2, CheckCircle, FileText, FileSpreadsheet, Search, XCircle, Save } from 'lucide-react';
+import { HardDrive, Loader2, CheckCircle, FileText, FileSpreadsheet, Save, Download } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { Configuration, SensorDataPoint, RegimenType, Language } from '@/lib/types';
 import { saveExportedFiles } from '@/actions/saveExport';
+import { getHistoryEntry } from '@/actions/getHistory';
+import JSZip from 'jszip';
 
 type ExportState = 'idle' | 'exporting' | 'success' | 'error';
-type USBStatus = 'idle' | 'checking' | 'found' | 'not_found';
 
 interface ExportModalProps {
   open: boolean;
@@ -42,121 +43,22 @@ interface ExportModalProps {
 }
 
 const formBaseSchema = {
-  exportMethod: z.enum(['wifi', 'usb', 'server']),
-  exportPath: z.string().optional(),
+  exportMethod: z.enum(['server', 'download']),
 };
 
 const singleFileFormSchema = z.object({
   ...formBaseSchema,
   fileName: z.string().min(1, 'El nombre es requerido').regex(/^[a-zA-Z0-9_-]+$/, 'Solo letras, números, guiones y guiones bajos'),
   includeDate: z.boolean(),
-}).refine(data => data.exportMethod === 'wifi' ? !!data.exportPath && data.exportPath.length > 0 : true, {
-  message: 'La ruta es requerida para exportación WiFi',
-  path: ['exportPath'],
 });
 
 type SingleFileFormValues = z.infer<typeof singleFileFormSchema>;
 
 const multiFileFormSchema = z.object({
   ...formBaseSchema,
-}).refine(data => data.exportMethod === 'wifi' ? !!data.exportPath && data.exportPath.length > 0 : true, {
-  message: 'La ruta es requerida para exportación WiFi',
-  path: ['exportPath'],
 });
 
 type MultiFileFormValues = z.infer<typeof multiFileFormSchema>;
-
-const UsbDetector = ({ usbStatus, onDetect, onRetry }: { usbStatus: USBStatus, onDetect: () => void, onRetry: () => void }) => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="space-y-3 rounded-md border p-4">
-      <Label className='font-semibold'>{t('usbExportMethod')}</Label>
-      <div className="flex flex-col items-center justify-center text-center min-h-[100px]">
-        {usbStatus === 'idle' && (
-          <Button onClick={onDetect} className="w-full sm:w-auto">
-            <Search className="mr-2 h-4 w-4" />
-            {t('detectUSBDevice')}
-          </Button>
-        )}
-        {usbStatus === 'checking' && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            <span>{t('detectingUSB')}</span>
-          </div>
-        )}
-        {usbStatus === 'not_found' && (
-          <div className="text-destructive space-y-2">
-            <XCircle className="mx-auto h-8 w-8" />
-            <div>
-              <p className="font-semibold">{t('usbNotFound')}</p>
-              <p className="text-xs">{t('usbNotFoundDesc')}</p>
-            </div>
-            <Button onClick={onRetry} variant="outline" size="sm">{t('retry')}</Button>
-          </div>
-        )}
-        {usbStatus === 'found' && (
-          <div className="text-green-600 dark:text-green-500 space-y-1">
-            <CheckCircle className="mx-auto h-8 w-8" />
-            <p className="font-semibold">{t('usbFound')}</p>
-            <p className="text-sm font-mono text-muted-foreground">/mnt/FRISAT_DRIVE</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Mock data and generator for multi-file export from History
-const mockHistoryForExport: {
-    [key: string]: {
-        config: Configuration;
-        sensorData: SensorDataPoint[];
-        startTimestamp: Date;
-    }
-} = {};
-
-const generateMockDataForFileName = (fileName: string) => {
-    if (mockHistoryForExport[fileName]) return mockHistoryForExport[fileName];
-
-    const duration = 30 + Math.random() * 120;
-    const samplesPerSecond = [5, 10, 20, 50][Math.floor(Math.random() * 4)];
-    const numSensors = 1 + Math.floor(Math.random() * 5);
-    const sensorKeys = Array.from({ length: numSensors }, (_, i) => `sensor${i + 1}`);
-    const regimen = (['flujo laminar', 'turbulento'] as const)[Math.floor(Math.random() * 2)];
-    
-    const config: Configuration = {
-        fileName,
-        acquisitionTime: duration,
-        samplesPerSecond,
-        sensors: {
-            sensor1: sensorKeys.includes('sensor1'),
-            sensor2: sensorKeys.includes('sensor2'),
-            sensor3: sensorKeys.includes('sensor3'),
-            sensor4: sensorKeys.includes('sensor4'),
-            sensor5: sensorKeys.includes('sensor5'),
-        }
-    };
-
-    const sensorData: SensorDataPoint[] = [];
-    const totalSamples = duration * samplesPerSecond;
-    for (let i = 0; i <= totalSamples; i++) {
-        const time = i / samplesPerSecond;
-        const point: SensorDataPoint = {
-        time: parseFloat(time.toFixed(2)),
-        regimen: regimen,
-        };
-        sensorKeys.forEach((sensorKey, index) => {
-        point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (index + 1) * 0.5)).toFixed(2));
-        });
-        sensorData.push(point);
-    }
-    
-    const startTimestamp = new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 5);
-
-    mockHistoryForExport[fileName] = { config, sensorData, startTimestamp };
-    return mockHistoryForExport[fileName];
-}
 
 const generateCsvContent = (
     config: Configuration,
@@ -237,7 +139,6 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
   const regimen = propRegimen || appRegimen;
   const { t } = useTranslation();
   const [exportState, setExportState] = useState<ExportState>('idle');
-  const [usbStatus, setUsbStatus] = useState<USBStatus>('idle');
   const { toast } = useToast();
 
   const isMultiExport = filesToExport.length > 1;
@@ -249,7 +150,6 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
       exportMethod: 'server',
       fileName: singleFileName,
       includeDate: true,
-      exportPath: '/mediciones/wifi/',
     },
   });
 
@@ -257,12 +157,10 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     resolver: zodResolver(multiFileFormSchema),
     defaultValues: {
       exportMethod: 'server',
-      exportPath: '/mediciones/exportacion_masiva/',
     },
   });
 
   const form = isMultiExport ? multiFileForm : singleFileForm;
-  const watchedExportMethod = form.watch('exportMethod');
 
   useEffect(() => {
     if (open) {
@@ -270,20 +168,14 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
         exportMethod: 'server',
         fileName: singleFileName,
         includeDate: true,
-        exportPath: '/mediciones/wifi/',
       });
       multiFileForm.reset({
         exportMethod: 'server',
-        exportPath: '/mediciones/exportacion_masiva/',
       });
       setExportState('idle');
-      setUsbStatus('idle');
     }
   }, [open, singleFileName, filesToExport, singleFileForm, multiFileForm]);
 
-  useEffect(() => {
-    setUsbStatus('idle');
-  }, [watchedExportMethod]);
   
   const watchedFileName = singleFileForm.watch('fileName');
   const watchedIncludeDate = singleFileForm.watch('includeDate');
@@ -298,71 +190,114 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     return `${finalName}.csv`;
   };
 
-  const handleDetectUsb = () => {
-    setUsbStatus('checking');
-    setTimeout(() => {
-        setUsbStatus('found');
-    }, 1500);
-  };
-
   const handleExport = async (values: SingleFileFormValues | MultiFileFormValues) => {
-    if (values.exportMethod === 'usb' && usbStatus !== 'found') {
-      toast({ title: t('exportErrorToastTitle'), description: t('exportErrorUSB'), variant: 'destructive' });
-      return;
-    }
-
     setExportState('exporting');
-    const toastDescription = isMultiExport
-      ? t('exportingMultipleToastDesc').replace('{count}', filesToExport.length.toString())
-      : `${t('exportingToastDesc')} "${(values as SingleFileFormValues).fileName}" via ${values.exportMethod === 'wifi' ? 'WiFi' : values.exportMethod === 'usb' ? 'USB' : t('serverExportMethod') }.`;
-    
-    toast({
-      title: t('exportingToastTitle'),
-      description: toastDescription,
-    });
     
     if (values.exportMethod === 'server') {
-      const filesToSave: { fileName: string; csvContent: string }[] = [];
-      if (isMultiExport) {
-        for (const fileName of filesToExport) {
-            const mockData = generateMockDataForFileName(fileName);
-            const fileRegimen = mockData.sensorData?.[0]?.regimen;
-            const csvContent = generateCsvContent(mockData.config, mockData.sensorData, mockData.startTimestamp, language, t, fileRegimen);
-            filesToSave.push({ fileName: `${fileName}.csv`, csvContent });
-        }
-      } else {
-        const fileName = getFinalFilename();
-        const currentConfig = { ...config, fileName: (values as SingleFileFormValues).fileName };
-        const csvContent = generateCsvContent(currentConfig, sensorData, startTimestamp, language, t, regimen);
-        filesToSave.push({ fileName, csvContent });
-      }
-
-      try {
-        const result = await saveExportedFiles(filesToSave);
-        if (result.success) {
-          setExportState('success');
-          const successDesc = isMultiExport ? t('multiExportSaveToastDesc').replace('{count}', filesToSave.length.toString()) : t('savedFile').replace('{fileName}', filesToSave[0].fileName);
-          toast({ title: t('exportSuccessToastTitle'), description: successDesc });
+        const toastDescription = isMultiExport
+          ? t('exportingMultipleToastDesc').replace('{count}', filesToExport.length.toString())
+          : `${t('exportingToastDesc')} "${(values as SingleFileFormValues).fileName}"`;
+        toast({ title: t('exportingToastTitle'), description: toastDescription });
+        
+        const filesToSave: { fileName: string; csvContent: string }[] = [];
+        if (isMultiExport) {
+            for (const fileName of filesToExport) {
+                const entryData = await getHistoryEntry(`${fileName}.csv`);
+                if (entryData) {
+                    const activeSensors = Object.keys(entryData.sensorData[0] || {}).filter(k => k.startsWith('sensor'));
+                    const reconstructedConfig: Configuration = {
+                        fileName: entryData.fileName,
+                        acquisitionTime: parseInt(entryData.duration),
+                        samplesPerSecond: entryData.samplesPerSecond,
+                        sensors: {
+                            sensor1: activeSensors.includes('sensor1'),
+                            sensor2: activeSensors.includes('sensor2'),
+                            sensor3: activeSensors.includes('sensor3'),
+                            sensor4: activeSensors.includes('sensor4'),
+                            sensor5: activeSensors.includes('sensor5'),
+                        }
+                    };
+                    const fileStartTimestamp = new Date(entryData.date);
+                    const csvContent = generateCsvContent(reconstructedConfig, entryData.sensorData, fileStartTimestamp, language, t, entryData.regimen);
+                    filesToSave.push({ fileName: `${entryData.fileName}.csv`, csvContent });
+                }
+            }
         } else {
-          throw new Error(result.message);
+            const fileName = getFinalFilename();
+            const currentConfig = { ...config, fileName: (values as SingleFileFormValues).fileName };
+            const csvContent = generateCsvContent(currentConfig, sensorData, startTimestamp, language, t, regimen);
+            filesToSave.push({ fileName, csvContent });
         }
-      } catch (error) {
-        setExportState('error');
-        toast({ title: t('exportErrorToastTitle'), description: (error as Error).message, variant: 'destructive' });
-      }
-      return;
-    }
 
-    setTimeout(() => {
-      const isSuccess = Math.random() > 0.2;
-      if (isSuccess) {
-        setExportState('success');
-        toast({ title: t('exportSuccessToastTitle'), description: t('exportSuccessToastDesc') });
-      } else {
-        setExportState('error');
-        toast({ title: t('exportErrorToastTitle'), description: t('exportErrorToastDesc'), variant: 'destructive' });
-      }
-    }, 2500);
+        try {
+            const result = await saveExportedFiles(filesToSave);
+            if (result.success) {
+                setExportState('success');
+                const successDesc = isMultiExport ? t('multiExportSaveToastDesc').replace('{count}', filesToSave.length.toString()) : t('savedFile').replace('{fileName}', filesToSave[0].fileName);
+                toast({ title: t('exportSuccessToastTitle'), description: successDesc });
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            setExportState('error');
+            toast({ title: t('exportErrorToastTitle'), description: (error as Error).message, variant: 'destructive' });
+        }
+    } else if (values.exportMethod === 'download') {
+        toast({ title: t('exportingToastTitle'), description: t('preparingDownload') });
+
+        try {
+            if (isMultiExport) {
+                const zip = new JSZip();
+                for (const fileName of filesToExport) {
+                    const entryData = await getHistoryEntry(`${fileName}.csv`);
+                    if (entryData) {
+                        const activeSensors = Object.keys(entryData.sensorData[0] || {}).filter(k => k.startsWith('sensor'));
+                        const reconstructedConfig: Configuration = {
+                            fileName: entryData.fileName,
+                            acquisitionTime: parseInt(entryData.duration),
+                            samplesPerSecond: entryData.samplesPerSecond,
+                            sensors: {
+                                sensor1: activeSensors.includes('sensor1'),
+                                sensor2: activeSensors.includes('sensor2'),
+                                sensor3: activeSensors.includes('sensor3'),
+                                sensor4: activeSensors.includes('sensor4'),
+                                sensor5: activeSensors.includes('sensor5'),
+                            }
+                        };
+                        const fileStartTimestamp = new Date(entryData.date);
+                        const csvContent = generateCsvContent(reconstructedConfig, entryData.sensorData, fileStartTimestamp, language, t, entryData.regimen);
+                        zip.file(`${entryData.fileName}.csv`, csvContent);
+                    }
+                }
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(zipBlob);
+                link.download = `FRISAT_Export_${new Date().toISOString().split('T')[0]}.zip`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            } else {
+                const fileName = getFinalFilename();
+                const currentConfig = { ...config, fileName: (values as SingleFileFormValues).fileName };
+                const csvContent = generateCsvContent(currentConfig, sensorData, startTimestamp, language, t, regimen);
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            }
+
+            setExportState('success');
+            toast({ title: t('exportSuccessToastTitle'), description: t('downloadSuccessToastDesc') });
+        } catch (error) {
+            setExportState('error');
+            toast({ title: t('exportErrorToastTitle'), description: (error as Error).message, variant: 'destructive' });
+        }
+    }
   };
   
   const handleClose = () => {
@@ -386,58 +321,27 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
                 ))}
               </ul>
             </ScrollArea>
-             {watchedExportMethod === 'wifi' && (
-                <FormField
-                  control={multiFileForm.control}
-                  name="exportPath"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('networkPath')}</FormLabel>
-                      <FormControl>
-                        <Input {...field} disabled={exportState !== 'idle'} />
-                      </FormControl>
-                      <FormMessage/>
-                    </FormItem>
-                  )}
-                />
-              )}
         </div>
        )
     }
 
     return (
         <div className="space-y-4">
-            {watchedExportMethod === 'wifi' && (
-              <FormField control={form.control} name="exportPath" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('networkPath')}</FormLabel>
+            <FormField control={form.control} name="fileName" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>{t('fileName')}</FormLabel>
                     <FormControl><Input {...field} disabled={exportState !== 'idle'} /></FormControl>
                     <FormMessage/>
-                  </FormItem>
+                </FormItem>
                 )}
-              />
-            )}
-
-            {(watchedExportMethod === 'server' || watchedExportMethod === 'usb' || watchedExportMethod === 'wifi') && (
-              <>
-                <FormField control={form.control} name="fileName" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('fileName')}</FormLabel>
-                      <FormControl><Input {...field} disabled={exportState !== 'idle' || (watchedExportMethod === 'usb' && usbStatus !== 'found')} /></FormControl>
-                      <FormMessage/>
-                    </FormItem>
-                  )}
-                />
-                <FormField control={form.control} name="includeDate" render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={exportState !== 'idle' || (watchedExportMethod === 'usb' && usbStatus !== 'found')} /></FormControl>
-                      <FormLabel className="font-normal">{t('includeDate')}</FormLabel>
-                    </FormItem>
-                  )}
-                />
-              </>
-            )}
-
+            />
+            <FormField control={form.control} name="includeDate" render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={exportState !== 'idle'} /></FormControl>
+                    <FormLabel className="font-normal">{t('includeDate')}</FormLabel>
+                </FormItem>
+                )}
+            />
             <div className="flex items-center gap-2 rounded-md border bg-muted p-3">
               <FileText className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">{t('finalFileName')}:</span>
@@ -448,12 +352,14 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
   }
 
   const getExportButtonText = () => {
-    switch (watchedExportMethod) {
-      case 'server': return isMultiExport ? t('exportAllToServer') : t('exportToServer');
-      case 'usb': return t('exportToUSB');
-      case 'wifi': return t('exportToWifi');
-      default: return t('export');
+    const { exportMethod } = form.getValues();
+    if (exportMethod === 'server') {
+        return isMultiExport ? t('exportAllToServer') : t('exportToServer');
     }
+    if (exportMethod === 'download') {
+        return isMultiExport ? t('downloadSelected') : t('downloadData');
+    }
+    return t('export');
   }
 
   return (
@@ -481,7 +387,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
                           <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
-                            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+                            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
                             disabled={exportState !== 'idle'}
                           >
                             <Label
@@ -496,20 +402,12 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
                               {t('serverExportMethod')}
                             </Label>
                             <Label
-                              htmlFor="wifi"
+                              htmlFor="download"
                               className={cn("flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary", exportState !== 'idle' && "cursor-not-allowed opacity-50")}
                             >
-                              <RadioGroupItem value="wifi" id="wifi" className="sr-only" />
-                              <Wifi className="h-5 w-5" />
-                              {t('wifiExportMethod')}
-                            </Label>
-                            <Label
-                              htmlFor="usb"
-                              className={cn("flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary", exportState !== 'idle' && "cursor-not-allowed opacity-50")}
-                            >
-                              <RadioGroupItem value="usb" id="usb" className="sr-only" />
-                              <Usb className="h-5 w-5" />
-                              {t('usbExportMethod')}
+                              <RadioGroupItem value="download" id="download" className="sr-only" />
+                              <Download className="h-5 w-5" />
+                              {t('downloadToComputer')}
                             </Label>
                           </RadioGroup>
                        </FormControl>
@@ -518,10 +416,6 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
                 />
                 
                 {renderContent()}
-
-                {watchedExportMethod === 'usb' && (
-                  <UsbDetector usbStatus={usbStatus} onDetect={handleDetectUsb} onRetry={handleDetectUsb} />
-                )}
 
                 {exportState !== 'idle' && (
                   <div className="rounded-lg border p-4 text-center min-h-[80px] flex items-center justify-center">
@@ -543,7 +437,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
                 </Button>
             ) : <Button type="button" variant="ghost" onClick={handleClose} disabled={exportState === 'exporting'}>{t('cancel')}</Button>}
             
-            <Button form="export-form" type="submit" disabled={exportState !== 'idle' || (watchedExportMethod === 'usb' && usbStatus !== 'found')}>
+            <Button form="export-form" type="submit" disabled={exportState !== 'idle'}>
                 {exportState === 'exporting' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {exportState === 'success' ? <CheckCircle className="mr-2 h-4 w-4" /> : <HardDrive className="mr-2 h-4 w-4" />}
                 {exportState === 'success' ? t('exported') : getExportButtonText()}
