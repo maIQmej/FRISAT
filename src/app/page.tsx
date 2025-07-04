@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -26,7 +25,17 @@ export default function WelcomePage() {
   const { t } = useTranslation();
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-main-background bg-cover bg-center p-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-background p-4">
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+      >
+        <source src="/back.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
       <div className="absolute inset-0 bg-blue-700 opacity-60 mix-blend-screen" />
       <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
         <LanguageSwitcher />

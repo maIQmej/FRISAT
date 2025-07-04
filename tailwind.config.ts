@@ -9,9 +9,6 @@ export default {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'main-background': "url('/flujo.gif')",
-      },
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
