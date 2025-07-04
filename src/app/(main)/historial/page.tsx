@@ -162,12 +162,12 @@ export default function HistorialPage() {
                     } className="capitalize">{t_regimen(test.regimen)}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/historial/${test.id}`} asChild>
-                      <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/historial/${test.id}`}>
                         <Eye className="h-4 w-4" />
                         <span className="sr-only">{t('viewDetails')}</span>
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               )) : (
