@@ -26,7 +26,7 @@ export default function WelcomePage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-main-background bg-cover bg-center p-4">
-      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-background/40" />
       <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
         <LanguageSwitcher />
         <ThemeToggle />
