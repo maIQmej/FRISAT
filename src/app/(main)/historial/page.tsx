@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, ArrowLeft, Download, Search, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Download, Search, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -164,7 +164,6 @@ export default function HistorialPage() {
                 <TableHead>{t('duration')}</TableHead>
                 <TableHead className="text-center">{t('sensors')}</TableHead>
                 <TableHead>{t('detectedRegime')}</TableHead>
-                <TableHead className="text-right">{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -177,7 +176,6 @@ export default function HistorialPage() {
                     <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
                     <TableCell className="text-center"><Skeleton className="h-4 w-1/4 mx-auto" /></TableCell>
                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-10 w-10 ml-auto" /></TableCell>
                   </TableRow>
                 ))
               ) : filteredHistory.length > 0 ? filteredHistory.map((test) => (
@@ -189,7 +187,11 @@ export default function HistorialPage() {
                       aria-label={`Select row ${test.id}`}
                     />
                   </TableCell>
-                  <TableCell className="font-medium">{test.fileName}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/historial/${encodeURIComponent(test.id)}`} className="hover:underline">
+                      {test.fileName}
+                    </Link>
+                  </TableCell>
                   <TableCell>{formatDisplayDate(test.date)}</TableCell>
                   <TableCell>{test.duration}</TableCell>
                   <TableCell className="text-center">{test.sensors}</TableCell>
@@ -199,18 +201,10 @@ export default function HistorialPage() {
                       test.regimen === 'turbulento' ? 'destructive' : 'secondary'
                     } className="capitalize">{t_regimen(test.regimen)}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/historial/${encodeURIComponent(test.id)}`}>
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">{t('viewDetails')}</span>
-                      </Link>
-                    </Button>
-                  </TableCell>
                 </TableRow>
               )) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     {t('noResults')}
                   </TableCell>
                 </TableRow>
