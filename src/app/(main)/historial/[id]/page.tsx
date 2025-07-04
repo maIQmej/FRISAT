@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,14 +12,8 @@ import { DataPointModal } from '@/components/app/DataPointModal';
 import type { SensorDataPoint, RegimenType, Configuration } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from '@/hooks/useTranslation';
-
-const mockHistory = [
-  { id: 1, fileName: 'prueba_motor_caliente', date: '2024-07-29 10:30', duration: 60, sensors: ['sensor1', 'sensor2', 'sensor3'], regimen: 'turbulento', samplesPerSecond: 10 },
-  { id: 2, fileName: 'test_flujo_laminar_01', date: '2024-07-29 09:15', duration: 30, sensors: ['sensor1', 'sensor2'], regimen: 'flujo laminar', samplesPerSecond: 5 },
-  { id: 3, fileName: 'medicion_valvula_fria', date: '2024-07-28 15:00', duration: 120, sensors: ['sensor1', 'sensor2', 'sensor3', 'sensor4', 'sensor5'], regimen: 'en la frontera', samplesPerSecond: 20 },
-  { id: 4, fileName: 'ensayo_largo_duracion', date: '2024-07-28 11:45', duration: 300, sensors: ['sensor1', 'sensor2', 'sensor3', 'sensor4'], regimen: 'turbulento', samplesPerSecond: 50 },
-  { id: 5, fileName: 'verificacion_rapida', date: '2024-07-27 18:00', duration: 15, sensors: ['sensor1'], regimen: 'flujo laminar', samplesPerSecond: 100 },
-] as const;
+import { getHistoryEntry, type HistoryDetail } from '@/actions/getHistory';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const sensorColors: { [key: string]: string } = {
   sensor1: 'chart-1',
@@ -29,53 +23,61 @@ const sensorColors: { [key: string]: string } = {
   sensor5: 'chart-5',
 };
 
-const generateMockSensorData = (duration: number, samplesPerSecond: number, sensors: readonly string[], overallRegimen: RegimenType): SensorDataPoint[] => {
-  const data: SensorDataPoint[] = [];
-  const totalSamples = duration * samplesPerSecond;
-  for (let i = 0; i <= totalSamples; i++) {
-    const time = i / samplesPerSecond;
-    const point: SensorDataPoint = {
-      time: parseFloat(time.toFixed(2)),
-      regimen: overallRegimen, // For mock data, use the overall test regimen for each point
-    };
-    sensors.forEach((sensorKey, index) => {
-      point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (index + 1) * 0.5)).toFixed(2));
-    });
-    data.push(point);
-  }
-  return data;
-};
-
 export default function HistorialDetallePage() {
   const params = useParams();
   const router = useRouter();
   const { t, t_regimen } = useTranslation();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [sensorData, setSensorData] = useState<SensorDataPoint[]>([]);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
   const [selectedDataPoint, setSelectedDataPoint] = useState<SensorDataPoint | null>(null);
   const [selectedDataPointIndex, setSelectedDataPointIndex] = useState<number | null>(null);
+  const [testData, setTestData] = useState<HistoryDetail | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const testId = params.id ? parseInt(params.id as string, 10) : null;
-  const testData = useMemo(() => testId ? mockHistory.find(t => t.id === testId) : null, [testId]);
-  
-  const totalPlannedSamples = useMemo(() => {
-    if (!testData) return 0;
-    return testData.duration * testData.samplesPerSecond + 1;
-  }, [testData]);
+  const testId = params.id ? decodeURIComponent(params.id as string) : null;
   
   useEffect(() => {
-    if (testData) {
-      const data = generateMockSensorData(testData.duration, testData.samplesPerSecond, testData.sensors, testData.regimen);
-      setSensorData(data);
+    if (testId) {
+      const fetchTestData = async () => {
+        setLoading(true);
+        const data = await getHistoryEntry(testId);
+        setTestData(data);
+        setLoading(false);
+      };
+      fetchTestData();
     }
-  }, [testData]);
+  }, [testId]);
   
   const handleDataPointClick = (dataPoint: SensorDataPoint, index: number) => {
     setSelectedDataPoint(dataPoint);
     setSelectedDataPointIndex(index);
     setIsDataPointModalOpen(true);
   };
+  
+  const formatDisplayDate = (isoDate: string) => {
+    if (!isoDate || isoDate === 'N/A') return 'N/A';
+    try {
+        return new Date(isoDate).toLocaleString();
+    } catch (e) {
+        return isoDate; // fallback
+    }
+  };
+  
+  if (loading) {
+      return (
+        <div className="space-y-4">
+            <div className="flex items-center gap-4">
+                <Skeleton className="h-10 w-10" />
+                <div className="space-y-2">
+                    <Skeleton className="h-6 w-72" />
+                    <Skeleton className="h-4 w-48" />
+                </div>
+            </div>
+            <Card><CardContent className="p-6"><Skeleton className="h-40 w-full" /></CardContent></Card>
+            <Card><CardContent className="p-6"><Skeleton className="h-60 w-full" /></CardContent></Card>
+        </div>
+      );
+  }
 
   if (!testData) {
     return (
@@ -90,16 +92,19 @@ export default function HistorialDetallePage() {
     );
   }
   
+  const activeSensors = Object.keys(testData.sensorData[0] || {}).filter(k => k.startsWith('sensor'));
+  const totalPlannedSamples = (parseInt(testData.duration) * testData.samplesPerSecond) + 1;
+
   const exportConfig: Configuration = {
     fileName: testData.fileName,
-    acquisitionTime: testData.duration,
+    acquisitionTime: parseInt(testData.duration),
     samplesPerSecond: testData.samplesPerSecond,
     sensors: {
-      sensor1: testData.sensors.includes('sensor1'),
-      sensor2: testData.sensors.includes('sensor2'),
-      sensor3: testData.sensors.includes('sensor3'),
-      sensor4: testData.sensors.includes('sensor4'),
-      sensor5: testData.sensors.includes('sensor5'),
+      sensor1: activeSensors.includes('sensor1'),
+      sensor2: activeSensors.includes('sensor2'),
+      sensor3: activeSensors.includes('sensor3'),
+      sensor4: activeSensors.includes('sensor4'),
+      sensor5: activeSensors.includes('sensor5'),
     }
   };
 
@@ -115,7 +120,7 @@ export default function HistorialDetallePage() {
           </Button>
           <div className="flex-grow">
             <h1 className="text-2xl font-bold">{testData.fileName}</h1>
-            <p className="text-muted-foreground">{testData.date}</p>
+            <p className="text-muted-foreground">{formatDisplayDate(testData.date)}</p>
           </div>
           <div className='flex items-center gap-2'>
             <Button variant="outline" onClick={() => router.push('/')}>
@@ -135,14 +140,14 @@ export default function HistorialDetallePage() {
               <Clock className="h-6 w-6 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">{t('startTime')}</p>
-                <p className="font-semibold">{testData.date}</p>
+                <p className="font-semibold">{formatDisplayDate(testData.date)}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 rounded-md border p-4">
               <Timer className="h-6 w-6 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">{t('duration')}</p>
-                <p className="font-semibold">{testData.duration}s</p>
+                <p className="font-semibold">{testData.duration}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 rounded-md border p-4">
@@ -156,7 +161,7 @@ export default function HistorialDetallePage() {
               <Sigma className="h-6 w-6 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">{t('totalSamplesLabel')}</p>
-                <p className="font-semibold">{sensorData.length * testData.sensors.length} / {totalPlannedSamples * testData.sensors.length}</p>
+                <p className="font-semibold">{testData.sensorData.length * activeSensors.length} / {totalPlannedSamples * activeSensors.length}</p>
               </div>
             </div>
              <div className="flex items-center space-x-3 rounded-md border p-4">
@@ -177,11 +182,11 @@ export default function HistorialDetallePage() {
             <CardDescription>{t('sensorDataDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4">
-            {testData.sensors.map(sensorKey => (
+            {activeSensors.map(sensorKey => (
               <SensorChart
                 key={sensorKey}
                 title={`${t('sensor')} ${parseInt(sensorKey.replace('sensor', ''))}`}
-                data={sensorData}
+                data={testData.sensorData}
                 dataKeys={[sensorKey]}
                 colors={sensorColors}
                 onDrop={() => {}} // No-op for historical view
@@ -195,7 +200,7 @@ export default function HistorialDetallePage() {
         open={isExportModalOpen}
         onOpenChange={setIsExportModalOpen}
         filesToExport={[testData.fileName]}
-        sensorData={sensorData}
+        sensorData={testData.sensorData}
         config={exportConfig}
         startTimestamp={startTimestamp}
       />
@@ -204,7 +209,7 @@ export default function HistorialDetallePage() {
         onOpenChange={setIsDataPointModalOpen}
         dataPoint={selectedDataPoint}
         dataPointIndex={selectedDataPointIndex}
-        activeSensors={testData.sensors as string[]}
+        activeSensors={activeSensors}
       />
     </>
   );

@@ -106,39 +106,63 @@ const UsbDetector = ({ usbStatus, onDetect, onRetry }: { usbStatus: USBStatus, o
   );
 }
 
-// Mock data and generator for multi-file export
-const mockHistory = [
-  { id: 1, fileName: 'prueba_motor_caliente', date: '2024-07-29 10:30', duration: 60, sensors: ['sensor1', 'sensor2', 'sensor3'], regimen: 'turbulento' as RegimenType, samplesPerSecond: 10 },
-  { id: 2, fileName: 'test_flujo_laminar_01', date: '2024-07-29 09:15', duration: 30, sensors: ['sensor1', 'sensor2'], regimen: 'flujo laminar' as RegimenType, samplesPerSecond: 5 },
-  { id: 3, fileName: 'medicion_valvula_fria', date: '2024-07-28 15:00', duration: 120, sensors: ['sensor1', 'sensor2', 'sensor3', 'sensor4', 'sensor5'], regimen: 'en la frontera' as RegimenType, samplesPerSecond: 20 },
-  { id: 4, fileName: 'ensayo_largo_duracion', date: '2024-07-28 11:45', duration: 300, sensors: ['sensor1', 'sensor2', 'sensor3', 'sensor4'], regimen: 'turbulento' as RegimenType, samplesPerSecond: 50 },
-  { id: 5, fileName: 'verificacion_rapida', date: '2024-07-27 18:00', duration: 15, sensors: ['sensor1'], regimen: 'flujo laminar' as RegimenType, samplesPerSecond: 100 },
-];
+// Mock data and generator for multi-file export from History
+const mockHistoryForExport: {
+    [key: string]: {
+        config: Configuration;
+        sensorData: SensorDataPoint[];
+        startTimestamp: Date;
+    }
+} = {};
 
-const generateMockSensorData = (duration: number, samplesPerSecond: number, sensors: readonly string[] | string[], overallRegimen: RegimenType): SensorDataPoint[] => {
-  const data: SensorDataPoint[] = [];
-  const totalSamples = duration * samplesPerSecond;
-  for (let i = 0; i <= totalSamples; i++) {
-    const time = i / samplesPerSecond;
-    const point: SensorDataPoint = {
-      time: parseFloat(time.toFixed(2)),
-      regimen: overallRegimen,
+const generateMockDataForFileName = (fileName: string) => {
+    if (mockHistoryForExport[fileName]) return mockHistoryForExport[fileName];
+
+    const duration = 30 + Math.random() * 120;
+    const samplesPerSecond = [5, 10, 20, 50][Math.floor(Math.random() * 4)];
+    const numSensors = 1 + Math.floor(Math.random() * 5);
+    const sensorKeys = Array.from({ length: numSensors }, (_, i) => `sensor${i + 1}`);
+    const regimen = ['flujo laminar', 'turbulento', 'en la frontera'][Math.floor(Math.random() * 3)] as RegimenType;
+    
+    const config: Configuration = {
+        fileName,
+        acquisitionTime: duration,
+        samplesPerSecond,
+        sensors: {
+            sensor1: sensorKeys.includes('sensor1'),
+            sensor2: sensorKeys.includes('sensor2'),
+            sensor3: sensorKeys.includes('sensor3'),
+            sensor4: sensorKeys.includes('sensor4'),
+            sensor5: sensorKeys.includes('sensor5'),
+        }
     };
-    sensors.forEach((sensorKey, index) => {
-      point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (index + 1) * 0.5)).toFixed(2));
-    });
-    data.push(point);
-  }
-  return data;
-};
+
+    const sensorData: SensorDataPoint[] = [];
+    const totalSamples = duration * samplesPerSecond;
+    for (let i = 0; i <= totalSamples; i++) {
+        const time = i / samplesPerSecond;
+        const point: SensorDataPoint = {
+        time: parseFloat(time.toFixed(2)),
+        regimen: regimen,
+        };
+        sensorKeys.forEach((sensorKey, index) => {
+        point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (index + 1) * 0.5)).toFixed(2));
+        });
+        sensorData.push(point);
+    }
+    
+    const startTimestamp = new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 5);
+
+    mockHistoryForExport[fileName] = { config, sensorData, startTimestamp };
+    return mockHistoryForExport[fileName];
+}
 
 const generateCsvContent = (
     config: Configuration,
     sensorData: SensorDataPoint[],
     startTimestamp: Date | null,
     language: Language,
-    t: (key: string) => string,
-    t_regimen: (regimen: RegimenType) => string
+    t: (key: string) => string
 ) => {
     let csv = '\uFEFF';
 
@@ -160,18 +184,16 @@ const generateCsvContent = (
         return { key, label: `${t('sensor')} ${parseInt(key.replace('sensor', ''))}`, mean: mean.toFixed(2), stdDev: stdDev.toFixed(2), min: min.toFixed(2), max: max.toFixed(2) };
     });
 
-    // --- Section 1: Test Summary ---
     csv += `"${t('testSummary')}"\n`;
     csv += `"${t('parameter')}","${t('value')}"\n`;
     csv += `"${t('fileNameLabel')}","${config.fileName}.csv"\n`;
     if (startTimestamp) {
-        csv += `"${t('startTime')}","${startTimestamp.toLocaleString(language)}"\n`;
+        csv += `"startTime","${startTimestamp.toISOString()}"\n`;
     }
-    csv += `"${t('durationLabel')}","${sensorData.at(-1)?.time.toFixed(2) || '0'}s"\n`;
-    csv += `"${t('samplesPerSecondLabel')}","${config.samplesPerSecond} Hz"\n`;
+    csv += `"durationLabel","${sensorData.at(-1)?.time.toFixed(2) || '0'}s"\n`;
+    csv += `"samplesPerSecondLabel","${config.samplesPerSecond} Hz"\n`;
     csv += '\n';
 
-    // --- Section 2: Test Statistics ---
     csv += `"${t('testStatistics')}"\n`;
     const statHeaders = [t('sensor'), t('statMean'), t('statStdDev'), t('statMin'), t('statMax')];
     csv += `${statHeaders.map(h => `"${h}"`).join(',')}\n`;
@@ -180,19 +202,17 @@ const generateCsvContent = (
         csv += `${row.join(',')}\n`;
     });
     csv += '\n';
-
-    // --- Section 3: Raw Data ---
-    csv += `"${t('collectedData')}"\n`;
+    
     const dataHeaders = ['time', ...activeSensors, 'regimen'];
+    csv += `"#RAW_HEADERS",${dataHeaders.join(',')}\n`;
+
+    csv += `"${t('collectedData')}"\n`;
     const displayHeaders = [`"${t('sampleNumber')}"`, `"${t('time')}"`, ...activeSensors.map(h => `"${t('sensor')} ${h.replace('sensor', '')}"`), `"${t('flowRegime')}"`];
     csv += `${displayHeaders.join(',')}\n`;
 
     sensorData.forEach((point, index) => {
         const rowData = dataHeaders.map(header => {
             const value = point[header];
-            if (header === 'regimen' && typeof value === 'string') {
-                return `"${t_regimen(value as RegimenType)}"`;
-            }
             if (typeof value === 'number') {
                 return value.toFixed(2);
             }
@@ -209,7 +229,7 @@ const generateCsvContent = (
 export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData = [], config: propConfig, startTimestamp }: ExportModalProps) {
   const { config: appConfig, language } = useApp();
   const config = propConfig || appConfig;
-  const { t, t_regimen } = useTranslation();
+  const { t } = useTranslation();
   const [exportState, setExportState] = useState<ExportState>('idle');
   const [usbStatus, setUsbStatus] = useState<USBStatus>('idle');
   const { toast } = useToast();
@@ -298,21 +318,15 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     if (values.exportMethod === 'server') {
       const filesToSave: { fileName: string; csvContent: string }[] = [];
       if (isMultiExport) {
-        const filesToProcess = mockHistory.filter(test => filesToExport.includes(test.fileName));
-        for (const test of filesToProcess) {
-          const testConfig: Configuration = {
-            fileName: test.fileName, acquisitionTime: test.duration, samplesPerSecond: test.samplesPerSecond,
-            sensors: { sensor1: test.sensors.includes('sensor1'), sensor2: test.sensors.includes('sensor2'), sensor3: test.sensors.includes('sensor3'), sensor4: test.sensors.includes('sensor4'), sensor5: test.sensors.includes('sensor5') }
-          };
-          const testSensorData = generateMockSensorData(test.duration, test.samplesPerSecond, test.sensors, test.regimen);
-          const testStartTimestamp = new Date(test.date);
-          const csvContent = generateCsvContent(testConfig, testSensorData, testStartTimestamp, language, t, t_regimen);
-          filesToSave.push({ fileName: `${test.fileName}.csv`, csvContent });
+        for (const fileName of filesToExport) {
+            const mockData = generateMockDataForFileName(fileName);
+            const csvContent = generateCsvContent(mockData.config, mockData.sensorData, mockData.startTimestamp, language, t);
+            filesToSave.push({ fileName: `${fileName}.csv`, csvContent });
         }
       } else {
         const fileName = getFinalFilename();
         const currentConfig = { ...config, fileName: (values as SingleFileFormValues).fileName };
-        const csvContent = generateCsvContent(currentConfig, sensorData, startTimestamp, language, t, t_regimen);
+        const csvContent = generateCsvContent(currentConfig, sensorData, startTimestamp, language, t);
         filesToSave.push({ fileName, csvContent });
       }
 
@@ -332,9 +346,8 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
       return;
     }
 
-    // Mock for WiFi and USB
     setTimeout(() => {
-      const isSuccess = Math.random() > 0.2; // 80% success rate
+      const isSuccess = Math.random() > 0.2;
       if (isSuccess) {
         setExportState('success');
         toast({ title: t('exportSuccessToastTitle'), description: t('exportSuccessToastDesc') });
@@ -384,8 +397,6 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
         </div>
        )
     }
-
-    const finalNameExt = 'csv';
 
     return (
         <div className="space-y-4">

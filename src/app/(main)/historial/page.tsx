@@ -1,50 +1,62 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, ArrowLeft, Download, Search } from 'lucide-react';
+import { Eye, ArrowLeft, Download, Search, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ExportModal } from '@/components/app/ExportModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { RegimenType } from '@/lib/types';
+import { getHistory, type HistoryEntry } from '@/actions/getHistory';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const mockHistory = [
-  { id: 1, fileName: 'prueba_motor_caliente', date: '2024-07-29 10:30', duration: '60s', sensors: 3, regimen: 'turbulento', samplesPerSecond: 10 },
-  { id: 2, fileName: 'test_flujo_laminar_01', date: '2024-07-29 09:15', duration: '30s', sensors: 2, regimen: 'flujo laminar', samplesPerSecond: 5 },
-  { id: 3, fileName: 'medicion_valvula_fria', date: '2024-07-28 15:00', duration: '120s', sensors: 5, regimen: 'en la frontera', samplesPerSecond: 20 },
-  { id: 4, fileName: 'ensayo_largo_duracion', date: '2024-07-28 11:45', duration: '300s', sensors: 4, regimen: 'turbulento', samplesPerSecond: 50 },
-  { id: 5, fileName: 'verificacion_rapida', date: '2024-07-27 18:00', duration: '15s', sensors: 1, regimen: 'flujo laminar', samplesPerSecond: 100 },
-] as const;
-
-type MockHistoryItem = typeof mockHistory[number];
 const regimenTypes: RegimenType[] = ['flujo laminar', 'turbulento', 'en la frontera', 'indeterminado'];
 
 export default function HistorialPage() {
   const router = useRouter();
   const { t, t_regimen } = useTranslation();
-  const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [filterText, setFilterText] = useState('');
   const [regimeFilter, setRegimeFilter] = useState('all');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [filesToExport, setFilesToExport] = useState<string[]>([]);
 
+  const fetchHistory = async () => {
+    setLoading(true);
+    setSelectedRows([]);
+    try {
+      const data = await getHistory();
+      setHistory(data);
+    } catch (error) {
+      console.error("Failed to fetch history:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
   const filteredHistory = useMemo(() => {
-    return mockHistory
+    return history
       .filter(test =>
         test.fileName.toLowerCase().includes(filterText.toLowerCase())
       )
       .filter(test => 
         regimeFilter === 'all' || test.regimen === regimeFilter
       );
-  }, [filterText, regimeFilter]);
+  }, [history, filterText, regimeFilter]);
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
@@ -54,7 +66,7 @@ export default function HistorialPage() {
     }
   };
 
-  const handleSelectRow = (id: number, checked: boolean) => {
+  const handleSelectRow = (id: string, checked: boolean) => {
     if (checked) {
       setSelectedRows(prev => [...prev, id]);
     } else {
@@ -63,13 +75,22 @@ export default function HistorialPage() {
   };
 
   const handleDownloadSelected = () => {
-    const selectedTests = mockHistory.filter(test => selectedRows.includes(test.id));
-    setFilesToExport(selectedTests.map(t => t.fileName));
+    const selectedFileNames = selectedRows.map(id => id.replace('.csv', ''));
+    setFilesToExport(selectedFileNames);
     setIsExportModalOpen(true);
   };
 
   const numSelected = selectedRows.length;
   const numTotal = filteredHistory.length;
+  
+  const formatDisplayDate = (isoDate: string) => {
+    if (!isoDate || isoDate === 'N/A') return 'N/A';
+    try {
+        return new Date(isoDate).toLocaleString();
+    } catch (e) {
+        return isoDate;
+    }
+  };
 
   return (
     <div className="container mx-auto max-w-6xl">
@@ -80,9 +101,14 @@ export default function HistorialPage() {
               <CardTitle>{t('historyTitle')}</CardTitle>
               <CardDescription>{t('historyDesc')}</CardDescription>
             </div>
-            <Button variant="outline" onClick={() => router.push('/')}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> {t('backToHome')}
-            </Button>
+             <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={fetchHistory} disabled={loading}>
+                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                </Button>
+                <Button variant="outline" onClick={() => router.push('/')}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> {t('backToHome')}
+                </Button>
+            </div>
           </div>
           <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex w-full flex-col sm:flex-row sm:w-auto sm:flex-grow gap-4">
@@ -142,7 +168,19 @@ export default function HistorialPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredHistory.length > 0 ? filteredHistory.map((test) => (
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
+                    <TableCell className="text-center"><Skeleton className="h-4 w-1/4 mx-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-10 w-10 ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredHistory.length > 0 ? filteredHistory.map((test) => (
                 <TableRow key={test.id} data-state={selectedRows.includes(test.id) ? "selected" : ""}>
                   <TableCell>
                     <Checkbox
@@ -152,7 +190,7 @@ export default function HistorialPage() {
                     />
                   </TableCell>
                   <TableCell className="font-medium">{test.fileName}</TableCell>
-                  <TableCell>{test.date}</TableCell>
+                  <TableCell>{formatDisplayDate(test.date)}</TableCell>
                   <TableCell>{test.duration}</TableCell>
                   <TableCell className="text-center">{test.sensors}</TableCell>
                   <TableCell>
@@ -163,7 +201,7 @@ export default function HistorialPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/historial/${test.id}`}>
+                      <Link href={`/historial/${encodeURIComponent(test.id)}`}>
                         <Eye className="h-4 w-4" />
                         <span className="sr-only">{t('viewDetails')}</span>
                       </Link>
