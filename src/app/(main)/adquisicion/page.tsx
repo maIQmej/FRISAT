@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { Progress } from '@/components/ui/progress';
@@ -28,7 +28,6 @@ export default function AdquisicionPage() {
   const [progress, setProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const elapsedTimeRef = useRef(0);
-  const [localSensorData, setLocalSensorData] = useState<SensorDataPoint[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -110,7 +109,7 @@ export default function AdquisicionPage() {
       elapsedTimeRef.current = 0;
       setElapsedTime(0);
       const initialDataPoint = generateDataPoint(0);
-      setLocalSensorData([initialDataPoint]);
+      setSensorData([initialDataPoint]);
       setRegimen(initialDataPoint.regimen || 'indeterminado');
       
       const interval = setInterval(() => {
@@ -123,11 +122,7 @@ export default function AdquisicionPage() {
           
           const finalDataPoint = generateDataPoint(config.acquisitionTime);
           
-          setLocalSensorData(prevData => {
-            const finalData = [...prevData, finalDataPoint];
-            setSensorData(finalData);
-            return finalData;
-          });
+          setSensorData(prevData => [...prevData, finalDataPoint]);
 
           setElapsedTime(config.acquisitionTime);
           setProgress(100);
@@ -136,7 +131,7 @@ export default function AdquisicionPage() {
           setIsResultsModalOpen(true);
         } else {
           const newDataPoint = generateDataPoint(newTime);
-          setLocalSensorData(prevData => [...prevData, newDataPoint]);
+          setSensorData(prevData => [...prevData, newDataPoint]);
           setElapsedTime(newTime);
           setProgress((newTime / config.acquisitionTime) * 100);
           setRegimen(newDataPoint.regimen || 'indeterminado');
@@ -153,12 +148,6 @@ export default function AdquisicionPage() {
       }
     };
   }, [acquisitionState, config, activeSensors, setAcquisitionState, setRegimen, setSensorData]);
-
-  useEffect(() => {
-    if (localSensorData.length > 0) {
-      setSensorData(localSensorData);
-    }
-  }, [localSensorData, setSensorData]);
 
   const handleStop = () => {
     if (intervalRef.current) {
@@ -251,7 +240,7 @@ export default function AdquisicionPage() {
                   <SensorChart
                     key={`${primaryKey}-${groupIndex}`}
                     title={title}
-                    data={localSensorData}
+                    data={sensorData}
                     dataKeys={group}
                     colors={sensorColors}
                     onDrop={handleDrop}
@@ -276,7 +265,7 @@ export default function AdquisicionPage() {
                 </CardHeader>
                 <CardContent className="p-4 pt-0 text-center">
                   <p className="text-2xl font-bold">
-                    {localSensorData.length * activeSensors.length} / {totalPlannedSamples * activeSensors.length}
+                    {sensorData.length * activeSensors.length} / {totalPlannedSamples * activeSensors.length}
                   </p>
                 </CardContent>
               </Card>
