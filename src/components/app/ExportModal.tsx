@@ -38,6 +38,7 @@ interface ExportModalProps {
   sensorData?: SensorDataPoint[];
   config?: Configuration;
   startTimestamp?: Date | null;
+  regimen?: RegimenType;
 }
 
 const formBaseSchema = {
@@ -162,7 +163,8 @@ const generateCsvContent = (
     sensorData: SensorDataPoint[],
     startTimestamp: Date | null,
     language: Language,
-    t: (key: string) => string
+    t: (key: string) => string,
+    regimen?: RegimenType
 ) => {
     let csv = '\uFEFF';
 
@@ -192,6 +194,9 @@ const generateCsvContent = (
     }
     csv += `"durationLabel","${sensorData.at(-1)?.time.toFixed(2) || '0'}s"\n`;
     csv += `"samplesPerSecondLabel","${config.samplesPerSecond} Hz"\n`;
+    if (regimen) {
+      csv += `"dominantRegimen","${regimen}"\n`;
+    }
     csv += '\n';
 
     csv += `"${t('testStatistics')}"\n`;
@@ -226,9 +231,10 @@ const generateCsvContent = (
 };
 
 
-export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData = [], config: propConfig, startTimestamp }: ExportModalProps) {
-  const { config: appConfig, language } = useApp();
+export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData = [], config: propConfig, startTimestamp, regimen: propRegimen }: ExportModalProps) {
+  const { config: appConfig, language, regimen: appRegimen } = useApp();
   const config = propConfig || appConfig;
+  const regimen = propRegimen || appRegimen;
   const { t } = useTranslation();
   const [exportState, setExportState] = useState<ExportState>('idle');
   const [usbStatus, setUsbStatus] = useState<USBStatus>('idle');
@@ -320,13 +326,14 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
       if (isMultiExport) {
         for (const fileName of filesToExport) {
             const mockData = generateMockDataForFileName(fileName);
-            const csvContent = generateCsvContent(mockData.config, mockData.sensorData, mockData.startTimestamp, language, t);
+            const fileRegimen = mockData.sensorData?.[0]?.regimen;
+            const csvContent = generateCsvContent(mockData.config, mockData.sensorData, mockData.startTimestamp, language, t, fileRegimen);
             filesToSave.push({ fileName: `${fileName}.csv`, csvContent });
         }
       } else {
         const fileName = getFinalFilename();
         const currentConfig = { ...config, fileName: (values as SingleFileFormValues).fileName };
-        const csvContent = generateCsvContent(currentConfig, sensorData, startTimestamp, language, t);
+        const csvContent = generateCsvContent(currentConfig, sensorData, startTimestamp, language, t, regimen);
         filesToSave.push({ fileName, csvContent });
       }
 

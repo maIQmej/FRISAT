@@ -293,6 +293,7 @@ export default function AdquisicionPage() {
         sensorData={sensorData}
         config={config}
         startTimestamp={startTimestamp}
+        regimen={regimen}
       />
 
       <DataPointModal

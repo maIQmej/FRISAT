@@ -1,3 +1,4 @@
+
 'use server';
 
 import fs from 'fs/promises';
@@ -27,6 +28,7 @@ const parseCsvFile = async (filePath: string, fileName: string): Promise<History
         let duration = '0s';
         let samplesPerSecond = 0;
         let dataHeaders: string[] = [];
+        let dominantRegimen: RegimenType = 'indeterminado';
 
         const metadataLines = lines.slice(0, 20);
         for (const line of metadataLines) {
@@ -43,6 +45,8 @@ const parseCsvFile = async (filePath: string, fileName: string): Promise<History
                 samplesPerSecond = parseInt(parts[1]?.split(' ')[0] || '0', 10);
             } else if (parts[0] === '#RAW_HEADERS') {
                 dataHeaders = parts.slice(1);
+            } else if (parts[0] === 'dominantRegimen') {
+                dominantRegimen = parts[1] as RegimenType;
             }
         }
         
@@ -85,9 +89,10 @@ const parseCsvFile = async (filePath: string, fileName: string): Promise<History
             sensorData.push(point);
         }
 
-        const dominantRegimen = (Object.keys(regimenCounts).length > 0
-            ? Object.entries(regimenCounts).reduce((a, b) => (b[1]! > a[1]! ? b : a))[0]
-            : 'indeterminado') as RegimenType;
+        // Only calculate if not found in metadata
+        if (dominantRegimen === 'indeterminado' && Object.keys(regimenCounts).length > 0) {
+            dominantRegimen = Object.entries(regimenCounts).reduce((a, b) => (b[1]! > a[1]! ? b : a))[0] as RegimenType;
+        }
         
         const activeSensorsCount = dataHeaders.filter(h => h.startsWith('sensor')).length;
         const cleanFileName = fileName.replace('.csv', '');

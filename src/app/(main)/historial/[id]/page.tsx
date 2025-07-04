@@ -203,6 +203,7 @@ export default function HistorialDetallePage() {
         sensorData={testData.sensorData}
         config={exportConfig}
         startTimestamp={startTimestamp}
+        regimen={testData.regimen}
       />
       <DataPointModal
         open={isDataPointModalOpen}
