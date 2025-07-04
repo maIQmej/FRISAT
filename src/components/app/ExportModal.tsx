@@ -23,7 +23,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { Wifi, Usb, HardDrive, Loader2, CheckCircle, FileText, FileSpreadsheet, Search, XCircle, Download } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Separator } from '../ui/separator';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { Configuration, SensorDataPoint, RegimenType, Language } from '@/lib/types';
@@ -476,82 +475,84 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
-        className="sm:max-w-lg"
+        className="sm:max-w-lg flex flex-col max-h-[90vh] p-0"
         onInteractOutside={(e) => { if (exportState === 'exporting') e.preventDefault(); }}
       >
-        <DialogHeader>
+        <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle>{isMultiExport ? t('multiExportTitle') : t('exportTitle')}</DialogTitle>
           <DialogDescription>{isMultiExport ? t('multiExportDesc').replace('{count}', filesToExport.length.toString()) : t('exportDesc')}</DialogDescription>
         </DialogHeader>
         
-        <Form {...form}>
-          <form id="export-form" onSubmit={form.handleSubmit(handleExport)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="exportMethod"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base">{t('exportMethod')}</FormLabel>
-                   <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-                        disabled={exportState !== 'idle'}
-                      >
-                        <Label
-                          htmlFor="direct"
-                          className={cn(
-                            "flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary",
-                            exportState !== 'idle' && "cursor-not-allowed opacity-50"
-                          )}
-                        >
-                          <RadioGroupItem value="direct" id="direct" className="sr-only" />
-                          <Download className="h-5 w-5" />
-                          {t('directExportMethod')}
-                        </Label>
-                        <Label
-                          htmlFor="wifi"
-                          className={cn("flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary", exportState !== 'idle' && "cursor-not-allowed opacity-50")}
-                        >
-                          <RadioGroupItem value="wifi" id="wifi" className="sr-only" />
-                          <Wifi className="h-5 w-5" />
-                          {t('wifiExportMethod')}
-                        </Label>
-                        <Label
-                          htmlFor="usb"
-                          className={cn("flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary", exportState !== 'idle' && "cursor-not-allowed opacity-50")}
-                        >
-                          <RadioGroupItem value="usb" id="usb" className="sr-only" />
-                          <Usb className="h-5 w-5" />
-                          {t('usbExportMethod')}
-                        </Label>
-                      </RadioGroup>
-                   </FormControl>
-                </FormItem>
-              )}
-            />
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6">
+            <Form {...form}>
+              <form id="export-form" onSubmit={form.handleSubmit(handleExport)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="exportMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base">{t('exportMethod')}</FormLabel>
+                       <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+                            disabled={exportState !== 'idle'}
+                          >
+                            <Label
+                              htmlFor="direct"
+                              className={cn(
+                                "flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary",
+                                exportState !== 'idle' && "cursor-not-allowed opacity-50"
+                              )}
+                            >
+                              <RadioGroupItem value="direct" id="direct" className="sr-only" />
+                              <Download className="h-5 w-5" />
+                              {t('directExportMethod')}
+                            </Label>
+                            <Label
+                              htmlFor="wifi"
+                              className={cn("flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary", exportState !== 'idle' && "cursor-not-allowed opacity-50")}
+                            >
+                              <RadioGroupItem value="wifi" id="wifi" className="sr-only" />
+                              <Wifi className="h-5 w-5" />
+                              {t('wifiExportMethod')}
+                            </Label>
+                            <Label
+                              htmlFor="usb"
+                              className={cn("flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary", exportState !== 'idle' && "cursor-not-allowed opacity-50")}
+                            >
+                              <RadioGroupItem value="usb" id="usb" className="sr-only" />
+                              <Usb className="h-5 w-5" />
+                              {t('usbExportMethod')}
+                            </Label>
+                          </RadioGroup>
+                       </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                {renderContent()}
+
+                {watchedExportMethod === 'usb' && (
+                  <UsbDetector usbStatus={usbStatus} onDetect={handleDetectUsb} onRetry={handleDetectUsb} />
+                )}
+
+                {exportState !== 'idle' && (
+                  <div className="rounded-lg border p-4 text-center min-h-[80px] flex items-center justify-center">
+                    {exportState === 'exporting' && <div className="flex items-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary" /><p>{t('exporting')}</p></div>}
+                    {exportState === 'success' && <div className="flex items-center gap-2"><CheckCircle className="h-6 w-6 text-green-500" /><p>{t('exportedSuccess')}</p></div>}
+                    {exportState === 'error' && <p className="text-destructive">{t('exportError')}</p>}
+                  </div>
+                )}
+
+              </form>
+            </Form>
+          </div>
+        </div>
             
-            <Separator/>
-
-            {renderContent()}
-
-            {watchedExportMethod === 'usb' && (
-              <UsbDetector usbStatus={usbStatus} onDetect={handleDetectUsb} onRetry={handleDetectUsb} />
-            )}
-
-            {exportState !== 'idle' && (
-              <div className="rounded-lg border p-4 text-center min-h-[80px] flex items-center justify-center">
-                {exportState === 'exporting' && <div className="flex items-center gap-2"><Loader2 className="h-6 w-6 animate-spin text-primary" /><p>{t('exporting')}</p></div>}
-                {exportState === 'success' && <div className="flex items-center gap-2"><CheckCircle className="h-6 w-6 text-green-500" /><p>{t('exportedSuccess')}</p></div>}
-                {exportState === 'error' && <p className="text-destructive">{t('exportError')}</p>}
-              </div>
-            )}
-
-          </form>
-        </Form>
-            
-        <DialogFooter className="sm:justify-between gap-2 pt-4">
+        <DialogFooter className="shrink-0 sm:justify-between gap-2 p-6 border-t">
             {exportState === 'success' || exportState === 'error' ? (
                 <Button variant="outline" onClick={handleClose}>
                     {t('close')}
