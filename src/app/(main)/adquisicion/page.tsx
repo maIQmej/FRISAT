@@ -33,6 +33,7 @@ export default function AdquisicionPage() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
   const [selectedDataPoint, setSelectedDataPoint] = useState<SensorDataPoint | null>(null);
+  const [selectedDataPointIndex, setSelectedDataPointIndex] = useState<number | null>(null);
   const [chartGroups, setChartGroups] = useState<string[][]>([]);
 
   const totalPlannedSamples = useMemo(
@@ -185,8 +186,9 @@ export default function AdquisicionPage() {
     setIsExportModalOpen(true);
   }
 
-  const handleDataPointClick = (dataPoint: SensorDataPoint) => {
+  const handleDataPointClick = (dataPoint: SensorDataPoint, index: number) => {
     setSelectedDataPoint(dataPoint);
+    setSelectedDataPointIndex(index);
     setIsDataPointModalOpen(true);
   };
 
@@ -297,6 +299,7 @@ export default function AdquisicionPage() {
         open={isDataPointModalOpen}
         onOpenChange={setIsDataPointModalOpen}
         dataPoint={selectedDataPoint}
+        dataPointIndex={selectedDataPointIndex}
         activeSensors={activeSensors}
       />
     </>

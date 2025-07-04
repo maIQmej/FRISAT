@@ -54,6 +54,7 @@ export default function HistorialDetallePage() {
   const [sensorData, setSensorData] = useState<SensorDataPoint[]>([]);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
   const [selectedDataPoint, setSelectedDataPoint] = useState<SensorDataPoint | null>(null);
+  const [selectedDataPointIndex, setSelectedDataPointIndex] = useState<number | null>(null);
 
   const testId = params.id ? parseInt(params.id as string, 10) : null;
   const testData = useMemo(() => testId ? mockHistory.find(t => t.id === testId) : null, [testId]);
@@ -70,8 +71,9 @@ export default function HistorialDetallePage() {
     }
   }, [testData]);
   
-  const handleDataPointClick = (dataPoint: SensorDataPoint) => {
+  const handleDataPointClick = (dataPoint: SensorDataPoint, index: number) => {
     setSelectedDataPoint(dataPoint);
+    setSelectedDataPointIndex(index);
     setIsDataPointModalOpen(true);
   };
 
@@ -201,6 +203,7 @@ export default function HistorialDetallePage() {
         open={isDataPointModalOpen}
         onOpenChange={setIsDataPointModalOpen}
         dataPoint={selectedDataPoint}
+        dataPointIndex={selectedDataPointIndex}
         activeSensors={testData.sensors as string[]}
       />
     </>

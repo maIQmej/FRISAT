@@ -16,7 +16,7 @@ interface SensorChartProps {
   colors: { [key: string]: string };
   onDrop: (sourceKey: string, targetKey: string) => void;
   onDoubleClick?: () => void;
-  onDataPointClick?: (dataPoint: SensorDataPoint) => void;
+  onDataPointClick?: (dataPoint: SensorDataPoint, index: number) => void;
 }
 
 export function SensorChart({ title, data, dataKeys, colors, onDrop, onDoubleClick, onDataPointClick }: SensorChartProps) {
@@ -106,7 +106,7 @@ export function SensorChart({ title, data, dataKeys, colors, onDrop, onDoubleCli
   
   const handleChartClick = (chartState: any) => {
     if (onDataPointClick && chartState && chartState.activePayload && chartState.activePayload.length > 0) {
-      onDataPointClick(chartState.activePayload[0].payload);
+      onDataPointClick(chartState.activePayload[0].payload, chartState.activeTooltipIndex);
     }
   };
 
