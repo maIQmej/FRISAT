@@ -333,7 +333,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
   const handleDetectUsb = () => {
     setUsbStatus('checking');
     setTimeout(() => {
-        setUsbStatus(Math.random() > 0.3 ? 'found' : 'not_found');
+        setUsbStatus('found');
     }, 1500);
   };
 
