@@ -21,12 +21,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Wifi, Usb, HardDrive, Loader2, CheckCircle, FileText, FileSpreadsheet, Search, XCircle, Download } from 'lucide-react';
+import { Wifi, Usb, HardDrive, Loader2, CheckCircle, FileText, FileSpreadsheet, Search, XCircle, Save } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { Configuration, SensorDataPoint, RegimenType, Language } from '@/lib/types';
-import JSZip from 'jszip';
+import { saveExportedFiles } from '@/actions/saveExport';
 
 type ExportState = 'idle' | 'exporting' | 'success' | 'error';
 type USBStatus = 'idle' | 'checking' | 'found' | 'not_found';
@@ -41,7 +41,7 @@ interface ExportModalProps {
 }
 
 const formBaseSchema = {
-  exportMethod: z.enum(['wifi', 'usb', 'direct']),
+  exportMethod: z.enum(['wifi', 'usb', 'server']),
   exportPath: z.string().optional(),
 };
 
@@ -184,12 +184,7 @@ const generateCsvContent = (
     // --- Section 3: Raw Data ---
     csv += `"${t('collectedData')}"\n`;
     const dataHeaders = ['time', ...activeSensors, 'regimen'];
-    const displayHeaders = [`"${t('sampleNumber')}"`, ...dataHeaders.map(h => {
-        if (h.startsWith('sensor')) {
-            return `"${t('sensor')} ${h.replace('sensor', '')}"`;
-        }
-        return `"${h}"`;
-    })];
+    const displayHeaders = [`"${t('sampleNumber')}"`, `"${t('time')}"`, ...activeSensors.map(h => `"${t('sensor')} ${h.replace('sensor', '')}"`), `"${t('flowRegime')}"`];
     csv += `${displayHeaders.join(',')}\n`;
 
     sensorData.forEach((point, index) => {
@@ -199,7 +194,7 @@ const generateCsvContent = (
                 return `"${t_regimen(value as RegimenType)}"`;
             }
             if (typeof value === 'number') {
-                return value.toString();
+                return value.toFixed(2);
             }
             return `"${value ?? ''}"`;
         });
@@ -225,7 +220,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
   const singleFileForm = useForm<SingleFileFormValues>({
     resolver: zodResolver(singleFileFormSchema),
     defaultValues: {
-      exportMethod: 'direct',
+      exportMethod: 'server',
       fileName: singleFileName,
       includeDate: true,
       exportPath: '/mediciones/wifi/',
@@ -235,7 +230,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
   const multiFileForm = useForm<MultiFileFormValues>({
     resolver: zodResolver(multiFileFormSchema),
     defaultValues: {
-      exportMethod: 'direct',
+      exportMethod: 'server',
       exportPath: '/mediciones/exportacion_masiva/',
     },
   });
@@ -246,13 +241,13 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
   useEffect(() => {
     if (open) {
       singleFileForm.reset({
-        exportMethod: 'direct',
+        exportMethod: 'server',
         fileName: singleFileName,
         includeDate: true,
         exportPath: '/mediciones/wifi/',
       });
       multiFileForm.reset({
-        exportMethod: 'direct',
+        exportMethod: 'server',
         exportPath: '/mediciones/exportacion_masiva/',
       });
       setExportState('idle');
@@ -267,67 +262,14 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
   const watchedFileName = singleFileForm.watch('fileName');
   const watchedIncludeDate = singleFileForm.watch('includeDate');
 
-  const getFinalFilename = (extension: 'xlsx' | 'csv' = 'xlsx') => {
-    let finalName = watchedFileName || config.fileName;
-    if (watchedIncludeDate) {
+  const getFinalFilename = () => {
+    let finalName = isMultiExport ? '' : watchedFileName || config.fileName;
+    if (!isMultiExport && watchedIncludeDate) {
       const now = new Date();
       const dateString = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
       finalName = `${finalName}_${dateString}`;
     }
-    return `${finalName}.${extension}`;
-  };
-
-  const handleDirectDownload = () => {
-    const fileName = getFinalFilename('csv');
-    const csvContent = generateCsvContent(config, sensorData, startTimestamp, language, t, t_regimen);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', fileName);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-  };
-
-  const handleMultiDirectDownload = async () => {
-    const zip = new JSZip();
-    const filesToProcess = mockHistory.filter(test => filesToExport.includes(test.fileName));
-    
-    for (const test of filesToProcess) {
-      const testConfig: Configuration = {
-        fileName: test.fileName,
-        acquisitionTime: test.duration,
-        samplesPerSecond: test.samplesPerSecond,
-        sensors: {
-          sensor1: test.sensors.includes('sensor1'),
-          sensor2: test.sensors.includes('sensor2'),
-          sensor3: test.sensors.includes('sensor3'),
-          sensor4: test.sensors.includes('sensor4'),
-          sensor5: test.sensors.includes('sensor5'),
-        }
-      };
-      const testSensorData = generateMockSensorData(test.duration, test.samplesPerSecond, test.sensors, test.regimen);
-      const testStartTimestamp = new Date(test.date);
-      
-      const csvContent = generateCsvContent(testConfig, testSensorData, testStartTimestamp, language, t, t_regimen);
-      zip.file(`${test.fileName}.csv`, csvContent);
-    }
-    
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(zipBlob);
-    link.href = url;
-    link.download = `FRISAT_Export_${new Date().toISOString().split('T')[0]}.zip`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    return `${finalName}.csv`;
   };
 
   const handleDetectUsb = () => {
@@ -337,34 +279,60 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     }, 1500);
   };
 
-  const handleExport = (values: SingleFileFormValues | MultiFileFormValues) => {
-    if (values.exportMethod === 'direct') {
-      if (isMultiExport) {
-        handleMultiDirectDownload();
-        toast({ title: t('exportSuccessToastTitle'), description: t('multiExportDownloadToastDesc').replace('{count}', filesToExport.length.toString()) });
-      } else {
-        handleDirectDownload();
-        toast({ title: t('exportSuccessToastTitle'), description: `${t('downloadedFile')} "${getFinalFilename('csv')}"` });
-      }
-      onOpenChange(false);
-      return;
-    }
-    
+  const handleExport = async (values: SingleFileFormValues | MultiFileFormValues) => {
     if (values.exportMethod === 'usb' && usbStatus !== 'found') {
       toast({ title: t('exportErrorToastTitle'), description: t('exportErrorUSB'), variant: 'destructive' });
       return;
     }
-    
+
     setExportState('exporting');
     const toastDescription = isMultiExport
       ? t('exportingMultipleToastDesc').replace('{count}', filesToExport.length.toString())
-      : `${t('exportingToastDesc')} "${getFinalFilename()}" via ${values.exportMethod === 'wifi' ? 'WiFi' : 'USB'}.`;
+      : `${t('exportingToastDesc')} "${(values as SingleFileFormValues).fileName}" via ${values.exportMethod === 'wifi' ? 'WiFi' : values.exportMethod === 'usb' ? 'USB' : t('serverExportMethod') }.`;
     
     toast({
       title: t('exportingToastTitle'),
       description: toastDescription,
     });
     
+    if (values.exportMethod === 'server') {
+      const filesToSave: { fileName: string; csvContent: string }[] = [];
+      if (isMultiExport) {
+        const filesToProcess = mockHistory.filter(test => filesToExport.includes(test.fileName));
+        for (const test of filesToProcess) {
+          const testConfig: Configuration = {
+            fileName: test.fileName, acquisitionTime: test.duration, samplesPerSecond: test.samplesPerSecond,
+            sensors: { sensor1: test.sensors.includes('sensor1'), sensor2: test.sensors.includes('sensor2'), sensor3: test.sensors.includes('sensor3'), sensor4: test.sensors.includes('sensor4'), sensor5: test.sensors.includes('sensor5') }
+          };
+          const testSensorData = generateMockSensorData(test.duration, test.samplesPerSecond, test.sensors, test.regimen);
+          const testStartTimestamp = new Date(test.date);
+          const csvContent = generateCsvContent(testConfig, testSensorData, testStartTimestamp, language, t, t_regimen);
+          filesToSave.push({ fileName: `${test.fileName}.csv`, csvContent });
+        }
+      } else {
+        const fileName = getFinalFilename();
+        const currentConfig = { ...config, fileName: (values as SingleFileFormValues).fileName };
+        const csvContent = generateCsvContent(currentConfig, sensorData, startTimestamp, language, t, t_regimen);
+        filesToSave.push({ fileName, csvContent });
+      }
+
+      try {
+        const result = await saveExportedFiles(filesToSave);
+        if (result.success) {
+          setExportState('success');
+          const successDesc = isMultiExport ? t('multiExportSaveToastDesc').replace('{count}', filesToSave.length.toString()) : t('savedFile').replace('{fileName}', filesToSave[0].fileName);
+          toast({ title: t('exportSuccessToastTitle'), description: successDesc });
+        } else {
+          throw new Error(result.message);
+        }
+      } catch (error) {
+        setExportState('error');
+        toast({ title: t('exportErrorToastTitle'), description: (error as Error).message, variant: 'destructive' });
+      }
+      return;
+    }
+
+    // Mock for WiFi and USB
     setTimeout(() => {
       const isSuccess = Math.random() > 0.2; // 80% success rate
       if (isSuccess) {
@@ -393,7 +361,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
                 {filesToExport.map((file, index) => (
                   <li key={index} className="text-sm font-mono truncate flex items-center gap-2">
                     <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
-                    {file}.xlsx
+                    {file}.csv
                   </li>
                 ))}
               </ul>
@@ -417,24 +385,22 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
        )
     }
 
-    const finalNameExt = watchedExportMethod === 'direct' ? 'csv' : 'xlsx';
+    const finalNameExt = 'csv';
 
     return (
         <div className="space-y-4">
-            {watchedExportMethod !== 'direct' && watchedExportMethod !== 'usb' && (
-              <>
-                <FormField control={form.control} name="exportPath" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('networkPath')}</FormLabel>
-                      <FormControl><Input {...field} disabled={exportState !== 'idle'} /></FormControl>
-                      <FormMessage/>
-                    </FormItem>
-                  )}
-                />
-              </>
+            {watchedExportMethod === 'wifi' && (
+              <FormField control={form.control} name="exportPath" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('networkPath')}</FormLabel>
+                    <FormControl><Input {...field} disabled={exportState !== 'idle'} /></FormControl>
+                    <FormMessage/>
+                  </FormItem>
+                )}
+              />
             )}
 
-            {(watchedExportMethod === 'direct' || watchedExportMethod === 'usb' || watchedExportMethod === 'wifi') && (
+            {(watchedExportMethod === 'server' || watchedExportMethod === 'usb' || watchedExportMethod === 'wifi') && (
               <>
                 <FormField control={form.control} name="fileName" render={({ field }) => (
                     <FormItem>
@@ -457,7 +423,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
             <div className="flex items-center gap-2 rounded-md border bg-muted p-3">
               <FileText className="h-5 w-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">{t('finalFileName')}:</span>
-              <span className="text-sm font-mono truncate">{getFinalFilename(finalNameExt)}</span>
+              <span className="text-sm font-mono truncate">{getFinalFilename()}</span>
             </div>
         </div>
     )
@@ -465,7 +431,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
 
   const getExportButtonText = () => {
     switch (watchedExportMethod) {
-      case 'direct': return isMultiExport ? t('exportToZip') : t('exportToDirect');
+      case 'server': return isMultiExport ? t('exportAllToServer') : t('exportToServer');
       case 'usb': return t('exportToUSB');
       case 'wifi': return t('exportToWifi');
       default: return t('export');
@@ -501,15 +467,15 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
                             disabled={exportState !== 'idle'}
                           >
                             <Label
-                              htmlFor="direct"
+                              htmlFor="server"
                               className={cn(
                                 "flex items-center justify-center gap-2 rounded-md border-2 p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary",
                                 exportState !== 'idle' && "cursor-not-allowed opacity-50"
                               )}
                             >
-                              <RadioGroupItem value="direct" id="direct" className="sr-only" />
-                              <Download className="h-5 w-5" />
-                              {t('directExportMethod')}
+                              <RadioGroupItem value="server" id="server" className="sr-only" />
+                              <Save className="h-5 w-5" />
+                              {t('serverExportMethod')}
                             </Label>
                             <Label
                               htmlFor="wifi"
