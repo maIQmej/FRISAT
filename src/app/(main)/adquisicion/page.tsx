@@ -23,6 +23,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { saveExportedFiles } from '@/actions/saveExport';
 import { generateCsvContent } from '@/lib/csv-utils';
+import { predictRegime } from '@/actions/predictRegime';
 
 const calculateDominantRegimen = (data: SensorDataPoint[]): RegimenType => {
   if (!data || data.length === 0) {
@@ -62,6 +63,9 @@ export default function AdquisicionPage() {
   const [selectedDataPointIndex, setSelectedDataPointIndex] = useState<number | null>(null);
   const [chartGroups, setChartGroups] = useState<string[][]>([]);
   const [isAutoSaved, setIsAutoSaved] = useState(false);
+  const sensorDataRef = useRef<SensorDataPoint[]>([]);
+  sensorDataRef.current = sensorData;
+
 
   const totalPlannedSamples = useMemo(
     () => Math.floor(config.acquisitionTime * config.samplesPerSecond) + 1,
@@ -119,13 +123,10 @@ export default function AdquisicionPage() {
 
     const intervalTime = 1000 / config.samplesPerSecond;
 
-    const generateDataPoint = (time: number): SensorDataPoint => {
-      const point: SensorDataPoint = {
+    const generateDataPoint = (time: number): Omit<SensorDataPoint, 'regimen'> => {
+      const point: Omit<SensorDataPoint, 'regimen'> = {
         time: parseFloat(time.toFixed(2)),
       };
-
-      const results: RegimenType[] = ['flujo laminar', 'turbulento'];
-      point.regimen = results[Math.floor(Math.random() * results.length)];
 
       activeSensors.forEach(sensorKey => {
         point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2));
@@ -136,37 +137,39 @@ export default function AdquisicionPage() {
     const runAcquisition = () => {
       elapsedTimeRef.current = 0;
       setElapsedTime(0);
-      const initialDataPoint = generateDataPoint(0);
-      setSensorData([initialDataPoint]);
-      setRegimen(initialDataPoint.regimen || 'indeterminado');
+      setSensorData([]);
       
-      const interval = setInterval(() => {
+      const interval = setInterval(async () => {
         const newTime = elapsedTimeRef.current + (1 / config.samplesPerSecond);
         elapsedTimeRef.current = newTime;
 
+        const currentData = sensorDataRef.current;
+        const newPointData = generateDataPoint(newTime);
+        const updatedData = [...currentData, newPointData as SensorDataPoint];
+        
+        const newRegimen = await predictRegime(updatedData);
+        const newDataPoint: SensorDataPoint = { ...newPointData, regimen: newRegimen };
+        
         if (newTime >= config.acquisitionTime) {
           clearInterval(interval);
           intervalRef.current = null;
+
+          setSensorData(prev => [...prev, newDataPoint]);
           
-          const finalDataPoint = generateDataPoint(config.acquisitionTime);
-          
-          setSensorData(prevData => {
-            const updatedData = [...prevData, finalDataPoint];
-            const dominantRegimen = calculateDominantRegimen(updatedData);
-            setRegimen(dominantRegimen);
-            return updatedData;
-          });
+          const finalData = [...sensorDataRef.current, newDataPoint];
+          const dominantRegimen = calculateDominantRegimen(finalData);
+          setRegimen(dominantRegimen);
 
           setElapsedTime(config.acquisitionTime);
           setProgress(100);
           setAcquisitionState('completed');
           setIsResultsModalOpen(true);
+
         } else {
-          const newDataPoint = generateDataPoint(newTime);
-          setSensorData(prevData => [...prevData, newDataPoint]);
+          setSensorData(prev => [...prev, newDataPoint]);
           setElapsedTime(newTime);
           setProgress((newTime / config.acquisitionTime) * 100);
-          setRegimen(newDataPoint.regimen || 'indeterminado');
+          setRegimen(newRegimen);
         }
       }, intervalTime);
       intervalRef.current = interval;
@@ -187,7 +190,9 @@ export default function AdquisicionPage() {
       if (!isAutoSaved && (acquisitionState === 'completed' || acquisitionState === 'stopped') && sensorData.length > 0) {
         setIsAutoSaved(true);
 
-        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, regimen);
+        const dominantRegimen = calculateDominantRegimen(sensorData);
+
+        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, dominantRegimen);
         const fileToSave = {
           fileName: `${config.fileName}.csv`,
           csvContent: csvContent
@@ -213,7 +218,7 @@ export default function AdquisicionPage() {
       }
     };
     autoSave();
-  }, [acquisitionState, config, sensorData, startTimestamp, regimen, t, toast, isAutoSaved]);
+  }, [acquisitionState, config, sensorData, startTimestamp, t, toast, isAutoSaved]);
 
 
   const handleStop = () => {
