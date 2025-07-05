@@ -104,8 +104,9 @@ export default function AdquisicionPage() {
     if (error) {
       toast({
         title: t('predictionErrorTitle'),
-        description: t('predictionErrorDesc'),
+        description: `${t('predictionErrorDesc')} ${error}`,
         variant: 'destructive',
+        duration: 10000,
       });
     }
     setRegimen(finalRegimen);
@@ -165,8 +166,9 @@ export default function AdquisicionPage() {
             if (error && !predictionErrorToastShownRef.current) {
               toast({
                 title: t('predictionErrorTitle'),
-                description: t('predictionErrorDesc'),
+                description: `${t('predictionErrorDesc')} ${error}`,
                 variant: 'destructive',
+                duration: 10000,
               });
               predictionErrorToastShownRef.current = true;
             }
@@ -185,8 +187,8 @@ export default function AdquisicionPage() {
     const autoSave = async () => {
       if (!isAutoSaved && (acquisitionState === 'completed' || acquisitionState === 'stopped') && sensorData.length > 0) {
         setIsAutoSaved(true);
-        const dominantRegimen = await predictRegime(sensorData);
-        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, dominantRegimen.regimen);
+        const { regimen: finalRegimen } = await predictRegime(sensorData);
+        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, finalRegimen);
         const fileToSave = {
           fileName: `${config.fileName}.csv`,
           csvContent: csvContent
