@@ -43,6 +43,7 @@ export default function AdquisicionPage() {
   const [chartGroups, setChartGroups] = useState<string[][]>([]);
   const [isAutoSaved, setIsAutoSaved] = useState(false);
   const sensorDataRef = useRef<SensorDataPoint[]>([]);
+  const predictionErrorToastShownRef = useRef(false);
   sensorDataRef.current = sensorData;
 
 
@@ -99,20 +100,26 @@ export default function AdquisicionPage() {
         predictionIntervalRef.current = null;
     }
 
-    // Get the final, definitive regimen for the entire test
-    const finalRegimen = await predictRegime(finalData);
+    const { regimen: finalRegimen, error } = await predictRegime(finalData);
+    if (error) {
+      toast({
+        title: t('predictionErrorTitle'),
+        description: t('predictionErrorDesc'),
+        variant: 'destructive',
+      });
+    }
     setRegimen(finalRegimen);
     
     setAcquisitionState(endState);
     setIsResultsModalOpen(true);
   };
   
-  // Effect for data acquisition and periodic prediction
   useEffect(() => {
     if (acquisitionState !== 'running') {
       return;
     }
     
+    predictionErrorToastShownRef.current = false;
     setChartGroups(activeSensors.length > 0 ? [activeSensors] : []);
     setSensorData([]);
     elapsedTimeRef.current = 0;
@@ -128,7 +135,6 @@ export default function AdquisicionPage() {
       return point;
     };
 
-    // Data collection interval (high frequency)
     const dataIntervalTime = 1000 / config.samplesPerSecond;
     dataAcquisitionIntervalRef.current = setInterval(() => {
         const newTime = elapsedTimeRef.current + (1 / config.samplesPerSecond);
@@ -153,13 +159,20 @@ export default function AdquisicionPage() {
         }
     }, dataIntervalTime);
 
-    // Prediction interval (low frequency)
     predictionIntervalRef.current = setInterval(async () => {
         if (sensorDataRef.current.length > 0) {
-            const currentRegimen = await predictRegime(sensorDataRef.current);
+            const { regimen: currentRegimen, error } = await predictRegime(sensorDataRef.current);
+            if (error && !predictionErrorToastShownRef.current) {
+              toast({
+                title: t('predictionErrorTitle'),
+                description: t('predictionErrorDesc'),
+                variant: 'destructive',
+              });
+              predictionErrorToastShownRef.current = true;
+            }
             setRegimen(currentRegimen);
         }
-    }, 2000); // Predict every 2 seconds
+    }, 2000); 
 
     return () => {
       if (dataAcquisitionIntervalRef.current) clearInterval(dataAcquisitionIntervalRef.current);
@@ -168,13 +181,12 @@ export default function AdquisicionPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acquisitionState]);
   
-  // Effect for auto-saving test results
   useEffect(() => {
     const autoSave = async () => {
       if (!isAutoSaved && (acquisitionState === 'completed' || acquisitionState === 'stopped') && sensorData.length > 0) {
         setIsAutoSaved(true);
-
-        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, regimen);
+        const dominantRegimen = await predictRegime(sensorData);
+        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, dominantRegimen.regimen);
         const fileToSave = {
           fileName: `${config.fileName}.csv`,
           csvContent: csvContent
@@ -201,7 +213,7 @@ export default function AdquisicionPage() {
     };
     autoSave();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [acquisitionState, sensorData]); // Depend on regimen being final
+  }, [acquisitionState, sensorData]);
 
 
   const handleStop = () => {
@@ -209,7 +221,6 @@ export default function AdquisicionPage() {
       clearInterval(dataAcquisitionIntervalRef.current);
       dataAcquisitionIntervalRef.current = null;
     }
-    // Use the current data collected so far
     finalizeAcquisition(sensorDataRef.current, 'stopped');
   };
 

@@ -147,6 +147,8 @@ export const translations: Translations = {
     value: 'Valor',
     collectedData: 'Datos Recolectados',
     sampleNumber: 'Nº de Muestra',
+    predictionErrorTitle: 'Error de Predicción',
+    predictionErrorDesc: 'El modelo de IA no pudo procesar los datos. El régimen se mostrará como "Indeterminado". Revise los logs del servidor para más detalles.',
   },
   en: {
     welcomeTitle: 'Welcome to FRISAT',
@@ -284,6 +286,8 @@ export const translations: Translations = {
     value: 'Value',
     collectedData: 'Collected Data',
     sampleNumber: 'Sample No.',
+    predictionErrorTitle: 'Prediction Error',
+    predictionErrorDesc: 'The AI model failed to process the data. The regime will be shown as "Undetermined". Check server logs for more details.',
   },
   fr: {
     welcomeTitle: 'Bienvenue sur FRISAT',
@@ -421,6 +425,8 @@ export const translations: Translations = {
     value: 'Valeur',
     collectedData: 'Données Collectées',
     sampleNumber: 'N° d\'échantillon',
+    predictionErrorTitle: 'Erreur de Prédiction',
+    predictionErrorDesc: 'Le modèle IA n\'a pas pu traiter les données. Le régime sera affiché comme "Indéterminé". Vérifiez les logs du serveur pour plus de détails.',
   },
   de: {
     welcomeTitle: 'Willkommen bei FRISAT',
@@ -558,5 +564,7 @@ export const translations: Translations = {
     value: 'Wert',
     collectedData: 'Gesammelte Daten',
     sampleNumber: 'Proben-Nr.',
+    predictionErrorTitle: 'Vorhersagefehler',
+    predictionErrorDesc: 'Das KI-Modell konnte die Daten nicht verarbeiten. Das Regime wird als "Unbestimmt" angezeigt. Überprüfen Sie die Serverprotokolle für weitere Details.',
   }
 };
