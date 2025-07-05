@@ -13,6 +13,7 @@ export interface HistoryEntry {
   sensors: number;
   regimen: RegimenType;
   samplesPerSecond: number;
+  totalSamples: number;
 }
 
 export interface HistoryDetail extends HistoryEntry {
@@ -27,6 +28,7 @@ const parseCsvFile = async (filePath: string, fileName: string): Promise<History
         let date = '';
         let duration = '0s';
         let samplesPerSecond = 0;
+        let totalSamples = 0;
         let dataHeaders: string[] = [];
         let dominantRegimen: RegimenType = 'indeterminado';
 
@@ -43,6 +45,8 @@ const parseCsvFile = async (filePath: string, fileName: string): Promise<History
                 duration = parts[1];
             } else if (parts[0] === 'samplesPerSecondLabel') {
                 samplesPerSecond = parseInt(parts[1]?.split(' ')[0] || '0', 10);
+            } else if (parts[0] === 'totalSamples') {
+                totalSamples = parseInt(parts[1] || '0', 10);
             } else if (parts[0] === '#RAW_HEADERS') {
                 dataHeaders = parts.slice(1);
             } else if (parts[0] === 'dominantRegimen') {
@@ -105,6 +109,7 @@ const parseCsvFile = async (filePath: string, fileName: string): Promise<History
             sensors: activeSensorsCount,
             regimen: dominantRegimen,
             samplesPerSecond,
+            totalSamples: totalSamples > 0 ? totalSamples : sensorData.length * activeSensorsCount,
             sensorData
         };
 

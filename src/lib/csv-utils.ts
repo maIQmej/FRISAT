@@ -35,7 +35,7 @@ export const generateCsvContent = (
     }
     csv += `"durationLabel","${sensorData.at(-1)?.time.toFixed(2) || '0'}s"\n`;
     csv += `"samplesPerSecondLabel","${config.samplesPerSecond} Hz"\n`;
-    csv += `"${t('totalSamplesLabel')}","${sensorData.length * activeSensors.length}"\n`;
+    csv += `"totalSamples","${sensorData.length * activeSensors.length}"\n`;
     if (regimen) {
       csv += `"dominantRegimen","${regimen}"\n`;
     }
