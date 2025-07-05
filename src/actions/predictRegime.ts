@@ -11,7 +11,8 @@ export async function predictRegime(data: SensorDataPoint[]): Promise<{ regimen:
   const dataString = JSON.stringify(data);
 
   return new Promise((resolve) => {
-    const pythonProcess = spawn(pythonExecutable, [scriptPath]);
+    // Añadido { shell: true } para mejorar la compatibilidad, especialmente en Windows
+    const pythonProcess = spawn(pythonExecutable, [scriptPath], { shell: process.platform === 'win32' });
 
     let result = '';
     let errorOutput = '';
