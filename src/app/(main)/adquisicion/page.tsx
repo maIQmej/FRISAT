@@ -27,7 +27,7 @@ import { generateCsvContent } from '@/lib/csv-utils';
 export default function AdquisicionPage() {
   const router = useRouter();
   const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp, startTimestamp, language } = useApp();
-  const { t } = useTranslation();
+  const { t, t_regimen } = useTranslation();
   const { toast } = useToast();
   const [progress, setProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
