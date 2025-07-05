@@ -6,7 +6,7 @@ import path from 'path';
 import type { SensorDataPoint, RegimenType } from '@/lib/types';
 
 export async function predictRegime(data: SensorDataPoint[]): Promise<{ regimen: RegimenType; error?: string }> {
-  const pythonExecutable = process.env.PYTHON_EXECUTABLE || 'python3';
+  const pythonExecutable = process.env.PYTHON_EXECUTABLE || 'python';
   const scriptPath = path.join(process.cwd(), 'src', 'python', 'Evaluacion.py');
   const dataString = JSON.stringify(data);
 
