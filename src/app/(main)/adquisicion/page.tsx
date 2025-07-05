@@ -24,6 +24,28 @@ import { useToast } from '@/hooks/use-toast';
 import { saveExportedFiles } from '@/actions/saveExport';
 import { generateCsvContent } from '@/lib/csv-utils';
 
+const calculateDominantRegimen = (data: SensorDataPoint[]): RegimenType => {
+  if (!data || data.length === 0) {
+    return 'indeterminado';
+  }
+  const regimenCounts: Partial<Record<RegimenType, number>> = {};
+  for (const point of data) {
+    if (point.regimen) {
+      regimenCounts[point.regimen] = (regimenCounts[point.regimen] || 0) + 1;
+    }
+  }
+
+  if (Object.keys(regimenCounts).length === 0) {
+    return 'indeterminado';
+  }
+
+  const dominantRegimen = Object.entries(regimenCounts).reduce(
+    (a, b) => ((b[1] ?? 0) > (a[1] ?? 0) ? b : a)
+  )[0] as RegimenType;
+
+  return dominantRegimen || 'indeterminado';
+};
+
 export default function AdquisicionPage() {
   const router = useRouter();
   const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp, startTimestamp, language } = useApp();
@@ -128,11 +150,15 @@ export default function AdquisicionPage() {
           
           const finalDataPoint = generateDataPoint(config.acquisitionTime);
           
-          setSensorData(prevData => [...prevData, finalDataPoint]);
+          setSensorData(prevData => {
+            const updatedData = [...prevData, finalDataPoint];
+            const dominantRegimen = calculateDominantRegimen(updatedData);
+            setRegimen(dominantRegimen);
+            return updatedData;
+          });
 
           setElapsedTime(config.acquisitionTime);
           setProgress(100);
-          setRegimen(finalDataPoint.regimen || 'indeterminado');
           setAcquisitionState('completed');
           setIsResultsModalOpen(true);
         } else {
@@ -194,6 +220,8 @@ export default function AdquisicionPage() {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
+    const dominantRegimen = calculateDominantRegimen(sensorData);
+    setRegimen(dominantRegimen);
     setAcquisitionState('stopped');
     setIsResultsModalOpen(true);
   };
