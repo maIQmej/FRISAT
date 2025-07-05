@@ -10,7 +10,7 @@ import { SensorChart } from '@/components/app/SensorChart';
 import { ResultsModal } from '@/components/app/ResultsModal';
 import { ExportModal } from '@/components/app/ExportModal';
 import { DataPointModal } from '@/components/app/DataPointModal';
-import type { SensorDataPoint, RegimenType } from '@/lib/types';
+import type { SensorDataPoint, AcquisitionState } from '@/lib/types';
 import {
   Card,
   CardContent,
@@ -25,28 +25,6 @@ import { saveExportedFiles } from '@/actions/saveExport';
 import { generateCsvContent } from '@/lib/csv-utils';
 import { predictRegime } from '@/actions/predictRegime';
 
-const calculateDominantRegimen = (data: SensorDataPoint[]): RegimenType => {
-  if (!data || data.length === 0) {
-    return 'indeterminado';
-  }
-  const regimenCounts: Partial<Record<RegimenType, number>> = {};
-  for (const point of data) {
-    if (point.regimen) {
-      regimenCounts[point.regimen] = (regimenCounts[point.regimen] || 0) + 1;
-    }
-  }
-
-  if (Object.keys(regimenCounts).length === 0) {
-    return 'indeterminado';
-  }
-
-  const dominantRegimen = Object.entries(regimenCounts).reduce(
-    (a, b) => ((b[1] ?? 0) > (a[1] ?? 0) ? b : a)
-  )[0] as RegimenType;
-
-  return dominantRegimen || 'indeterminado';
-};
-
 export default function AdquisicionPage() {
   const router = useRouter();
   const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp, startTimestamp, language } = useApp();
@@ -55,7 +33,8 @@ export default function AdquisicionPage() {
   const [progress, setProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const elapsedTimeRef = useRef(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const dataAcquisitionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const predictionIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
@@ -114,75 +93,80 @@ export default function AdquisicionPage() {
     });
   };
 
+  const finalizeAcquisition = async (finalData: SensorDataPoint[], endState: 'completed' | 'stopped') => {
+    if (predictionIntervalRef.current) {
+        clearInterval(predictionIntervalRef.current);
+        predictionIntervalRef.current = null;
+    }
+
+    // Get the final, definitive regimen for the entire test
+    const finalRegimen = await predictRegime(finalData);
+    setRegimen(finalRegimen);
+    
+    setAcquisitionState(endState);
+    setIsResultsModalOpen(true);
+  };
+  
+  // Effect for data acquisition and periodic prediction
   useEffect(() => {
     if (acquisitionState !== 'running') {
       return;
     }
     
     setChartGroups(activeSensors.length > 0 ? [activeSensors] : []);
+    setSensorData([]);
+    elapsedTimeRef.current = 0;
+    setElapsedTime(0);
 
-    const intervalTime = 1000 / config.samplesPerSecond;
-
-    const generateDataPoint = (time: number): Omit<SensorDataPoint, 'regimen'> => {
-      const point: Omit<SensorDataPoint, 'regimen'> = {
+    const generateDataPoint = (time: number): SensorDataPoint => {
+      const point: SensorDataPoint = {
         time: parseFloat(time.toFixed(2)),
       };
-
       activeSensors.forEach(sensorKey => {
         point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2));
       });
       return point;
     };
 
-    const runAcquisition = () => {
-      elapsedTimeRef.current = 0;
-      setElapsedTime(0);
-      setSensorData([]);
-      
-      const interval = setInterval(async () => {
+    // Data collection interval (high frequency)
+    const dataIntervalTime = 1000 / config.samplesPerSecond;
+    dataAcquisitionIntervalRef.current = setInterval(() => {
         const newTime = elapsedTimeRef.current + (1 / config.samplesPerSecond);
         elapsedTimeRef.current = newTime;
 
-        const currentData = sensorDataRef.current;
-        const newPointData = generateDataPoint(newTime);
-        const updatedData = [...currentData, newPointData as SensorDataPoint];
-        
-        const newRegimen = await predictRegime(updatedData);
-        const newDataPoint: SensorDataPoint = { ...newPointData, regimen: newRegimen };
-        
         if (newTime >= config.acquisitionTime) {
-          clearInterval(interval);
-          intervalRef.current = null;
+            clearInterval(dataAcquisitionIntervalRef.current!);
+            dataAcquisitionIntervalRef.current = null;
 
-          setSensorData(prev => [...prev, newDataPoint]);
-          
-          const finalData = [...sensorDataRef.current, newDataPoint];
-          const dominantRegimen = calculateDominantRegimen(finalData);
-          setRegimen(dominantRegimen);
+            const finalPoint = generateDataPoint(config.acquisitionTime);
+            const finalData = [...sensorDataRef.current, finalPoint];
+            setSensorData(finalData);
+            setElapsedTime(config.acquisitionTime);
+            setProgress(100);
 
-          setElapsedTime(config.acquisitionTime);
-          setProgress(100);
-          setAcquisitionState('completed');
-          setIsResultsModalOpen(true);
-
+            finalizeAcquisition(finalData, 'completed');
         } else {
-          setSensorData(prev => [...prev, newDataPoint]);
-          setElapsedTime(newTime);
-          setProgress((newTime / config.acquisitionTime) * 100);
-          setRegimen(newRegimen);
+            const newDataPoint = generateDataPoint(newTime);
+            setSensorData(prev => [...prev, newDataPoint]);
+            setElapsedTime(newTime);
+            setProgress((newTime / config.acquisitionTime) * 100);
         }
-      }, intervalTime);
-      intervalRef.current = interval;
-    };
-    
-    runAcquisition();
+    }, dataIntervalTime);
+
+    // Prediction interval (low frequency)
+    predictionIntervalRef.current = setInterval(async () => {
+        if (sensorDataRef.current.length > 0) {
+            const currentRegimen = await predictRegime(sensorDataRef.current);
+            setRegimen(currentRegimen);
+        }
+    }, 2000); // Predict every 2 seconds
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (dataAcquisitionIntervalRef.current) clearInterval(dataAcquisitionIntervalRef.current);
+      if (predictionIntervalRef.current) clearInterval(predictionIntervalRef.current);
     };
-  }, [acquisitionState, config, activeSensors, setAcquisitionState, setRegimen, setSensorData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [acquisitionState]);
   
   // Effect for auto-saving test results
   useEffect(() => {
@@ -190,9 +174,7 @@ export default function AdquisicionPage() {
       if (!isAutoSaved && (acquisitionState === 'completed' || acquisitionState === 'stopped') && sensorData.length > 0) {
         setIsAutoSaved(true);
 
-        const dominantRegimen = calculateDominantRegimen(sensorData);
-
-        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, dominantRegimen);
+        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, regimen);
         const fileToSave = {
           fileName: `${config.fileName}.csv`,
           csvContent: csvContent
@@ -218,17 +200,17 @@ export default function AdquisicionPage() {
       }
     };
     autoSave();
-  }, [acquisitionState, config, sensorData, startTimestamp, t, toast, isAutoSaved]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [acquisitionState, sensorData]); // Depend on regimen being final
 
 
   const handleStop = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+    if (dataAcquisitionIntervalRef.current) {
+      clearInterval(dataAcquisitionIntervalRef.current);
+      dataAcquisitionIntervalRef.current = null;
     }
-    const dominantRegimen = calculateDominantRegimen(sensorData);
-    setRegimen(dominantRegimen);
-    setAcquisitionState('stopped');
-    setIsResultsModalOpen(true);
+    // Use the current data collected so far
+    finalizeAcquisition(sensorDataRef.current, 'stopped');
   };
 
   const sensorColors: { [key: string]: string } = {

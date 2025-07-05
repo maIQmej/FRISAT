@@ -35,7 +35,7 @@ export const generateCsvContent = (
     }
     csv += `"durationLabel","${sensorData.at(-1)?.time.toFixed(2) || '0'}s"\n`;
     csv += `"samplesPerSecondLabel","${config.samplesPerSecond} Hz"\n`;
-    csv += `"totalSamples","${sensorData.length * activeSensors.length}"\n`;
+    csv += `"totalSamples","${sensorData.length}"\n`;
     if (regimen) {
       csv += `"dominantRegimen","${regimen}"\n`;
     }
@@ -50,11 +50,11 @@ export const generateCsvContent = (
     });
     csv += '\n';
     
-    const dataHeaders = ['time', ...activeSensors, 'regimen'];
+    const dataHeaders = ['time', ...activeSensors];
     csv += `"#RAW_HEADERS",${dataHeaders.join(',')}\n`;
 
     csv += `"${t('collectedData')}"\n`;
-    const displayHeaders = [`"${t('sampleNumber')}"`, `"${t('time')}"`, ...activeSensors.map(h => `"${t('sensor')} ${h.replace('sensor', '')}"`), `"${t('flowRegime')}"`];
+    const displayHeaders = [`"${t('sampleNumber')}"`, `"${t('time')}"`, ...activeSensors.map(h => `"${t('sensor')} ${h.replace('sensor', '')}"`)];
     csv += `${displayHeaders.join(',')}\n`;
 
     sensorData.forEach((point, index) => {

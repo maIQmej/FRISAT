@@ -20,8 +20,7 @@ export interface Configuration {
 
 export type SensorDataPoint = {
   time: number;
-  regimen?: RegimenType;
-  [key: string]: number | RegimenType | undefined;
+  [key: string]: number | undefined;
 };
 
 export type AcquisitionState = 'idle' | 'configuring' | 'running' | 'stopped' | 'completed';
