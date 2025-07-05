@@ -51,19 +51,19 @@ export default function WelcomePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 p-8 pt-0 sm:grid-cols-3">
-          <Button asChild size="lg" className="h-24 w-full flex-col text-lg">
+          <Button asChild size="lg" className="h-24 w-full flex-col text-lg hover:bg-accent">
             <Link href="/configuracion">
               <PlayCircle className="mb-2 h-7 w-7" />
               <span>{t('newTest')}</span>
             </Link>
           </Button>
-          <Button asChild size="lg" variant="secondary" className="h-24 w-full flex-col text-lg">
+          <Button asChild size="lg" variant="secondary" className="h-24 w-full flex-col text-lg hover:bg-accent hover:text-accent-foreground">
             <Link href="/historial">
               <History className="mb-2 h-7 w-7" />
               <span>{t('history')}</span>
             </Link>
           </Button>
-          <Button asChild size="lg" variant="secondary" className="h-24 w-full flex-col text-lg">
+          <Button asChild size="lg" variant="secondary" className="h-24 w-full flex-col text-lg hover:bg-accent hover:text-accent-foreground">
             <Link href="/ayuda">
               <HelpCircle className="mb-2 h-7 w-7" />
               <span>{t('help')}</span>
