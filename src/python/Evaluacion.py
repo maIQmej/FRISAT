@@ -1,97 +1,79 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-@author: CARLOS AVILES CRUZ, 03-septiembre-2024
-Adaptado para integración con Node.js
+@author: CARLOS AVILES CRUZ, adaptado para FRISAT
 """
-import sys
 import json
-import os
+import sys
 import numpy as np
+import os
 
-# Suprimir logs de TensorFlow para una salida más limpia
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
-from keras.models import load_model
+# Suprimir logs de TensorFlow
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-def get_script_path():
-    """Obtiene la ruta absoluta del directorio donde se encuentra el script."""
-    return os.path.dirname(os.path.realpath(sys.argv[0]))
+# Añadir la ruta del script al path de Python para encontrar los módulos locales
+script_dir = os.path.dirname(os.path.abspath(__file__))
+if script_dir not in sys.path:
+    sys.path.append(script_dir)
 
-def Normaliza(dato, mini, maxi):
-    """Normaliza los datos a un rango de 0 a 1."""
-    if (maxi - mini) == 0:
-        return dato # Evitar división por cero
-    return (dato - mini) / (maxi - mini)
+# Importar los módulos del proyecto
+try:
+    from data_processor import normalize_data, prepare_for_prediction
+    from model_loader import get_model
+except ImportError as e:
+    print(f"Error importing local modules: {e}. Make sure data_processor.py and model_loader.py are in the same directory.", file=sys.stderr, flush=True)
+    sys.exit(1)
+
 
 def main():
     try:
-        # Obtener la ruta base del script para localizar los archivos del modelo
-        base_path = get_script_path()
-        
-        # Definir rutas a los archivos del modelo y de normalización
-        model_path = os.path.join(base_path, 'Modelo_1500.h5')
-        maximin_path = os.path.join(base_path, 'MaxiMini.npz')
-
-        # Cargar el modelo y los datos de normalización
-        model = load_model(model_path, compile=False)
-        MaxiMini = np.load(maximin_path)
-        mini = MaxiMini['mini']
-        maxi = MaxiMini['maxi']
-
-        # Leer los datos de los sensores desde la entrada estándar (stdin)
-        input_data = sys.stdin.read()
-        sensor_data_points = json.loads(input_data)
-        
-        if not sensor_data_points:
+        # 1. Leer datos de sensores desde stdin (enviados por Node.js)
+        input_data_str = sys.stdin.read()
+        if not input_data_str:
             print("indeterminado", file=sys.stdout, flush=True)
             return
+            
+        all_sensor_data = json.loads(input_data_str)
 
-        # Extraer datos del primer sensor disponible en el array de datos
+        # Asumimos que los datos relevantes están en la primera clave de sensor encontrada (ej. 'sensor1')
         first_sensor_key = None
-        for key in sensor_data_points[0].keys():
-            if key.startswith('sensor'):
-                first_sensor_key = key
-                break
+        if all_sensor_data:
+            for key in all_sensor_data[0]:
+                if key.startswith('sensor'):
+                    first_sensor_key = key
+                    break
         
         if not first_sensor_key:
             print("indeterminado", file=sys.stdout, flush=True)
             return
 
-        # Crear un array de numpy con los valores del sensor
-        dato = np.array([p.get(first_sensor_key, 0.0) for p in sensor_data_points])
+        signal_data = np.array([p.get(first_sensor_key, 0) for p in all_sensor_data])
 
-        # Normalizar y preparar los datos
-        DB = Normaliza(dato, mini, maxi)
+        # 2. Procesar los datos usando los nuevos módulos
+        normalized_signal = normalize_data(signal_data)
+        prepared_data = prepare_for_prediction(normalized_signal)
         
-        # Asegurar que los datos tengan la longitud esperada por el modelo (350 muestras)
-        required_samples = 350
-        if len(DB) > required_samples:
-            # Truncar si hay más datos de los necesarios
-            DB = DB[:required_samples]
-        elif len(DB) < required_samples:
-            # Rellenar con ceros si faltan datos
-            padding = np.zeros(required_samples - len(DB))
-            DB = np.concatenate([DB, padding])
-        
-        # Remodelar para que coincida con la entrada del modelo
-        DB = np.reshape(DB, (1, required_samples, 1))
+        # 3. Obtener el modelo y predecir
+        model = get_model()
+        prediction = np.argmax(model.predict(prepared_data, verbose=0))
 
-        # Realizar la predicción
-        prediction = model.predict(DB, verbose=0)
-        result = np.argmax(prediction)
-
-        # Imprimir el resultado para que el script de Node.js lo capture
-        if result == 0:
+        # 4. Devolver el resultado
+        if prediction == 0:
             print("flujo laminar", file=sys.stdout, flush=True)
-        elif result == 2:
+        elif prediction == 1:
+            # El modelo clasifica "Transición" como 1, lo mapeamos a "indeterminado"
+            # para que coincida con los estados de la app.
+            print("indeterminado", file=sys.stdout, flush=True)
+        elif prediction == 2:
             print("turbulento", file=sys.stdout, flush=True)
-        else:  # Esto cubre el resultado 1 (Transición) y cualquier otro caso
+        else:
             print("indeterminado", file=sys.stdout, flush=True)
 
+    except json.JSONDecodeError:
+        print(f"Error: Invalid JSON received.", file=sys.stderr, flush=True)
+        print("indeterminado", file=sys.stdout, flush=True)
     except Exception as e:
-        # Enviar errores a stderr para depuración en Node.js
-        print(f"Error in Python script: {e}", file=sys.stderr, flush=True)
-        # Asegurarse de que siempre haya una salida válida para no romper la app
+        print(f"An unexpected error occurred in Evaluacion.py: {e}", file=sys.stderr, flush=True)
         print("indeterminado", file=sys.stdout, flush=True)
 
 if __name__ == "__main__":

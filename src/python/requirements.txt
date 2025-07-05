@@ -1,0 +1,5 @@
+flask==2.0.1
+numpy==1.21.2
+keras==2.6.0
+tensorflow==2.6.0
+firebase-admin==5.3.0
