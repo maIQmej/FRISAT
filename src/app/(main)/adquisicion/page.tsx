@@ -20,11 +20,15 @@ import {
 } from '@/components/ui/card';
 import { Wind, RotateCw, HardDrive, Database, Home, Sigma } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/hooks/use-toast';
+import { saveExportedFiles } from '@/actions/saveExport';
+import { generateCsvContent } from '@/lib/csv-utils';
 
 export default function AdquisicionPage() {
   const router = useRouter();
-  const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp, startTimestamp } = useApp();
-  const { t, t_regimen } = useTranslation();
+  const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp, startTimestamp, language } = useApp();
+  const { t } = useTranslation();
+  const { toast } = useToast();
   const [progress, setProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const elapsedTimeRef = useRef(0);
@@ -35,6 +39,7 @@ export default function AdquisicionPage() {
   const [selectedDataPoint, setSelectedDataPoint] = useState<SensorDataPoint | null>(null);
   const [selectedDataPointIndex, setSelectedDataPointIndex] = useState<number | null>(null);
   const [chartGroups, setChartGroups] = useState<string[][]>([]);
+  const [isAutoSaved, setIsAutoSaved] = useState(false);
 
   const totalPlannedSamples = useMemo(
     () => Math.floor(config.acquisitionTime * config.samplesPerSecond) + 1,
@@ -149,6 +154,41 @@ export default function AdquisicionPage() {
       }
     };
   }, [acquisitionState, config, activeSensors, setAcquisitionState, setRegimen, setSensorData]);
+  
+  // Effect for auto-saving test results
+  useEffect(() => {
+    const autoSave = async () => {
+      if (!isAutoSaved && (acquisitionState === 'completed' || acquisitionState === 'stopped') && sensorData.length > 0) {
+        setIsAutoSaved(true);
+
+        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, regimen);
+        const fileToSave = {
+          fileName: `${config.fileName}.csv`,
+          csvContent: csvContent
+        };
+
+        try {
+          const result = await saveExportedFiles([fileToSave]);
+          if (result.success) {
+            toast({
+              title: t('autoSaveSuccessTitle'),
+              description: t('autoSaveSuccessDesc').replace('{fileName}', fileToSave.fileName)
+            });
+          } else {
+            throw new Error(result.message);
+          }
+        } catch (error) {
+          toast({
+            title: t('autoSaveErrorTitle'),
+            description: (error as Error).message,
+            variant: 'destructive',
+          });
+        }
+      }
+    };
+    autoSave();
+  }, [acquisitionState, config, sensorData, startTimestamp, regimen, t, toast, isAutoSaved]);
+
 
   const handleStop = () => {
     if (intervalRef.current) {
