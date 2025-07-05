@@ -1,3 +1,4 @@
+
 'use server';
 
 import { spawn } from 'child_process';
@@ -7,7 +8,7 @@ import type { SensorDataPoint, RegimenType } from '@/lib/types';
 export async function predictRegime(data: SensorDataPoint[]): Promise<RegimenType> {
   // Asegúrate de que Python está instalado en el entorno de ejecución.
   const pythonExecutable = process.env.PYTHON_EXECUTABLE || 'python3';
-  const scriptPath = path.join(process.cwd(), 'src', 'python', 'predict.py');
+  const scriptPath = path.join(process.cwd(), 'src', 'python', 'Evaluacion.py');
   const dataString = JSON.stringify(data);
 
   return new Promise((resolve) => {
