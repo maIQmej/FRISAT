@@ -222,7 +222,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
       >
         <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle>{isMultiExport ? t('multiExportTitle') : t('exportTitle')}</DialogTitle>
-          <DialogDescription>{isMultiExport ? t('multiExportDesc').replace('{count}', filesToExport.length.toString()) : t('exportDesc')}</DialogDescription>
+          {isMultiExport && <DialogDescription>{t('multiExportDesc').replace('{count}', filesToExport.length.toString())}</DialogDescription>}
         </DialogHeader>
         
         <div className="flex-1 overflow-y-auto">
