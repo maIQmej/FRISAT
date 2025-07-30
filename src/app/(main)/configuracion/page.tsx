@@ -27,7 +27,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const formSchema = z.object({
-  acquisitionTime: z.coerce.number().min(1, 'Debe ser al menos 1 segundo').max(3600, 'No puede exceder 1 hora'),
+  acquisitionTime: z.coerce.number().min(10, 'El tiempo debe ser de al menos 10 segundos').max(600, 'El tiempo no puede exceder los 600 segundos'),
   samplesPerSecond: z.coerce.number().min(1, 'Mínimo 1 muestra/s').max(1000, 'Máximo 1000 muestras/s'),
   fileName: z.string().min(1, 'El nombre es requerido').regex(/^[a-zA-Z0-9_-]+$/, 'Solo letras, números, guiones y guiones bajos'),
   sensors: z.object({
