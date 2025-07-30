@@ -35,7 +35,6 @@ export default function AdquisicionPage() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const elapsedTimeRef = useRef(0);
   const dataAcquisitionIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const predictionIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
   const [selectedDataPoint, setSelectedDataPoint] = useState<SensorDataPoint | null>(null);
@@ -43,7 +42,6 @@ export default function AdquisicionPage() {
   const [chartGroups, setChartGroups] = useState<string[][]>([]);
   const [isAutoSaved, setIsAutoSaved] = useState(false);
   const sensorDataRef = useRef<SensorDataPoint[]>([]);
-  const predictionErrorToastShownRef = useRef(false);
   sensorDataRef.current = sensorData;
 
   const totalPlannedSamples = useMemo(
@@ -134,11 +132,6 @@ export default function AdquisicionPage() {
   };
 
   const finalizeAcquisition = async (finalData: SensorDataPoint[], endState: 'completed' | 'stopped') => {
-    if (predictionIntervalRef.current) {
-        clearInterval(predictionIntervalRef.current);
-        predictionIntervalRef.current = null;
-    }
-
     const { regimen: finalRegimen, error } = await predictRegime(finalData);
     if (error) {
       toast({
@@ -157,11 +150,11 @@ export default function AdquisicionPage() {
       return;
     }
     
-    predictionErrorToastShownRef.current = false;
     setChartGroups(activeSensors.length > 0 ? [activeSensors] : []);
     setSensorData([]);
     elapsedTimeRef.current = 0;
     setElapsedTime(0);
+    setRegimen('indeterminado');
 
     const generateDataPoint = (time: number): SensorDataPoint => {
       const point: SensorDataPoint = {
@@ -197,25 +190,8 @@ export default function AdquisicionPage() {
         }
     }, dataIntervalTime);
 
-    predictionIntervalRef.current = setInterval(async () => {
-        if (sensorDataRef.current.length > 0) {
-            const { regimen: currentRegimen, error } = await predictRegime(sensorDataRef.current);
-            if (error && !predictionErrorToastShownRef.current) {
-              toast({
-                title: t('predictionErrorTitle'),
-                description: `${t('predictionErrorDesc')} ${error}`,
-                variant: 'destructive',
-                duration: 10000,
-              });
-              predictionErrorToastShownRef.current = true;
-            }
-            setRegimen(currentRegimen);
-        }
-    }, 2000); 
-
     return () => {
       if (dataAcquisitionIntervalRef.current) clearInterval(dataAcquisitionIntervalRef.current);
-      if (predictionIntervalRef.current) clearInterval(predictionIntervalRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acquisitionState]);
