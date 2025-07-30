@@ -1,0 +1,27 @@
+﻿"Resumen de la Prueba"
+"Parámetro","Valor"
+"Nombre del archivo","df.csv"
+"startTime","2025-07-30T22:38:15.625Z"
+"durationLabel","10.00s"
+"samplesPerSecondLabel","1 Hz"
+"totalSamples","10"
+"dominantRegimen","indeterminado"
+
+"Estadísticas de la Prueba"
+"Sensor","Media","Desv. Est.","Mín","Máx"
+"Sensor 4","2.25","0.96","0.73","3.44"
+"Sensor 5","3.31","1.43","1.08","5.75"
+
+"#RAW_HEADERS",time,sensor4,sensor5
+"Datos Recolectados"
+"Nº de Muestra","time","Sensor 4","Sensor 5"
+1,1.00,1.18,4.52
+2,2.00,2.34,1.74
+3,3.00,2.94,1.87
+4,4.00,0.73,5.75
+5,5.00,2.91,4.40
+6,6.00,3.15,3.09
+7,7.00,1.36,1.08
+8,8.00,3.44,3.32
+9,9.00,2.89,3.85
+10,10.00,1.54,3.46

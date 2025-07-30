@@ -70,7 +70,7 @@ export const translations: Translations = {
     notAvailable: 'No disponible',
 
     exportTitle: 'Descargar Datos',
-    exportDesc: 'Ajuste el nombre del archivo y proceda con la descarga.',
+    exportDesc: 'Verifique y proceda con la descarga.',
     
     includeDate: 'Incluir fecha y hora en el nombre del archivo',
     finalFileName: 'Nombre final del archivo',
@@ -217,7 +217,7 @@ export const translations: Translations = {
     notAvailable: 'Not available',
 
     exportTitle: 'Download Data',
-    exportDesc: 'Adjust the file name and proceed with the download.',
+    exportDesc: 'Verify and proceed with the download.',
     
     includeDate: 'Include date and time in filename',
     finalFileName: 'Final filename',
@@ -364,7 +364,7 @@ export const translations: Translations = {
     notAvailable: 'Non disponible',
 
     exportTitle: 'Télécharger les Données',
-    exportDesc: 'Ajustez le nom du fichier et procédez au téléchargement.',
+    exportDesc: 'Vérifiez et procédez au téléchargement.',
     
     includeDate: "Inclure la date et l'heure dans le nom du fichier",
     finalFileName: "Nom final du fichier",
@@ -511,7 +511,7 @@ export const translations: Translations = {
     notAvailable: 'Nicht verfügbar',
 
     exportTitle: 'Daten herunterladen',
-    exportDesc: 'Passen Sie den Dateinamen an und fahren Sie mit dem Download fort.',
+    exportDesc: 'Überprüfen und mit dem Download fortfahren.',
     
     includeDate: 'Datum und Uhrzeit in den Dateinamen aufnehmen',
     finalFileName: 'Endgültiger Dateiname',
