@@ -43,7 +43,7 @@ export const translations: Translations = {
     
     acqFinished: 'Adquisición Finalizada',
     acqInProgress: 'Adquisición en Proceso',
-    acqFinishedDesc: 'La recolección de datos ha terminado.',
+    acqFinishedDesc: 'La recolección de datos ha terminado. A continuación se muestra el resumen.',
     acqInProgressDesc: 'Monitoreando datos de sensores en tiempo real. Tiempo restante:',
     remainingTime: 'Tiempo restante',
     viewHistory: 'Ver Historial',
@@ -182,7 +182,7 @@ export const translations: Translations = {
     
     acqFinished: 'Acquisition Finished',
     acqInProgress: 'Acquisition in Progress',
-    acqFinishedDesc: 'Data collection has finished.',
+    acqFinishedDesc: 'Data collection has finished. The summary is shown below.',
     acqInProgressDesc: 'Monitoring sensor data in real time. Time remaining:',
     remainingTime: 'Time remaining',
     viewHistory: 'View History',
@@ -321,7 +321,7 @@ export const translations: Translations = {
     
     acqFinished: 'Acquisition Terminée',
     acqInProgress: 'Acquisition en Cours',
-    acqFinishedDesc: 'La collecte de données est terminée.',
+    acqFinishedDesc: 'La collecte de données est terminée. Le résumé est affiché ci-dessous.',
     acqInProgressDesc: 'Surveillance des données des capteurs en temps réel. Temps restant:',
     remainingTime: 'Temps restant',
     viewHistory: 'Voir l\'Historique',
@@ -460,7 +460,7 @@ export const translations: Translations = {
 
     acqFinished: 'Erfassung abgeschlossen',
     acqInProgress: 'Erfassung läuft',
-    acqFinishedDesc: 'Die Datenerfassung ist abgeschlossen.',
+    acqFinishedDesc: 'Die Datenerfassung ist abgeschlossen. Die Zusammenfassung wird unten angezeigt.',
     acqInProgressDesc: 'Überwachung der Sensordaten in Echtzeit. Verbleibende Zeit:',
     remainingTime: 'Verbleibende Zeit',
     viewHistory: 'Verlauf anzeigen',
@@ -568,3 +568,5 @@ export const translations: Translations = {
     predictionErrorDesc: 'Im Vorhersage-Skript ist ein Fehler aufgetreten. Details:',
   }
 };
+
+    

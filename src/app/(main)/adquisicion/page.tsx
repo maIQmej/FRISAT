@@ -7,7 +7,6 @@ import { useApp } from '@/context/AppContext';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { SensorChart } from '@/components/app/SensorChart';
-import { ResultsModal } from '@/components/app/ResultsModal';
 import { ExportModal } from '@/components/app/ExportModal';
 import { DataPointModal } from '@/components/app/DataPointModal';
 import type { SensorDataPoint, AcquisitionState } from '@/lib/types';
@@ -18,12 +17,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Wind, RotateCw, HardDrive, Database, Home, Sigma } from 'lucide-react';
+import { Wind, RotateCw, HardDrive, Database, Home, Sigma, FileText, Clock, Timer } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { saveExportedFiles } from '@/actions/saveExport';
 import { generateCsvContent } from '@/lib/csv-utils';
 import { predictRegime } from '@/actions/predictRegime';
+import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export default function AdquisicionPage() {
   const router = useRouter();
@@ -35,7 +36,6 @@ export default function AdquisicionPage() {
   const elapsedTimeRef = useRef(0);
   const dataAcquisitionIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const predictionIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
   const [selectedDataPoint, setSelectedDataPoint] = useState<SensorDataPoint | null>(null);
@@ -45,7 +45,6 @@ export default function AdquisicionPage() {
   const sensorDataRef = useRef<SensorDataPoint[]>([]);
   const predictionErrorToastShownRef = useRef(false);
   sensorDataRef.current = sensorData;
-
 
   const totalPlannedSamples = useMemo(
     () => Math.floor(config.acquisitionTime * config.samplesPerSecond) + 1,
@@ -57,6 +56,46 @@ export default function AdquisicionPage() {
       .filter(([, isActive]) => isActive)
       .map(([key]) => key), 
   [config.sensors]);
+
+  const testStats = useMemo(() => {
+    if (!sensorData || sensorData.length < 2) {
+      return [];
+    }
+    
+    return activeSensors.map((key) => {
+      const values = sensorData.map(p => p[key]).filter((v): v is number => typeof v === 'number' && isFinite(v));
+
+      if (values.length < 2) {
+        return {
+          key,
+          label: `${t('sensor')} ${parseInt(key.replace('sensor', ''))}`,
+          mean: "N/A",
+          stdDev: "N/A",
+          min: "N/A",
+          max: "N/A",
+        };
+      }
+
+      const count = values.length;
+      const sum = values.reduce((a, b) => a + b, 0);
+      const mean = sum / count;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      
+      const stdDev = Math.sqrt(
+        values.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / (count > 1 ? count - 1 : 1)
+      );
+
+      return {
+        key,
+        label: `${t('sensor')} ${parseInt(key.replace('sensor', ''))}`,
+        mean: mean.toFixed(2),
+        stdDev: stdDev.toFixed(2),
+        min: min.toFixed(2),
+        max: max.toFixed(2),
+      };
+    });
+  }, [sensorData, activeSensors, t]);
 
   useEffect(() => {
     if (acquisitionState !== 'running' && acquisitionState !== 'completed' && acquisitionState !== 'stopped') {
@@ -110,9 +149,7 @@ export default function AdquisicionPage() {
       });
     }
     setRegimen(finalRegimen);
-    
     setAcquisitionState(endState);
-    setIsResultsModalOpen(true);
   };
   
   useEffect(() => {
@@ -235,6 +272,9 @@ export default function AdquisicionPage() {
   };
 
   const isAcquisitionFinished = acquisitionState === 'completed' || acquisitionState === 'stopped';
+  const activeSensorsCount = activeSensors.length;
+  const finalTime = sensorData.at(-1)?.time.toFixed(2) || '0.00';
+  const formattedStartTime = startTimestamp ? startTimestamp.toLocaleString(language) : t('notAvailable');
   
   const handleNewTest = () => {
     resetApp();
@@ -249,16 +289,154 @@ export default function AdquisicionPage() {
     router.push('/historial');
   };
   
-  const handleTriggerExport = () => {
-    setIsResultsModalOpen(false);
-    setIsExportModalOpen(true);
-  }
-
   const handleDataPointClick = (dataPoint: SensorDataPoint, index: number) => {
     setSelectedDataPoint(dataPoint);
     setSelectedDataPointIndex(index);
     setIsDataPointModalOpen(true);
   };
+
+  const renderAcquisitionInProgress = () => (
+    <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {chartGroups.map((group, groupIndex) => {
+        const primaryKey = group[0];
+        const title = group.length > 1 ? t('sensorSelection') : `${t('sensor')} ${parseInt(primaryKey.replace('sensor', ''))}`;
+        return (
+          <SensorChart
+            key={`${primaryKey}-${groupIndex}`}
+            title={title}
+            data={sensorData}
+            dataKeys={group}
+            colors={sensorColors}
+            onDrop={handleDrop}
+            onDoubleClick={() => handleSeparate(group)}
+            onDataPointClick={handleDataPointClick}
+          />
+        );
+      })}
+      <Card className="flex flex-col items-center justify-center min-h-[240px]">
+        <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
+          <Wind className="h-8 w-8 text-primary" />
+          <CardTitle className="mt-2">{t('flowRegime')}</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <p className="text-2xl font-bold capitalize text-center">{t_regimen(regimen)}</p>
+        </CardContent>
+      </Card>
+      <Card className="flex flex-col items-center justify-center min-h-[240px]">
+        <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
+          <Sigma className="h-8 w-8 text-primary" />
+          <CardTitle className="mt-2">{t('totalSamplesLabel')}</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0 text-center">
+          <p className="text-2xl font-bold">
+            {sensorData.length * activeSensors.length} / {totalPlannedSamples * activeSensors.length}
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderAcquisitionFinished = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+            <CardTitle className="text-2xl">{t('resultsTitle')}</CardTitle>
+            <CardDescription>{t('resultsDesc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex items-center space-x-3 rounded-md border p-4 sm:col-span-2">
+              <FileText className="h-6 w-6 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('fileNameLabel')}</p>
+                <p className="font-semibold">{config.fileName}.csv</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 rounded-md border p-4">
+              <Clock className="h-6 w-6 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('startTime')}</p>
+                <p className="font-semibold">{formattedStartTime}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 rounded-md border p-4">
+              <Timer className="h-6 w-6 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('durationLabel')}</p>
+                <p className="font-semibold">{finalTime}s / {config.acquisitionTime}s</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 rounded-md border p-4">
+              <Sigma className="h-6 w-6 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('totalSamplesLabel')}</p>
+                <p className="font-semibold">{sensorData.length * activeSensorsCount} / {totalPlannedSamples * activeSensorsCount}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 rounded-md border p-4">
+              <Timer className="h-6 w-6 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('activeSensorsLabel')}</p>
+                <p className="font-semibold">{activeSensorsCount}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 rounded-md border p-4 sm:col-span-2">
+              <Wind className="h-6 w-6 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('flowRegimeLabel')}</p>
+                <p className="font-semibold capitalize">{t_regimen(regimen)}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+            <CardTitle>{t('testStatistics')}</CardTitle>
+            <CardDescription>{t('testStatisticsDesc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>{t('sensor')}</TableHead>
+                        <TableHead className="text-right">{t('statMean')}</TableHead>
+                        <TableHead className="text-right">{t('statStdDev')}</TableHead>
+                        <TableHead className="text-right">{t('statMin')}</TableHead>
+                        <TableHead className="text-right">{t('statMax')}</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {testStats.map((stat) => (
+                        <TableRow key={stat.key}>
+                            <TableCell className="font-medium">{stat.label}</TableCell>
+                            <TableCell className="text-right font-mono">{stat.mean}</TableCell>
+                            <TableCell className="text-right font-mono">{stat.stdDev}</TableCell>
+                            <TableCell className="text-right font-mono">{stat.min}</TableCell>
+                            <TableCell className="text-right font-mono">{stat.max}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </CardContent>
+      </Card>
+
+      <div className="grid flex-grow grid-cols-1 gap-4">
+      {activeSensors.map((sensorKey, index) => (
+          <SensorChart
+            key={sensorKey}
+            title={`${t('sensor')} ${parseInt(sensorKey.replace('sensor', ''))}`}
+            data={sensorData}
+            dataKeys={[sensorKey]}
+            colors={sensorColors}
+            onDrop={() => {}} // No-op
+            onDataPointClick={handleDataPointClick}
+          />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -301,58 +479,11 @@ export default function AdquisicionPage() {
             </div>
           </CardHeader>
           <CardContent className="flex flex-grow flex-col gap-4">
-            <Progress value={progress} />
-            <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {chartGroups.map((group, groupIndex) => {
-                const primaryKey = group[0];
-                const title = group.length > 1 ? t('sensorSelection') : `${t('sensor')} ${parseInt(primaryKey.replace('sensor', ''))}`;
-                return (
-                  <SensorChart
-                    key={`${primaryKey}-${groupIndex}`}
-                    title={title}
-                    data={sensorData}
-                    dataKeys={group}
-                    colors={sensorColors}
-                    onDrop={handleDrop}
-                    onDoubleClick={() => handleSeparate(group)}
-                    onDataPointClick={handleDataPointClick}
-                  />
-                );
-              })}
-              <Card className="flex flex-col items-center justify-center min-h-[240px]">
-                <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
-                  <Wind className="h-8 w-8 text-primary" />
-                  <CardTitle className="mt-2">{t('flowRegime')}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-2xl font-bold capitalize text-center">{t_regimen(regimen)}</p>
-                </CardContent>
-              </Card>
-              <Card className="flex flex-col items-center justify-center min-h-[240px]">
-                <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
-                  <Sigma className="h-8 w-8 text-primary" />
-                  <CardTitle className="mt-2">{t('totalSamplesLabel')}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0 text-center">
-                  <p className="text-2xl font-bold">
-                    {sensorData.length * activeSensors.length} / {totalPlannedSamples * activeSensors.length}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            {!isAcquisitionFinished && <Progress value={progress} />}
+            {isAcquisitionFinished ? renderAcquisitionFinished() : renderAcquisitionInProgress()}
           </CardContent>
         </Card>
       </div>
-
-      <ResultsModal
-        open={isResultsModalOpen}
-        onOpenChange={setIsResultsModalOpen}
-        config={config}
-        sensorData={sensorData}
-        regimen={regimen}
-        onTriggerExport={handleTriggerExport}
-        startTimestamp={startTimestamp}
-      />
       
       <ExportModal 
         open={isExportModalOpen}
@@ -374,3 +505,5 @@ export default function AdquisicionPage() {
     </>
   );
 }
+
+    
