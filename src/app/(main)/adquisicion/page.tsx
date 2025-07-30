@@ -459,9 +459,6 @@ export default function AdquisicionPage() {
                     <Button variant="outline" onClick={handleNewTest}>
                       <RotateCw className="mr-2 h-4 w-4" /> {t('newTest')}
                     </Button>
-                    <Button variant="secondary" onClick={handleHistory}>
-                      <Database className="mr-2 h-4 w-4" /> {t('viewHistory')}
-                    </Button>
                     <Button onClick={handleDownload}>
                       <HardDrive className="mr-2 h-4 w-4" /> {t('downloadData')}
                     </Button>

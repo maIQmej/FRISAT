@@ -26,7 +26,7 @@ export const translations: Translations = {
     sensorSelection: 'Selección de Sensores',
     sensorSelectionDesc: 'Active los sensores que desea monitorear.',
     sensor: 'Sensor',
-    reset: 'Reiniciar',
+    reset: 'Borrar',
     startAcq: 'Iniciar Adquisición',
     backToHome: 'Volver al Inicio',
     
@@ -37,7 +37,7 @@ export const translations: Translations = {
     fileNameLabel: 'Nombre del archivo',
     activeSensorsLabel: 'Sensores Activos',
     none: 'Ninguno',
-    cancel: 'Cancelar',
+    cancel: 'Borrar',
     confirmAndStart: 'Confirmar e Iniciar',
     seconds: 'segundos',
     
@@ -165,7 +165,7 @@ export const translations: Translations = {
     sensorSelection: 'Sensor Selection',
     sensorSelectionDesc: 'Activate the sensors you want to monitor.',
     sensor: 'Sensor',
-    reset: 'Reset',
+    reset: 'Clear',
     startAcq: 'Start Acquisition',
     backToHome: 'Back to Home',
 
@@ -176,7 +176,7 @@ export const translations: Translations = {
     fileNameLabel: 'File name',
     activeSensorsLabel: 'Active Sensors',
     none: 'None',
-    cancel: 'Cancel',
+    cancel: 'Clear',
     confirmAndStart: 'Confirm and Start',
     seconds: 'seconds',
     
@@ -304,7 +304,7 @@ export const translations: Translations = {
     sensorSelection: 'Sélection des Capteurs',
     sensorSelectionDesc: 'Activez les capteurs que vous souhaitez surveiller.',
     sensor: 'Capteur',
-    reset: 'Réinitialiser',
+    reset: 'Effacer',
     startAcq: 'Démarrer l\'Acquisition',
     backToHome: 'Retour à l\'Accueil',
 
@@ -315,7 +315,7 @@ export const translations: Translations = {
     fileNameLabel: 'Nom du fichier',
     activeSensorsLabel: 'Capteurs Actifs',
     none: 'Aucun',
-    cancel: 'Annuler',
+    cancel: 'Effacer',
     confirmAndStart: 'Confirmer et Démarrer',
     seconds: 'secondes',
     
@@ -443,7 +443,7 @@ export const translations: Translations = {
     sensorSelection: 'Sensorauswahl',
     sensorSelectionDesc: 'Aktivieren Sie die Sensoren, die Sie überwachen möchten.',
     sensor: 'Sensor',
-    reset: 'Zurücksetzen',
+    reset: 'Löschen',
     startAcq: 'Erfassung starten',
     backToHome: 'Zurück zur Startseite',
 
@@ -454,7 +454,7 @@ export const translations: Translations = {
     fileNameLabel: 'Dateiname',
     activeSensorsLabel: 'Aktive Sensoren',
     none: 'Keine',
-    cancel: 'Abbrechen',
+    cancel: 'Löschen',
     confirmAndStart: 'Bestätigen und Starten',
     seconds: 'Sekunden',
 
