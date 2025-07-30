@@ -66,7 +66,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     resolver: zodResolver(singleFileFormSchema),
     defaultValues: {
       fileName: singleFileName,
-      includeDate: true,
+      includeDate: false,
     },
   });
 
@@ -80,7 +80,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     if (open) {
       singleFileForm.reset({
         fileName: singleFileName,
-        includeDate: true,
+        includeDate: false,
       });
       multiFileForm.reset({});
       setExportState('idle');
