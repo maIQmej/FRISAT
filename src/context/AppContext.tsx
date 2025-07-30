@@ -9,10 +9,10 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const initialConfig: Configuration = {
   acquisitionTime: 10,
   samplesPerSecond: 1,
-  fileName: 'medicion_01',
+  fileName: '',
   sensors: {
-    sensor1: true,
-    sensor2: true,
+    sensor1: false,
+    sensor2: false,
     sensor3: false,
     sensor4: false,
     sensor5: false,
