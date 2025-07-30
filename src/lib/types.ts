@@ -23,7 +23,7 @@ export type SensorDataPoint = {
   [key: string]: number | undefined;
 };
 
-export type AcquisitionState = 'idle' | 'configuring' | 'running' | 'stopped' | 'completed';
+export type AcquisitionState = 'configuring' | 'ready' | 'running' | 'stopped' | 'completed';
 
 export type AppContextType = {
   config: Configuration;

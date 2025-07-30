@@ -17,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Wind, RotateCw, HardDrive, Database, Home, Sigma, FileText, Clock, Timer } from 'lucide-react';
+import { Wind, RotateCw, HardDrive, Database, Home, Sigma, FileText, Clock, Timer, PlayCircle, Settings } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { saveExportedFiles } from '@/actions/saveExport';
@@ -28,7 +28,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 export default function AdquisicionPage() {
   const router = useRouter();
-  const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp, startTimestamp, language } = useApp();
+  const { config, setSensorData, sensorData, setAcquisitionState, acquisitionState, regimen, setRegimen, resetApp, startTimestamp, language, setStartTimestamp } = useApp();
   const { t, t_regimen } = useTranslation();
   const { toast } = useToast();
   const [progress, setProgress] = useState(0);
@@ -98,7 +98,7 @@ export default function AdquisicionPage() {
   }, [sensorData, activeSensors, t]);
 
   useEffect(() => {
-    if (acquisitionState !== 'running' && acquisitionState !== 'completed' && acquisitionState !== 'stopped') {
+    if (!['running', 'completed', 'stopped', 'ready'].includes(acquisitionState)) {
       router.replace('/configuracion');
     }
   }, [acquisitionState, router]);
@@ -272,6 +272,9 @@ export default function AdquisicionPage() {
   };
 
   const isAcquisitionFinished = acquisitionState === 'completed' || acquisitionState === 'stopped';
+  const isAcquisitionRunning = acquisitionState === 'running';
+  const isAcquisitionReady = acquisitionState === 'ready';
+
   const activeSensorsCount = activeSensors.length;
   const finalTime = sensorData.at(-1)?.time.toFixed(2) || '0.00';
   const formattedStartTime = startTimestamp ? startTimestamp.toLocaleString(language) : t('notAvailable');
@@ -295,6 +298,65 @@ export default function AdquisicionPage() {
     setIsDataPointModalOpen(true);
   };
 
+  const handleStartAcquisitionClick = () => {
+    setStartTimestamp(new Date());
+    setAcquisitionState('running');
+  };
+
+  const renderAcquisitionReady = () => {
+    const activeSensorsText = activeSensors
+      .map((key) => `${t('sensor')} ${parseInt(key.replace('sensor', ''), 10)}`)
+      .join(', ');
+      
+    return (
+      <div className="flex h-full flex-col items-center justify-center text-center">
+        <Card className="w-full max-w-2xl">
+          <CardHeader>
+            <CardTitle className="text-2xl">{t('readyToStartTitle')}</CardTitle>
+            <CardDescription>{t('readyToStartDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-3 text-left text-sm sm:grid-cols-2">
+                <div className="flex items-center space-x-3 rounded-md border p-3 sm:col-span-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('fileNameLabel')}</p>
+                    <p className="font-semibold">{config.fileName}.csv</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 rounded-md border p-3">
+                  <Timer className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('acqTimeLabel')}</p>
+                    <p className="font-semibold">{config.acquisitionTime} {t('seconds')}</p>
+                  </div>
+                </div>
+                 <div className="flex items-center space-x-3 rounded-md border p-3">
+                  <Sigma className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('samplesPerSecondLabel')}</p>
+                    <p className="font-semibold">{config.samplesPerSecond} Hz</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3 rounded-md border p-3 sm:col-span-2">
+                  <Database className="h-5 w-5 flex-shrink-0 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('activeSensorsLabel')}</p>
+                    <p className="font-semibold">{activeSensorsText || t('none')}</p>
+                  </div>
+                </div>
+              </div>
+              <Separator />
+               <Button size="lg" className="h-16 w-full text-lg" onClick={handleStartAcquisitionClick}>
+                <PlayCircle className="mr-2 h-6 w-6" />
+                {t('startAcq')}
+              </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+  
   const renderAcquisitionInProgress = () => (
     <div className="grid flex-grow grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       {chartGroups.map((group, groupIndex) => {
@@ -438,6 +500,27 @@ export default function AdquisicionPage() {
     </div>
   );
 
+  const getCardTitle = () => {
+    if (isAcquisitionFinished) return t('acqFinished');
+    if (isAcquisitionRunning) return t('acqInProgress');
+    if (isAcquisitionReady) return t('acqReady');
+    return t('acqTitle');
+  };
+
+  const getCardDescription = () => {
+    if (isAcquisitionFinished) return t('acqFinishedDesc');
+    if (isAcquisitionRunning) return `${t('acqInProgressDesc')} ${(config.acquisitionTime - elapsedTime).toFixed(1)}s`;
+    if (isAcquisitionReady) return t('acqReadyDesc');
+    return '';
+  }
+
+  const renderContent = () => {
+    if (isAcquisitionReady) return renderAcquisitionReady();
+    if (isAcquisitionFinished) return renderAcquisitionFinished();
+    if (isAcquisitionRunning) return renderAcquisitionInProgress();
+    return null;
+  }
+
   return (
     <>
       <div className="flex h-full flex-col gap-4">
@@ -445,13 +528,8 @@ export default function AdquisicionPage() {
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <CardTitle>{isAcquisitionFinished ? t('acqFinished') : t('acqInProgress')}</CardTitle>
-                <CardDescription>
-                  {isAcquisitionFinished 
-                    ? t('acqFinishedDesc')
-                    : `${t('acqInProgressDesc')} ${(config.acquisitionTime - elapsedTime).toFixed(1)}s`
-                  }
-                </CardDescription>
+                <CardTitle>{getCardTitle()}</CardTitle>
+                <CardDescription>{getCardDescription()}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 {isAcquisitionFinished ? (
@@ -467,17 +545,21 @@ export default function AdquisicionPage() {
                         <span className="sr-only">{t('home')}</span>
                       </Button>
                   </>
-                ) : (
+                ) : isAcquisitionRunning ? (
                   <Button variant="destructive" onClick={handleStop}>
                     {t('stopAcq')}
                   </Button>
-                )}
+                ) : isAcquisitionReady ? (
+                  <Button variant="outline" onClick={() => router.push('/configuracion')}>
+                    <Settings className="mr-2 h-4 w-4" /> {t('reconfigure')}
+                  </Button>
+                ) : null}
               </div>
             </div>
           </CardHeader>
           <CardContent className="flex flex-grow flex-col gap-4">
-            {!isAcquisitionFinished && <Progress value={progress} />}
-            {isAcquisitionFinished ? renderAcquisitionFinished() : renderAcquisitionInProgress()}
+            {isAcquisitionRunning && <Progress value={progress} />}
+            {renderContent()}
           </CardContent>
         </Card>
       </div>
@@ -502,5 +584,3 @@ export default function AdquisicionPage() {
     </>
   );
 }
-
-    

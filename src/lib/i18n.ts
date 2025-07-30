@@ -37,10 +37,14 @@ export const translations: Translations = {
     fileNameLabel: 'Nombre del archivo',
     activeSensorsLabel: 'Sensores Activos',
     none: 'Ninguno',
-    cancel: 'Borrar',
+    cancel: 'Cancelar',
+    confirm: 'Confirmar',
     confirmAndStart: 'Confirmar e Iniciar',
     seconds: 'segundos',
     
+    acqTitle: 'Adquisición',
+    acqReady: 'Prueba Lista para Iniciar',
+    acqReadyDesc: 'Los parámetros están configurados. Presione Iniciar Adquisición para comenzar.',
     acqFinished: 'Adquisición Finalizada',
     acqInProgress: 'Adquisición en Proceso',
     acqFinishedDesc: 'La recolección de datos ha terminado. A continuación se muestra el resumen.',
@@ -51,6 +55,10 @@ export const translations: Translations = {
     home: 'Inicio',
     stopAcq: 'Detener Adquisición',
     flowRegime: 'Régimen de Flujo',
+    reconfigure: 'Reconfigurar',
+
+    readyToStartTitle: 'Prueba Lista',
+    readyToStartDesc: 'Verifique los parámetros a continuación y comience la adquisición cuando esté listo.',
     
     resultsTitle: 'Resumen de la Medición',
     resultsDesc: 'La adquisición ha finalizado. Aquí están los detalles y resultados.',
@@ -113,7 +121,7 @@ export const translations: Translations = {
     whatIsSensorSyncDesc: 'FRISAT (Sistema de Identificación de Régimen de Flujo en Tanques Agitados) es un sistema avanzado de adquisición de datos diseñado para monitorear, registrar y analizar información de múltiples sensores en tiempo real. Permite configurar mediciones, visualizar datos en vivo y exportarlos para su posterior análisis.',
     quickStartGuide: 'Guía Rápida de Uso',
     quickStartGuideConfig: '<strong>Configuración:</strong> Vaya a la pestaña \'Configuración\'. Establezca el tiempo de adquisición, las muestras por segundo, un nombre para el archivo y seleccione los sensores que desea usar.',
-    quickStartGuideAcq: '<strong>Adquisición:</strong> Presione \'Iniciar Adquisición\'. Será llevado a la pantalla de monitoreo donde verá los datos de los sensores en gráficos en tiempo real.',
+    quickStartGuideAcq: '<strong>Acquisición:</strong> Presione \'Iniciar Adquisición\'. Será llevado a la pantalla de monitoreo donde verá los datos de los sensores en gráficos en tiempo real.',
     quickStartGuidePost: '<strong>Post-Test:</strong> Una vez finalizada la adquisición, la prueba se guarda automáticamente en el servidor y verá un resumen. Desde aquí puede optar por descargar los datos o iniciar una nueva configuración.',
     quickStartGuideExport: '<strong>Exportación:</strong> Use la opción "Descargar Datos" para guardar los archivos en su computadora.',
     faq: 'Preguntas Frecuentes (FAQ)',
@@ -176,10 +184,14 @@ export const translations: Translations = {
     fileNameLabel: 'File name',
     activeSensorsLabel: 'Active Sensors',
     none: 'None',
-    cancel: 'Clear',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
     confirmAndStart: 'Confirm and Start',
     seconds: 'seconds',
     
+    acqTitle: 'Acquisition',
+    acqReady: 'Test Ready to Start',
+    acqReadyDesc: 'Parameters are set. Press Start Acquisition to begin.',
     acqFinished: 'Acquisition Finished',
     acqInProgress: 'Acquisition in Progress',
     acqFinishedDesc: 'Data collection has finished. The summary is shown below.',
@@ -190,6 +202,10 @@ export const translations: Translations = {
     home: 'Home',
     stopAcq: 'Stop Acquisition',
     flowRegime: 'Flow Regime',
+    reconfigure: 'Reconfigure',
+
+    readyToStartTitle: 'Test Ready',
+    readyToStartDesc: 'Verify the parameters below and start the acquisition when ready.',
     
     resultsTitle: 'Measurement Summary',
     resultsDesc: 'The acquisition has finished. Here are the details and results.',
@@ -315,10 +331,14 @@ export const translations: Translations = {
     fileNameLabel: 'Nom du fichier',
     activeSensorsLabel: 'Capteurs Actifs',
     none: 'Aucun',
-    cancel: 'Effacer',
+    cancel: 'Annuler',
+    confirm: 'Confirmer',
     confirmAndStart: 'Confirmer et Démarrer',
     seconds: 'secondes',
     
+    acqTitle: 'Acquisition',
+    acqReady: 'Test Prêt à Démarrer',
+    acqReadyDesc: 'Les paramètres sont définis. Appuyez sur Démarrer l\'acquisition pour commencer.',
     acqFinished: 'Acquisition Terminée',
     acqInProgress: 'Acquisition en Cours',
     acqFinishedDesc: 'La collecte de données est terminée. Le résumé est affiché ci-dessous.',
@@ -329,6 +349,10 @@ export const translations: Translations = {
     home: 'Accueil',
     stopAcq: 'Arrêter l\'Acquisition',
     flowRegime: 'Régime d\'Écoulement',
+    reconfigure: 'Reconfigurer',
+
+    readyToStartTitle: 'Test Prêt',
+    readyToStartDesc: 'Vérifiez les paramètres ci-dessous et commencez l\'acquisition lorsque vous êtes prêt.',
     
     resultsTitle: 'Résumé de la Mesure',
     resultsDesc: 'L\'acquisition est terminée. Voici les détails et les résultats.',
@@ -454,10 +478,14 @@ export const translations: Translations = {
     fileNameLabel: 'Dateiname',
     activeSensorsLabel: 'Aktive Sensoren',
     none: 'Keine',
-    cancel: 'Löschen',
+    cancel: 'Abbrechen',
+    confirm: 'Bestätigen',
     confirmAndStart: 'Bestätigen und Starten',
     seconds: 'Sekunden',
 
+    acqTitle: 'Erfassung',
+    acqReady: 'Test bereit zum Starten',
+    acqReadyDesc: 'Die Parameter sind eingestellt. Drücken Sie Erfassung starten, um zu beginnen.',
     acqFinished: 'Erfassung abgeschlossen',
     acqInProgress: 'Erfassung läuft',
     acqFinishedDesc: 'Die Datenerfassung ist abgeschlossen. Die Zusammenfassung wird unten angezeigt.',
@@ -468,7 +496,11 @@ export const translations: Translations = {
     home: 'Startseite',
     stopAcq: 'Erfassung stoppen',
     flowRegime: 'Strömungsregime',
-    
+    reconfigure: 'Neu konfigurieren',
+
+    readyToStartTitle: 'Test bereit',
+    readyToStartDesc: 'Überprüfen Sie die folgenden Parameter und starten Sie die Erfassung, wenn Sie bereit sind.',
+
     resultsTitle: 'Messungszusammenfassung',
     resultsDesc: 'Die Erfassung ist abgeschlossen. Hier sind die Details und Ergebnisse.',
     durationLabel: 'Dauer',
@@ -568,5 +600,3 @@ export const translations: Translations = {
     predictionErrorDesc: 'Im Vorhersage-Skript ist ein Fehler aufgetreten. Details:',
   }
 };
-
-    

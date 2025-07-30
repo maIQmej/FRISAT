@@ -44,7 +44,7 @@ const formSchema = z.object({
 
 export default function ConfiguracionPage() {
   const router = useRouter();
-  const { config, setConfig, setAcquisitionState, resetApp, setStartTimestamp } = useApp();
+  const { config, setConfig, setAcquisitionState, resetApp } = useApp();
   const { t } = useTranslation();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [pendingConfig, setPendingConfig] = useState<Configuration | null>(null);
@@ -59,11 +59,10 @@ export default function ConfiguracionPage() {
     setIsConfirmModalOpen(true);
   };
 
-  const handleStartAcquisition = () => {
+  const handleConfirmConfiguration = () => {
     if (!pendingConfig) return;
     setConfig(pendingConfig);
-    setStartTimestamp(new Date());
-    setAcquisitionState('running');
+    setAcquisitionState('ready');
     router.push('/adquisicion');
   };
   
@@ -192,7 +191,7 @@ export default function ConfiguracionPage() {
               </div>
               <div className="grid grid-cols-[1fr,auto] items-center gap-4">
                 <Label className="text-muted-foreground">{t('fileNameLabel')}</Label>
-                <p className="font-semibold truncate">{pendingConfig.fileName}.xlsx</p>
+                <p className="font-semibold truncate">{pendingConfig.fileName}.csv</p>
               </div>
               <div className="grid grid-cols-[1fr,auto] items-start gap-4">
                 <Label className="text-muted-foreground">{t('activeSensorsLabel')}</Label>
@@ -202,7 +201,7 @@ export default function ConfiguracionPage() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>{t('cancel')}</Button>
-            <Button onClick={handleStartAcquisition}>{t('confirmAndStart')}</Button>
+            <Button onClick={handleConfirmConfiguration}>{t('confirm')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
