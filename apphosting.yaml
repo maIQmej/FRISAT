@@ -1,10 +1,8 @@
-# Settings to manage and configure a Firebase App Hosting backend.
-# https://firebase.google.com/docs/app-hosting/configure
-
+# apphosting.yaml (corregido)
 runConfig:
   cpu: 1
   memoryMiB: 1024
-  minInstances: 0
+  minInstances: 0   # pon 1 si quieres evitar cold start
   maxInstances: 2
   concurrency: 80
   timeoutSeconds: 60
@@ -15,6 +13,10 @@ build:
 serve:
   command: "npm start"
 
+# OPCIONAL: solo si necesitas variables personalizadas
 env:
-  - key: NODE_ENV
+  - variable: NODE_ENV
     value: "production"
+    availability:
+      - BUILD
+      - RUNTIME
