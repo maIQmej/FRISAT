@@ -1,30 +1,31 @@
 
+
 'use client';
 
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useApp } from '@/context/AppContext';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { SensorChart } from '@/components/app/SensorChart';
-import { ExportModal } from '@/components/app/ExportModal';
-import { DataPointModal } from '@/components/app/DataPointModal';
-import type { SensorDataPoint, AcquisitionState } from '@/lib/types';
+import { useApp } from '../../../context/AppContext';
+import { Progress } from '../../../components/ui/progress';
+import { Button } from '../../../components/ui/button';
+import { SensorChart } from '../../../components/app/SensorChart';
+import { ExportModal } from '../../../components/app/ExportModal';
+import { DataPointModal } from '../../../components/app/DataPointModal';
+import type { SensorDataPoint, AcquisitionState } from '../../../lib/types';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '../../../components/ui/card';
 import { Wind, RotateCw, HardDrive, Database, Home, Sigma, FileText, Clock, Timer, PlayCircle, Settings } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useToast } from '@/hooks/use-toast';
-import { saveExportedFiles } from '@/actions/saveExport';
-import { generateCsvContent } from '@/lib/csv-utils';
-import { predictRegime } from '@/actions/predictRegime';
-import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useTranslation } from '../../../hooks/useTranslation';
+import { useToast } from '../../../hooks/use-toast';
+import { saveExportedFiles } from '../../../actions/saveExport';
+import { generateCsvContent } from '../../../lib/csv-utils';
+import { predictRegime } from '../../../actions/predictRegime';
+import { Separator } from '../../../components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
 
 export default function AdquisicionPage() {
   const router = useRouter();
@@ -560,3 +561,5 @@ export default function AdquisicionPage() {
     </>
   );
 }
+
+    

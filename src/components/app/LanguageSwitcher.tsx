@@ -1,17 +1,18 @@
 
+
 'use client'
 
 import * as React from 'react'
 import { Languages } from 'lucide-react'
-import { useApp } from '@/context/AppContext'
+import { useApp } from '../../context/AppContext'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '../ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '../ui/dropdown-menu'
 
 export function LanguageSwitcher() {
   const { setLanguage } = useApp()
@@ -41,3 +42,5 @@ export function LanguageSwitcher() {
     </DropdownMenu>
   )
 }
+
+    

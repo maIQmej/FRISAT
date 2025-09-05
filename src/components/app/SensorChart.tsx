@@ -1,12 +1,13 @@
 
+
 'use client';
 
 import { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import type { SensorDataPoint } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
+import type { SensorDataPoint } from '../../lib/types';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '../../hooks/useTranslation';
 import { Separator } from '../ui/separator';
 
 interface SensorChartProps {
@@ -190,3 +191,5 @@ export function SensorChart({ title, data, dataKeys, colors, onDrop, onDoubleCli
     </Card>
   );
 }
+
+    

@@ -1,8 +1,9 @@
 
+
 'use client';
-import { useApp } from '@/context/AppContext';
-import { translations } from '@/lib/i18n';
-import type { RegimenType } from '@/lib/types';
+import { useApp } from '../context/AppContext';
+import { translations } from '../lib/i18n';
+import type { RegimenType } from '../lib/types';
 
 export const useTranslation = () => {
   const { language } = useApp();
@@ -23,3 +24,5 @@ export const useTranslation = () => {
 
   return { t, t_regimen };
 };
+
+    

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -6,8 +7,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { useTranslation } from '@/hooks/useTranslation';
+} from '../ui/accordion';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function HelpContent() {
   const { t } = useTranslation();
@@ -67,3 +68,5 @@ export function HelpContent() {
     </Accordion>
   );
 }
+
+    

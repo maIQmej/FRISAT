@@ -1,11 +1,12 @@
 
+
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from './ThemeToggle';
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Logo = () => {
     return (
@@ -42,3 +43,5 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+    

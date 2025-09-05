@@ -1,22 +1,23 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
+import { Badge } from '../../../components/ui/badge';
+import { Button } from '../../../components/ui/button';
+import { Input } from '../../../components/ui/input';
+import { Checkbox } from '../../../components/ui/checkbox';
 import { ArrowLeft, Download, Search, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useTranslation } from '@/hooks/useTranslation';
-import { ExportModal } from '@/components/app/ExportModal';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { RegimenType } from '@/lib/types';
-import { getHistory, type HistoryEntry } from '@/actions/getHistory';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from '../../../hooks/useTranslation';
+import { ExportModal } from '../../../components/app/ExportModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import type { RegimenType } from '../../../lib/types';
+import { getHistory, type HistoryEntry } from '../../../actions/getHistory';
+import { Skeleton } from '../../../components/ui/skeleton';
 
 const regimenTypes: RegimenType[] = ['flujo laminar', 'turbulento', 'indeterminado'];
 
@@ -221,3 +222,5 @@ export default function HistorialPage() {
     </div>
   );
 }
+
+    

@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import type { Configuration, SensorDataPoint, AcquisitionState, AppContextType, RegimenType, Language } from '@/lib/types';
+import type { Configuration, SensorDataPoint, AcquisitionState, AppContextType, RegimenType, Language } from '../lib/types';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -66,3 +67,5 @@ export const useApp = () => {
   }
   return context;
 };
+
+    

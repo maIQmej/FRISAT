@@ -1,12 +1,13 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useApp } from '@/context/AppContext';
-import { Button } from '@/components/ui/button';
+import { useApp } from '../../context/AppContext';
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogContent,
@@ -14,18 +15,18 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+} from '../ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
+import { Input } from '../ui/input';
+import { Checkbox } from '../ui/checkbox';
+import { Label } from '../ui/label';
+import { useToast } from '../../hooks/use-toast';
 import { Loader2, CheckCircle, FileText, FileSpreadsheet, Download } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '../../hooks/useTranslation';
 import { ScrollArea } from '../ui/scroll-area';
-import type { Configuration, SensorDataPoint, RegimenType } from '@/lib/types';
-import { getHistoryEntry } from '@/actions/getHistory';
-import { generateCsvContent } from '@/lib/csv-utils';
+import type { Configuration, SensorDataPoint, RegimenType } from '../../lib/types';
+import { getHistoryEntry } from '../../actions/getHistory';
+import { generateCsvContent } from '../../lib/csv-utils';
 import JSZip from 'jszip';
 
 type ExportState = 'idle' | 'exporting' | 'success' | 'error';
@@ -265,3 +266,5 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     </Dialog>
   );
 }
+
+    

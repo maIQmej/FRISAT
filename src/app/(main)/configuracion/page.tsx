@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -6,14 +7,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useApp } from '@/context/AppContext';
-import type { Configuration } from '@/lib/types';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { useApp } from '../../../context/AppContext';
+import type { Configuration } from '../../../lib/types';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components/ui/form';
+import { Input } from '../../../components/ui/input';
+import { Button } from '../../../components/ui/button';
+import { Checkbox } from '../../../components/ui/checkbox';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../components/ui/card';
+import { Separator } from '../../../components/ui/separator';
 import {
   Dialog,
   DialogContent,
@@ -21,10 +22,10 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+} from '../../../components/ui/dialog';
+import { Label } from '../../../components/ui/label';
 import { ArrowLeft } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 const formSchema = z.object({
   acquisitionTime: z.coerce.number().min(10, 'El tiempo debe ser de al menos 10 segundos').max(600, 'El tiempo no puede exceder los 600 segundos'),
@@ -208,3 +209,5 @@ export default function ConfiguracionPage() {
     </>
   );
 }
+
+    

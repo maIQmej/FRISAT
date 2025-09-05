@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -8,12 +9,12 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
+} from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '../ui/table';
 import { Clock, Hash } from 'lucide-react';
-import type { SensorDataPoint } from '@/lib/types';
-import { useTranslation } from '@/hooks/useTranslation';
+import type { SensorDataPoint } from '../../lib/types';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface DataPointModalProps {
   open: boolean;
@@ -85,3 +86,5 @@ export function DataPointModal({ open, onOpenChange, dataPoint, dataPointIndex, 
     </Dialog>
   );
 }
+
+    

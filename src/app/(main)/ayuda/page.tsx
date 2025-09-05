@@ -1,12 +1,13 @@
 
+
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { HelpContent } from '@/components/app/HelpContent';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card';
+import { HelpContent } from '../../../components/app/HelpContent';
+import { Button } from '../../../components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 export default function AyudaPage() {
   const router = useRouter();
@@ -33,3 +34,5 @@ export default function AyudaPage() {
     </div>
   );
 }
+
+    

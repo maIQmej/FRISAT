@@ -1,13 +1,14 @@
 
+
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { PlayCircle, History, HelpCircle } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { ThemeToggle } from '@/components/app/ThemeToggle';
-import { LanguageSwitcher } from '@/components/app/LanguageSwitcher';
+import { useTranslation } from '../hooks/useTranslation';
+import { ThemeToggle } from '../components/app/ThemeToggle';
+import { LanguageSwitcher } from '../components/app/LanguageSwitcher';
 
 const Logo = () => (
     <div className="flex items-center justify-center gap-2 p-2">
@@ -74,3 +75,5 @@ export default function WelcomePage() {
     </div>
   );
 }
+
+    

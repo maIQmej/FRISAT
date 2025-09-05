@@ -1,19 +1,20 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { SensorChart } from '@/components/app/SensorChart';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
+import { SensorChart } from '../../../../components/app/SensorChart';
 import { ArrowLeft, HardDrive, Timer, Sigma, Wind, SlidersHorizontal, Home, Clock } from 'lucide-react';
-import { ExportModal } from '@/components/app/ExportModal';
-import { DataPointModal } from '@/components/app/DataPointModal';
-import type { SensorDataPoint, RegimenType, Configuration } from '@/lib/types';
-import { Badge } from '@/components/ui/badge';
-import { useTranslation } from '@/hooks/useTranslation';
-import { getHistoryEntry, type HistoryDetail } from '@/actions/getHistory';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ExportModal } from '../../../../components/app/ExportModal';
+import { DataPointModal } from '../../../../components/app/DataPointModal';
+import type { SensorDataPoint, RegimenType, Configuration } from '../../../../lib/types';
+import { Badge } from '../../../../components/ui/badge';
+import { useTranslation } from '../../../../hooks/useTranslation';
+import { getHistoryEntry, type HistoryDetail } from '../../../../actions/getHistory';
+import { Skeleton } from '../../../../components/ui/skeleton';
 
 const sensorColors: { [key: string]: string } = {
   sensor1: 'chart-1',
@@ -215,3 +216,5 @@ export default function HistorialDetallePage() {
     </>
   );
 }
+
+    
