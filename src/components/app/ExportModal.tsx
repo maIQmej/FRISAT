@@ -266,5 +266,3 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
     </Dialog>
   );
 }
-
-    
