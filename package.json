@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm:dev:next\" \"npm:dev:python\"",
-    "dev:next": "next dev -p 9002",
+    "dev:next": "next dev -p 9003",
     "dev:python": "cd ml_backend && python3 -m pip install -r requirements.txt && uvicorn server:app --host 127.0.0.1 --port 8765 --reload",
     "build": "next build",
     "start": "next start",
