@@ -18,14 +18,14 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../components/ui/card';
-import { Wind, RotateCw, HardDrive, Database, Home, Sigma, FileText, Clock, Timer, PlayCircle, Settings } from 'lucide-react';
+import { Wind, RotateCw, HardDrive, Database, Home, Sigma, FileText, Clock, Timer, PlayCircle, Settings, AlertCircle } from 'lucide-react';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useToast } from '../../../hooks/use-toast';
 import { saveExportedFiles } from '../../../actions/saveExport';
 import { generateCsvContent } from '../../../lib/csv-utils';
-import { predictRegime } from '../../../actions/predictRegime';
 import { Separator } from '../../../components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
+import { usePredictionWebSocket } from '../../../hooks/usePredictionWebSocket';
 
 export default function AdquisicionPage() {
   const router = useRouter();
@@ -45,16 +45,28 @@ export default function AdquisicionPage() {
   const sensorDataRef = useRef<SensorDataPoint[]>([]);
   sensorDataRef.current = sensorData;
 
-  const totalPlannedSamples = useMemo(
-    () => Math.floor(config.acquisitionTime * config.samplesPerSecond) + 1,
-    [config.acquisitionTime, config.samplesPerSecond]
-  );
-
   const activeSensors = useMemo(() => 
     Object.entries(config.sensors)
       .filter(([, isActive]) => isActive)
       .map(([key]) => key), 
   [config.sensors]);
+
+  const { lastPrediction, connectionStatus, error: wsError } = usePredictionWebSocket({
+    n_sensors: activeSensors.length,
+    hop: 30, // Make this configurable if needed
+    enabled: acquisitionState === 'running'
+  });
+  
+  useEffect(() => {
+    if (lastPrediction) {
+      setRegimen(lastPrediction.label);
+    }
+  }, [lastPrediction, setRegimen]);
+
+  const totalPlannedSamples = useMemo(
+    () => Math.floor(config.acquisitionTime * config.samplesPerSecond) + 1,
+    [config.acquisitionTime, config.samplesPerSecond]
+  );
 
   const testStats = useMemo(() => {
     if (!sensorData || sensorData.length < 2) {
@@ -132,17 +144,7 @@ export default function AdquisicionPage() {
     });
   };
 
-  const finalizeAcquisition = async (finalData: SensorDataPoint[], endState: 'completed' | 'stopped') => {
-    const { regimen: finalRegimen, error } = await predictRegime(finalData);
-    if (error) {
-      toast({
-        title: t('predictionErrorTitle'),
-        description: `${t('predictionErrorDesc')} ${error}`,
-        variant: 'destructive',
-        duration: 10000,
-      });
-    }
-    setRegimen(finalRegimen);
+  const finalizeAcquisition = (endState: 'completed' | 'stopped') => {
     setAcquisitionState(endState);
   };
   
@@ -161,9 +163,16 @@ export default function AdquisicionPage() {
       const point: SensorDataPoint = {
         time: parseFloat(time.toFixed(2)),
       };
+      const values: number[] = [];
       activeSensors.forEach(sensorKey => {
-        point[sensorKey] = parseFloat((Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2));
+        const sensorValue = parseFloat((Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2));
+        point[sensorKey] = sensorValue;
+        values.push(sensorValue);
       });
+      // Send data to WebSocket
+      if (lastPrediction.send) {
+        lastPrediction.send({ type: 'SAMPLES', values });
+      }
       return point;
     };
 
@@ -177,12 +186,11 @@ export default function AdquisicionPage() {
             dataAcquisitionIntervalRef.current = null;
 
             const finalPoint = generateDataPoint(config.acquisitionTime);
-            const finalData = [...sensorDataRef.current, finalPoint];
-            setSensorData(finalData);
+            setSensorData(prev => [...prev, finalPoint]);
             setElapsedTime(config.acquisitionTime);
             setProgress(100);
 
-            finalizeAcquisition(finalData, 'completed');
+            finalizeAcquisition('completed');
         } else {
             const newDataPoint = generateDataPoint(newTime);
             setSensorData(prev => [...prev, newDataPoint]);
@@ -201,8 +209,7 @@ export default function AdquisicionPage() {
     const autoSave = async () => {
       if (!isAutoSaved && (acquisitionState === 'completed' || acquisitionState === 'stopped') && sensorData.length > 0) {
         setIsAutoSaved(true);
-        const { regimen: finalRegimen } = await predictRegime(sensorData);
-        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, finalRegimen);
+        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, regimen);
         const fileToSave = {
           fileName: `${config.fileName}.csv`,
           csvContent: csvContent
@@ -237,7 +244,7 @@ export default function AdquisicionPage() {
       clearInterval(dataAcquisitionIntervalRef.current);
       dataAcquisitionIntervalRef.current = null;
     }
-    finalizeAcquisition(sensorDataRef.current, 'stopped');
+    finalizeAcquisition('stopped');
   };
 
   const sensorColors: { [key: string]: string } = {
@@ -359,6 +366,12 @@ export default function AdquisicionPage() {
         </CardHeader>
         <CardContent className="p-4 pt-0">
           <p className="text-2xl font-bold capitalize text-center">{t_regimen(regimen)}</p>
+          <div className='text-center mt-2'>
+            <span className={`text-xs px-2 py-1 rounded-full ${connectionStatus === 'connected' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {t(connectionStatus)}
+            </span>
+            {wsError && <p className='text-xs text-destructive mt-1'>{wsError}</p>}
+          </div>
         </CardContent>
       </Card>
       <Card className="flex flex-col items-center justify-center min-h-[240px]">
@@ -561,5 +574,3 @@ export default function AdquisicionPage() {
     </>
   );
 }
-
-    
