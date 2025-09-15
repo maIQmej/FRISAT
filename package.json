@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently \"npm:dev:next\" \"npm:dev:python\"",
     "dev:next": "next dev -p 9002",
-    "dev:python": "cd ml_backend && uvicorn server:app --host 127.0.0.1 --port 8765 --reload",
+    "dev:python": "cd ml_backend && pip install -r requirements.txt && uvicorn server:app --host 127.0.0.1 --port 8765 --reload",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
