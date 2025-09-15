@@ -1,6 +1,14 @@
 #!/bin/bash
 set -e # Exit immediately if a command exits with a non-zero status.
 
+# This script is no longer the primary way to start the backend.
+# Use 'npm run dev' from the root directory instead.
+
+echo "This script is for manual execution only."
+echo "The recommended way to start the servers is by running 'npm run dev' from the project root."
+echo ""
+echo "Attempting to start the Python backend..."
+
 # Navigate to the script's directory to ensure paths are correct
 cd "$(dirname "$0")"
 
