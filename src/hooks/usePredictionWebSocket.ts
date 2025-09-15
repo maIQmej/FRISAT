@@ -20,103 +20,46 @@ type UsePredictionWebSocketProps = {
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
+const simulatedRegimens: RegimenType[] = ['LAMINAR', 'TRANSITION', 'TURBULENT'];
+
 export const usePredictionWebSocket = ({ n_sensors, hop, enabled = true }: UsePredictionWebSocketProps) => {
     const [lastPrediction, setLastPrediction] = useState<any | null>(null);
-    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
+    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connected');
     const [error, setError] = useState<string | null>(null);
-    const ws = useRef<WebSocket | null>(null);
-    const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
-
-    const connect = () => {
-        if (!enabled || (ws.current && ws.current.readyState === WebSocket.OPEN)) {
-            return;
-        }
-
-        setConnectionStatus('connecting');
-        setError(null);
-        ws.current = new WebSocket(WEBSOCKET_URL);
-
-        ws.current.onopen = () => {
-            console.log('WebSocket connected');
-            setConnectionStatus('connected');
-            setError(null);
-            if (reconnectTimeout.current) {
-                clearTimeout(reconnectTimeout.current);
-                reconnectTimeout.current = null;
-            }
-
-            // Send config on connect
-            ws.current?.send(JSON.stringify({
-                type: 'CONFIG',
-                n_sensors,
-                hop
-            }));
-        };
-
-        ws.current.onmessage = (event) => {
-            try {
-                const message = JSON.parse(event.data);
-                if (message.type === 'PREDICTION') {
-                    setLastPrediction(message);
-                } else if (message.type === 'ACK') {
-                    console.log('WebSocket config ACK:', message);
-                } else if (message.type === 'FILLING') {
-                    // console.log('WebSocket filling buffer:', message);
-                } else if (message.type === 'ERROR') {
-                    console.error('WebSocket server error:', message.msg);
-                    setError(message.msg);
-                }
-            } catch (e) {
-                console.error('Failed to parse WebSocket message:', e);
-            }
-        };
-
-        ws.current.onerror = (err) => {
-            console.error('WebSocket error:', err);
-            setError('Connection failed.');
-            setConnectionStatus('error');
-        };
-
-        ws.current.onclose = () => {
-            console.log('WebSocket disconnected');
-            setConnectionStatus('disconnected');
-            if (enabled) {
-                // Attempt to reconnect
-                if (!reconnectTimeout.current) {
-                    reconnectTimeout.current = setTimeout(() => {
-                        console.log('Attempting to reconnect WebSocket...');
-                        connect();
-                    }, 3000);
-                }
-            }
-        };
-    };
+    const simulationInterval = useRef<NodeJS.Timeout | null>(null);
+    const regimenIndex = useRef(0);
 
     useEffect(() => {
         if (enabled) {
-            connect();
+            setConnectionStatus('connected');
+            simulationInterval.current = setInterval(() => {
+                const newPrediction = {
+                    type: 'PREDICTION',
+                    label: simulatedRegimens[regimenIndex.current],
+                    probs: [0, 0, 0], // Dummy probabilities
+                    window: 350
+                };
+                setLastPrediction(newPrediction);
+                regimenIndex.current = (regimenIndex.current + 1) % simulatedRegimens.length;
+            }, 3000);
+        } else {
+            if (simulationInterval.current) {
+                clearInterval(simulationInterval.current);
+            }
+            setConnectionStatus('disconnected');
         }
 
         return () => {
-            if (reconnectTimeout.current) {
-                clearTimeout(reconnectTimeout.current);
-            }
-            if (ws.current) {
-                ws.current.close();
-                ws.current = null;
+            if (simulationInterval.current) {
+                clearInterval(simulationInterval.current);
             }
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [enabled, n_sensors, hop]);
+    }, [enabled]);
     
+    // The send function is now a no-op, but we keep it for API consistency
     const send = (data: any) => {
-        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-            ws.current.send(JSON.stringify(data));
-        } else {
-            console.warn('WebSocket not connected. Cannot send data.');
-        }
+        // console.log('Simulating send of:', data);
     };
-
 
     return { lastPrediction: {...lastPrediction, send}, connectionStatus, error };
 };
