@@ -10,6 +10,7 @@ export type Prediction = {
     label: RegimenType;
     probs: number[];
     window: number;
+    send?: (data: any) => void;
 };
 
 type UsePredictionWebSocketProps = {
@@ -71,7 +72,6 @@ export const usePredictionWebSocket = ({ n_sensors, hop, enabled = true }: UsePr
         ws.current.onclose = () => {
             console.log('WebSocket disconnected');
             setConnectionStatus('disconnected');
-            // Optional: try to reconnect
         };
 
     }, [enabled, n_sensors, hop]);
