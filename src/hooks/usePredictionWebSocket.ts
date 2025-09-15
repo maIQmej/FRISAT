@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { RegimenType } from '../lib/types';
 
 const WEBSOCKET_URL = 'ws://127.0.0.1:8765/ws';
@@ -20,46 +20,81 @@ type UsePredictionWebSocketProps = {
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
-const simulatedRegimens: RegimenType[] = ['LAMINAR', 'TRANSITION', 'TURBULENT'];
-
 export const usePredictionWebSocket = ({ n_sensors, hop, enabled = true }: UsePredictionWebSocketProps) => {
-    const [lastPrediction, setLastPrediction] = useState<any | null>(null);
-    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connected');
+    const [lastPrediction, setLastPrediction] = useState<Prediction | null>(null);
+    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
     const [error, setError] = useState<string | null>(null);
-    const simulationInterval = useRef<NodeJS.Timeout | null>(null);
-    const regimenIndex = useRef(0);
+    const ws = useRef<WebSocket | null>(null);
+    
+    const connect = useCallback(() => {
+        if (!enabled || (ws.current && ws.current.readyState === WebSocket.OPEN)) {
+            return;
+        }
+
+        setConnectionStatus('connecting');
+        setError(null);
+        
+        ws.current = new WebSocket(WEBSOCKET_URL);
+
+        ws.current.onopen = () => {
+            console.log('WebSocket connected');
+            setConnectionStatus('connected');
+            // Send config on connect
+            ws.current?.send(JSON.stringify({
+                type: 'CONFIG',
+                n_sensors,
+                hop
+            }));
+        };
+
+        ws.current.onmessage = (event) => {
+            try {
+                const message = JSON.parse(event.data);
+                if (message.type === 'PREDICTION') {
+                    setLastPrediction(message);
+                } else if (message.type === 'ERROR') {
+                    console.error('WebSocket server error:', message.msg);
+                    setError(message.msg);
+                }
+            } catch (e) {
+                console.error('Failed to parse WebSocket message:', e);
+                setError('Invalid message from server');
+            }
+        };
+
+        ws.current.onerror = (event) => {
+            console.error('WebSocket error:', event);
+            setError('Connection failed');
+            setConnectionStatus('error');
+        };
+
+        ws.current.onclose = () => {
+            console.log('WebSocket disconnected');
+            setConnectionStatus('disconnected');
+            // Optional: try to reconnect
+        };
+
+    }, [enabled, n_sensors, hop]);
 
     useEffect(() => {
         if (enabled) {
-            setConnectionStatus('connected');
-            simulationInterval.current = setInterval(() => {
-                const newPrediction = {
-                    type: 'PREDICTION',
-                    label: simulatedRegimens[regimenIndex.current],
-                    probs: [0, 0, 0], // Dummy probabilities
-                    window: 350
-                };
-                setLastPrediction(newPrediction);
-                regimenIndex.current = (regimenIndex.current + 1) % simulatedRegimens.length;
-            }, 3000);
+            connect();
         } else {
-            if (simulationInterval.current) {
-                clearInterval(simulationInterval.current);
-            }
-            setConnectionStatus('disconnected');
+            ws.current?.close();
         }
 
         return () => {
-            if (simulationInterval.current) {
-                clearInterval(simulationInterval.current);
-            }
+            ws.current?.close();
         };
-    }, [enabled]);
-    
-    // The send function is now a no-op, but we keep it for API consistency
-    const send = (data: any) => {
-        // console.log('Simulating send of:', data);
-    };
+    }, [enabled, connect]);
 
-    return { lastPrediction: {...lastPrediction, send}, connectionStatus, error };
+    const send = useCallback((data: any) => {
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify(data));
+        } else {
+            // console.warn('WebSocket not connected. Unable to send data.');
+        }
+    }, []);
+
+    return { lastPrediction: {...(lastPrediction || {}), send}, connectionStatus, error };
 };
