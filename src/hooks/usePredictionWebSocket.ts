@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { RegimenType } from '../lib/types';
 
-const WEBSOCKET_URL = 'ws://localhost:8000/ws';
+const WEBSOCKET_URL = 'ws://127.0.0.1:8765/ws';
 
 export type Prediction = {
     label: RegimenType;
