@@ -20,8 +20,8 @@ body {
     --secondary-foreground: 222 47% 11%;
     --muted: 215 20% 90%;
     --muted-foreground: 215 20% 55%;
-    --accent: 260 85% 65%; /* Púrpura */
-    --accent-foreground: 210 40% 98%;
+    --accent: 215 25% 85%; /* Gris neutro para hover */
+    --accent-foreground: 222 47% 11%;
     --destructive: 38 92% 50%; /* Naranja Vivo */
     --destructive-foreground: 210 40% 98%;
     --border: 214 20% 88%;
@@ -56,7 +56,7 @@ body {
     --secondary-foreground: 210 40% 98%;
     --muted: 220 15% 20%;
     --muted-foreground: 215 20% 65%;
-    --accent: 260 85% 70%; /* Púrpura */
+    --accent: 220 15% 25%; /* Gris neutro para hover */
     --accent-foreground: 210 40% 98%;
     --destructive: 38 95% 55%; /* Naranja Vivo */
     --destructive-foreground: 210 40% 98%;
