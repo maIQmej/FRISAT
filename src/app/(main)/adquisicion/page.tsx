@@ -28,7 +28,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { usePredictionWebSocket } from '../../../hooks/usePredictionWebSocket';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../components/ui/tooltip';
 import { PredictionCard } from '../../../components/app/PredictionCard';
-import { Badge } from '@/components/ui/badge';
+import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 export default function AdquisicionPage() {
@@ -192,7 +192,7 @@ export default function AdquisicionPage() {
             const finalPoint = generateDataPoint(config.acquisitionTime);
             setSensorData(prev => [...prev, finalPoint]);
             setElapsedTime(config.acquisitionTime);
-            setProgress(100);
+setProgress(100);
 
             finalizeAcquisition('completed');
         } else {
@@ -291,11 +291,11 @@ export default function AdquisicionPage() {
     setAcquisitionState('running');
   };
 
-  const getRegimenBadgeVariant = (regimen: RegimenType) => {
+  const getRegimenBadgeVariant = (regimen: RegimenType): BadgeProps["variant"] => {
     switch(regimen) {
-      case 'LAMINAR': return 'default';
-      case 'TRANSITION': return 'accent';
-      case 'TURBULENT': return 'destructive';
+      case 'LAMINAR': return 'laminar';
+      case 'TRANSITION': return 'transition';
+      case 'TURBULENT': return 'turbulent';
       case 'INDETERMINADO':
       case 'indeterminado':
       default: return 'secondary';

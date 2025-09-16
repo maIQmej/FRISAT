@@ -11,7 +11,7 @@ import { ArrowLeft, HardDrive, Timer, Sigma, Wind, SlidersHorizontal, Home, Cloc
 import { ExportModal } from '../../../../components/app/ExportModal';
 import { DataPointModal } from '../../../../components/app/DataPointModal';
 import type { SensorDataPoint, RegimenType, Configuration } from '../../../../lib/types';
-import { Badge } from '../../../../components/ui/badge';
+import { Badge, type BadgeProps } from '../../../../components/ui/badge';
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { getHistoryEntry, type HistoryDetail } from '../../../../actions/getHistory';
 import { Skeleton } from '../../../../components/ui/skeleton';
@@ -64,11 +64,11 @@ export default function HistorialDetallePage() {
     }
   };
 
-  const getRegimenBadgeVariant = (regimen: RegimenType) => {
+  const getRegimenBadgeVariant = (regimen: RegimenType): BadgeProps["variant"] => {
     switch(regimen) {
-      case 'LAMINAR': return 'default';
-      case 'TRANSITION': return 'accent';
-      case 'TURBULENT': return 'destructive';
+      case 'LAMINAR': return 'laminar';
+      case 'TRANSITION': return 'transition';
+      case 'TURBULENT': return 'turbulent';
       case 'INDETERMINADO':
       case 'indeterminado':
       default: return 'secondary';

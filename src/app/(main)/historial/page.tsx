@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
-import { Badge } from '../../../components/ui/badge';
+import { Badge, type BadgeProps } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Checkbox } from '../../../components/ui/checkbox';
@@ -93,11 +93,11 @@ export default function HistorialPage() {
     }
   };
 
-  const getRegimenBadgeVariant = (regimen: RegimenType) => {
+  const getRegimenBadgeVariant = (regimen: RegimenType): BadgeProps["variant"] => {
     switch(regimen) {
-      case 'LAMINAR': return 'default';
-      case 'TRANSITION': return 'accent';
-      case 'TURBULENT': return 'destructive';
+      case 'LAMINAR': return 'laminar';
+      case 'TRANSITION': return 'transition';
+      case 'TURBULENT': return 'turbulent';
       case 'INDETERMINADO':
       case 'indeterminado':
       default: return 'secondary';
