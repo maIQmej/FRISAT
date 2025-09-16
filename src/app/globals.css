@@ -14,22 +14,22 @@ body {
     --card-foreground: 222 47% 11%;
     --popover: 210 30% 98%;
     --popover-foreground: 222 47% 11%;
-    --primary: 220 85% 55%; /* Azul Frío */
+    --primary: 142 71% 45%; /* Verde para Laminar */
     --primary-foreground: 210 40% 98%;
     --secondary: 215 20% 90%;
     --secondary-foreground: 222 47% 11%;
     --muted: 215 20% 90%;
     --muted-foreground: 215 20% 55%;
-    --accent: 260 85% 65%; /* Púrpura */
+    --accent: 38 92% 50%; /* Ámbar para Transición */
     --accent-foreground: 210 40% 98%;
-    --destructive: 25 95% 53%; /* Naranja Vivo */
+    --destructive: 0 84% 60%; /* Rojo para Turbulento */
     --destructive-foreground: 210 40% 98%;
     --border: 214 20% 88%;
     --input: 214 20% 88%;
-    --ring: 220 85% 55%; /* Azul Frío */
-    --chart-1: 221 83% 53%;
-    --chart-2: 25 95% 53%;
-    --chart-3: 45 95% 55%;
+    --ring: 142 71% 45%; /* Verde para Laminar */
+    --chart-1: 142 71% 45%; /* Verde */
+    --chart-2: 38 92% 50%; /* Ámbar */
+    --chart-3: 0 84% 60%; /* Rojo */
     --chart-4: 260 85% 65%;
     --chart-5: 340 85% 65%;
     --radius: 0.5rem;
@@ -39,9 +39,9 @@ body {
     --sidebar-border: 214 20% 88%;
     --sidebar-accent: 210 30% 90%;
     --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 142 71% 45%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-ring: 142 71% 45%;
   }
   .dark {
     --background: 220 25% 12%;
@@ -50,22 +50,22 @@ body {
     --card-foreground: 210 40% 98%;
     --popover: 220 25% 12%;
     --popover-foreground: 210 40% 98%;
-    --primary: 220 90% 65%; /* Azul Frío */
-    --primary-foreground: 222 47% 11%;
+    --primary: 142 76% 42%; /* Verde para Laminar */
+    --primary-foreground: 210 40% 98%;
     --secondary: 220 15% 20%;
     --secondary-foreground: 210 40% 98%;
     --muted: 220 15% 20%;
     --muted-foreground: 215 20% 65%;
-    --accent: 260 85% 75%; /* Púrpura */
+    --accent: 38 95% 55%; /* Ámbar para Transición */
     --accent-foreground: 210 40% 98%;
-    --destructive: 25 95% 60%; /* Naranja Vivo */
+    --destructive: 0 72% 51%; /* Rojo para Turbulento */
     --destructive-foreground: 210 40% 98%;
     --border: 220 15% 25%;
     --input: 220 15% 25%;
-    --ring: 220 90% 70%; /* Azul Frío */
-    --chart-1: 217 91% 60%;
-    --chart-2: 25 95% 60%;
-    --chart-3: 45 95% 65%;
+    --ring: 142 76% 42%; /* Verde para Laminar */
+    --chart-1: 142 76% 42%; /* Verde */
+    --chart-2: 38 95% 55%; /* Ámbar */
+    --chart-3: 0 72% 51%; /* Rojo */
     --chart-4: 260 85% 75%;
     --chart-5: 340 85% 75%;
 
@@ -74,9 +74,9 @@ body {
     --sidebar-border: 220 15% 25%;
     --sidebar-accent: 220 15% 18%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-ring: 217 91% 70%;
+    --sidebar-primary: 142 76% 42%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-ring: 142 76% 42%;
   }
 }
 
