@@ -14,15 +14,14 @@ export const useTranslation = () => {
 
   const t_regimen = (regimen: RegimenType) => {
     const keyMap: { [key in RegimenType]: string } = {
-      'flujo laminar': 'regimenLaminar',
-      'turbulento': 'regimenTurbulento',
+      'LAMINAR': 'regimenLAMINAR',
+      'TRANSITION': 'regimenTRANSITION',
+      'TURBULENT': 'regimenTURBULENT',
       'indeterminado': 'regimenIndeterminado'
     };
-    const key = keyMap[regimen];
+    const key = keyMap[regimen] || 'regimenIndeterminado';
     return t(key);
   }
 
   return { t, t_regimen };
 };
-
-    

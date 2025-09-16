@@ -135,9 +135,9 @@ export const translations: Translations = {
     faqAIPrediction: '¿Cómo funciona la predicción de régimen en tiempo real?',
     faqAIPredictionDesc: 'Actualmente, la identificación del régimen de flujo se basa en un modelo simulado. En futuras versiones, FRISAT se integrará con un potente backend de análisis escrito en Python. Este sistema utilizará los datos de los sensores en tiempo real para alimentar un modelo de inteligencia artificial (IA) que predecirá con alta precisión el régimen de flujo (laminar o turbulent), proporcionando insights más rápidos y fiables durante sus pruebas.',
 
-    regimenLaminar: 'Laminar',
-    regimenTransition: 'Transición',
-    regimenTurbulento: 'Turbulento',
+    regimenLAMINAR: 'Laminar',
+    regimenTRANSITION: 'Transición',
+    regimenTURBULENT: 'Turbulento',
     regimenIndeterminado: 'Indeterminado',
 
     statistics: 'Estadísticas',
@@ -289,9 +289,9 @@ export const translations: Translations = {
     faqAIPrediction: 'How does real-time regime prediction work?',
     faqAIPredictionDesc: 'Currently, flow regime identification is based on a simulated model. In future versions, FRISAT will integrate with a powerful analysis backend written in Python. This system will use real-time sensor data to feed an artificial intelligence (AI) model that will predict the flow regime (laminar or turbulent) with high accuracy, providing faster and more reliable insights during your tests.',
 
-    regimenLaminar: 'Laminar',
-    regimenTransition: 'Transition',
-    regimenTurbulento: 'Turbulent',
+    regimenLAMINAR: 'Laminar',
+    regimenTRANSITION: 'Transition',
+    regimenTURBULENT: 'Turbulent',
     regimenIndeterminado: 'Undetermined',
 
     statistics: 'Statistics',
@@ -443,9 +443,9 @@ export const translations: Translations = {
     faqAIPrediction: 'Comment fonctionne la prédiction de régime en temps réel ?',
     faqAIPredictionDesc: "Actuellement, l'identification du régime d'écoulement est basée sur un modèle simulé. Dans les versions futures, FRISAT s'intégrera à un puissant backend d'analyse écrit en Python. Ce système utilisera les données des capteurs en temps réel pour alimenter un modèle d'intelligence artificielle (IA) qui prédira avec une grande précision le régime d'écoulement (laminaire ou turbulent), fournissant des informations plus rapides et plus fiables lors de vos tests.",
 
-    regimenLaminar: 'Laminaire',
-    regimenTransition: 'Transition',
-    regimenTurbulento: 'Turbulent',
+    regimenLAMINAR: 'Laminaire',
+    regimenTRANSITION: 'Transition',
+    regimenTURBULENT: 'Turbulent',
     regimenIndeterminado: 'Indéterminé',
 
     statistics: 'Statistiques',
@@ -597,9 +597,9 @@ export const translations: Translations = {
     faqAIPrediction: 'Wie funktioniert die Echtzeit-Regime-Vorhersage?',
     faqAIPredictionDesc: 'Derzeit basiert die Identifizierung des Strömungsregimes auf einem simulierten Modell. In zukünftigen Versionen wird FRISAT in ein leistungsstarkes Analyse-Backend integriert, das in Python geschrieben ist. Dieses System wird Echtzeit-Sensordaten verwenden, um ein künstliches Intelligenz (KI)-Modell zu füttern, das das Strömungsregime (laminar oder turbulent) mit hoher Genauigkeit vorhersagt und so schnellere und zuverlässigere Einblicke während Ihrer Tests liefert.',
 
-    regimenLaminar: 'Laminar',
-    regimenTransition: 'Übergang',
-    regimenTurbulento: 'Turbulent',
+    regimenLAMINAR: 'Laminar',
+    regimenTRANSITION: 'Übergang',
+    regimenTURBULENT: 'Turbulent',
     regimenIndeterminado: 'Unbestimmt',
 
     statistics: 'Statistiken',

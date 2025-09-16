@@ -10,6 +10,7 @@ export type Prediction = {
     label: RegimenType;
     probs: number[];
     window: number;
+    send?: (data: any) => void;
 };
 
 type UsePredictionWebSocketProps = {
@@ -71,7 +72,6 @@ export const usePredictionWebSocket = ({ n_sensors, hop, enabled = true }: UsePr
         ws.current.onclose = () => {
             console.log('WebSocket disconnected');
             setConnectionStatus('disconnected');
-            // Optional: try to reconnect
         };
 
     }, [enabled, n_sensors, hop]);
@@ -80,19 +80,22 @@ export const usePredictionWebSocket = ({ n_sensors, hop, enabled = true }: UsePr
         if (enabled) {
             connect();
         } else {
-            ws.current?.close();
+            if (ws.current) {
+                ws.current.close();
+                ws.current = null;
+            }
         }
 
         return () => {
-            ws.current?.close();
+            if (ws.current) {
+                ws.current.close();
+            }
         };
     }, [enabled, connect]);
 
     const send = useCallback((data: any) => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
             ws.current.send(JSON.stringify(data));
-        } else {
-            // console.warn('WebSocket not connected. Unable to send data.');
         }
     }, []);
 
