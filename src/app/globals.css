@@ -14,19 +14,19 @@ body {
     --card-foreground: 222 47% 11%;
     --popover: 210 30% 98%;
     --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
+    --primary: 220 85% 55%; /* Azul Frío */
     --primary-foreground: 210 40% 98%;
     --secondary: 215 20% 90%;
     --secondary-foreground: 222 47% 11%;
     --muted: 215 20% 90%;
     --muted-foreground: 215 20% 55%;
-    --accent: 25 95% 53%;
+    --accent: 260 85% 65%; /* Púrpura */
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 25 95% 53%; /* Naranja Vivo */
     --destructive-foreground: 210 40% 98%;
     --border: 214 20% 88%;
     --input: 214 20% 88%;
-    --ring: 221 83% 53%;
+    --ring: 220 85% 55%; /* Azul Frío */
     --chart-1: 221 83% 53%;
     --chart-2: 25 95% 53%;
     --chart-3: 45 95% 55%;
@@ -50,19 +50,19 @@ body {
     --card-foreground: 210 40% 98%;
     --popover: 220 25% 12%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
+    --primary: 220 90% 65%; /* Azul Frío */
     --primary-foreground: 222 47% 11%;
     --secondary: 220 15% 20%;
     --secondary-foreground: 210 40% 98%;
     --muted: 220 15% 20%;
     --muted-foreground: 215 20% 65%;
-    --accent: 25 95% 60%;
+    --accent: 260 85% 75%; /* Púrpura */
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 25 95% 60%; /* Naranja Vivo */
     --destructive-foreground: 210 40% 98%;
     --border: 220 15% 25%;
     --input: 220 15% 25%;
-    --ring: 217 91% 70%;
+    --ring: 220 90% 70%; /* Azul Frío */
     --chart-1: 217 91% 60%;
     --chart-2: 25 95% 60%;
     --chart-3: 45 95% 65%;
