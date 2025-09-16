@@ -27,11 +27,12 @@ body {
     --border: 214 20% 88%;
     --input: 214 20% 88%;
     --ring: 220 85% 65%;
-    --chart-1: 142 71% 45%; /* Verde */
-    --chart-2: 38 92% 50%; /* Ámbar */
-    --chart-3: 0 84% 60%; /* Rojo */
-    --chart-4: 260 85% 65%;
-    --chart-5: 340 85% 65%;
+    /* Pastel Palette */
+    --chart-1: 205 90% 70%; /* Pastel Blue */
+    --chart-2: 260 90% 75%; /* Pastel Lavender */
+    --chart-3: 340 90% 75%; /* Pastel Pink */
+    --chart-4: 170 70% 65%; /* Pastel Mint */
+    --chart-5: 25 90% 70%;  /* Pastel Peach */
     --radius: 0.5rem;
 
     --sidebar-background: 210 30% 94%;
@@ -63,11 +64,12 @@ body {
     --border: 220 15% 25%;
     --input: 220 15% 25%;
     --ring: 220 85% 60%;
-    --chart-1: 142 76% 42%; /* Verde */
-    --chart-2: 38 95% 55%; /* Ámbar */
-    --chart-3: 0 72% 51%; /* Rojo */
-    --chart-4: 260 85% 75%;
-    --chart-5: 340 85% 75%;
+    /* Pastel Palette */
+    --chart-1: 205 80% 60%; /* Pastel Blue */
+    --chart-2: 260 80% 65%; /* Pastel Lavender */
+    --chart-3: 340 80% 65%; /* Pastel Pink */
+    --chart-4: 170 60% 50%; /* Pastel Mint */
+    --chart-5: 25 80% 60%;  /* Pastel Peach */
 
     --sidebar-background: 220 25% 10%;
     --sidebar-foreground: 210 40% 98%;
