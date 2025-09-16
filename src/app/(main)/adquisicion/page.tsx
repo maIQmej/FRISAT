@@ -10,7 +10,7 @@ import { Button } from '../../../components/ui/button';
 import { SensorChart } from '../../../components/app/SensorChart';
 import { ExportModal } from '../../../components/app/ExportModal';
 import { DataPointModal } from '../../../components/app/DataPointModal';
-import type { SensorDataPoint, AcquisitionState } from '../../../lib/types';
+import type { SensorDataPoint, AcquisitionState, RegimenType } from '../../../lib/types';
 import {
   Card,
   CardContent,
@@ -28,6 +28,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { usePredictionWebSocket } from '../../../hooks/usePredictionWebSocket';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../components/ui/tooltip';
 import { PredictionCard } from '../../../components/app/PredictionCard';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 export default function AdquisicionPage() {
   const router = useRouter();
@@ -289,6 +291,17 @@ export default function AdquisicionPage() {
     setAcquisitionState('running');
   };
 
+  const getRegimenBadgeVariant = (regimen: RegimenType) => {
+    switch(regimen) {
+      case 'LAMINAR': return 'default';
+      case 'TRANSITION': return 'accent';
+      case 'TURBULENT': return 'destructive';
+      case 'INDETERMINADO':
+      case 'indeterminado':
+      default: return 'secondary';
+    }
+  }
+
   const renderAcquisitionReady = () => {
     const activeSensorsText = activeSensors
       .map((key) => `${t('sensor')} ${parseInt(key.replace('sensor', '', 10))}`)
@@ -424,7 +437,12 @@ export default function AdquisicionPage() {
               <Wind className="h-6 w-6 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">{t('flowRegimeLabel')}</p>
-                <p className="font-semibold capitalize">{t_regimen(regimen)}</p>
+                <Badge 
+                  variant={getRegimenBadgeVariant(regimen)}
+                  className="text-base capitalize"
+                >
+                  {t_regimen(regimen)}
+                </Badge>
               </div>
             </div>
           </div>

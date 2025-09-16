@@ -63,6 +63,17 @@ export default function HistorialDetallePage() {
         return isoDate; // fallback
     }
   };
+
+  const getRegimenBadgeVariant = (regimen: RegimenType) => {
+    switch(regimen) {
+      case 'LAMINAR': return 'default';
+      case 'TRANSITION': return 'accent';
+      case 'TURBULENT': return 'destructive';
+      case 'INDETERMINADO':
+      case 'indeterminado':
+      default: return 'secondary';
+    }
+  }
   
   if (loading) {
       return (
@@ -169,10 +180,12 @@ export default function HistorialDetallePage() {
               <Wind className="h-6 w-6 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">{t('detectedRegime')}</p>
-                <Badge variant={
-                  testData.regimen === 'flujo laminar' ? 'default' : 
-                  testData.regimen === 'turbulento' ? 'destructive' : 'secondary'
-                } className="capitalize text-base">{t_regimen(testData.regimen)}</Badge>
+                <Badge
+                  variant={getRegimenBadgeVariant(testData.regimen)}
+                  className="text-base capitalize"
+                >
+                  {t_regimen(testData.regimen)}
+                </Badge>
               </div>
             </div>
           </CardContent>
@@ -216,5 +229,3 @@ export default function HistorialDetallePage() {
     </>
   );
 }
-
-    

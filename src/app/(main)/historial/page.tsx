@@ -19,7 +19,7 @@ import type { RegimenType } from '../../../lib/types';
 import { getHistory, type HistoryEntry } from '../../../actions/getHistory';
 import { Skeleton } from '../../../components/ui/skeleton';
 
-const regimenTypes: RegimenType[] = ['flujo laminar', 'turbulento', 'indeterminado'];
+const regimenTypes: RegimenType[] = ['LAMINAR', 'TRANSITION', 'TURBULENT', 'indeterminado'];
 
 export default function HistorialPage() {
   const router = useRouter();
@@ -92,6 +92,17 @@ export default function HistorialPage() {
         return isoDate;
     }
   };
+
+  const getRegimenBadgeVariant = (regimen: RegimenType) => {
+    switch(regimen) {
+      case 'LAMINAR': return 'default';
+      case 'TRANSITION': return 'accent';
+      case 'TURBULENT': return 'destructive';
+      case 'INDETERMINADO':
+      case 'indeterminado':
+      default: return 'secondary';
+    }
+  }
 
   return (
     <div className="container mx-auto max-w-6xl">
@@ -197,10 +208,12 @@ export default function HistorialPage() {
                   <TableCell>{test.duration}</TableCell>
                   <TableCell className="text-center">{test.sensors}</TableCell>
                   <TableCell>
-                    <Badge variant={
-                      test.regimen === 'flujo laminar' ? 'default' : 
-                      test.regimen === 'turbulento' ? 'destructive' : 'secondary'
-                    } className="capitalize">{t_regimen(test.regimen)}</Badge>
+                    <Badge 
+                      variant={getRegimenBadgeVariant(test.regimen)} 
+                      className="capitalize"
+                    >
+                      {t_regimen(test.regimen)}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               )) : (
@@ -222,5 +235,3 @@ export default function HistorialPage() {
     </div>
   );
 }
-
-    
