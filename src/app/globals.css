@@ -20,7 +20,7 @@ body {
     --secondary-foreground: 222 47% 11%;
     --muted: 215 20% 90%;
     --muted-foreground: 215 20% 55%;
-    --accent: 38 92% 50% / 0.1; /* Naranja translúcido para hover */
+    --accent: 38 92% 50% / 0.2; /* Naranja translúcido para hover */
     --accent-foreground: 38 95% 30%;
     --destructive: 38 92% 50%; /* Naranja Vivo */
     --destructive-foreground: 210 40% 98%;
@@ -56,7 +56,7 @@ body {
     --secondary-foreground: 210 40% 98%;
     --muted: 220 15% 20%;
     --muted-foreground: 215 20% 65%;
-    --accent: 38 92% 50% / 0.1; /* Naranja translúcido para hover */
+    --accent: 38 92% 50% / 0.2; /* Naranja translúcido para hover */
     --accent-foreground: 38 95% 70%;
     --destructive: 38 95% 55%; /* Naranja Vivo */
     --destructive-foreground: 210 40% 98%;
