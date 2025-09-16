@@ -8,39 +8,60 @@ Siga estas instrucciones para tener una copia del proyecto funcionando en su má
 
 ### Prerrequisitos
 
-Necesitará tener instalado [Node.js](https://nodejs.org/) en su sistema. Se recomienda utilizar la versión especificada en el archivo `.nvmrc`.
-
-Si utiliza `nvm` (Node Version Manager), puede ejecutar el siguiente comando en la raíz del proyecto para usar la versión correcta:
-
-```bash
-nvm use
-```
+- **Node.js**: Necesitará tener instalado [Node.js](https://nodejs.org/) en su sistema.
+- **Python**: Necesitará [Python](https://www.python.org/downloads/) para ejecutar el backend de Machine Learning.
 
 ### Instalación
 
-1. Clone el repositorio en su máquina local:
+1. Clone el repositorio e instale las dependencias de Node.js:
    ```bash
    git clone <repository-url>
-   ```
-2. Navegue al directorio del proyecto:
-   ```bash
    cd frisat-app
+   npm install
    ```
-3. Instale las dependencias del proyecto utilizando `npm`:
-   ```bash
-   npm ci
-   ```
-   Se recomienda usar `npm ci` para asegurar una instalación limpia y consistente que coincida con `package-lock.json`.
+
+2. Instale las dependencias de Python:
+    ```bash
+    # Navegue a la carpeta del backend
+    cd ml_backend
+
+    # Instale los paquetes de Python
+    pip install -r requirements.txt
+    ```
+    *(Nota: dependiendo de su sistema, puede que necesite usar `python -m pip` o `python3 -m pip`)*
 
 ### Ejecutando el Servidor de Desarrollo
 
-Para iniciar la aplicación en modo de desarrollo, ejecute el siguiente comando:
+Para ejecutar el proyecto completo, necesita iniciar dos procesos en terminales separadas: el **backend de Python** y el **frontend de Next.js**.
+
+**1. Iniciar el Backend (Python)**
+
+Abra una terminal y ejecute el script de inicio correspondiente a su sistema operativo.
+
+- **Para Windows:**
+  ```bash
+  # Desde la raíz del proyecto
+  .\ml_backend\start-backend.bat
+  ```
+
+- **Para macOS / Linux:**
+  ```bash
+  # Desde la raíz del proyecto
+  ./ml_backend/start-backend.sh
+  ```
+  *(Si obtiene un error de "permission denied" en Mac/Linux, ejecute `chmod +x ./ml_backend/start-backend.sh` una vez y vuelva a intentarlo).*
+
+El servidor de Python estará corriendo en `http://127.0.0.1:8765`.
+
+**2. Iniciar el Frontend (Next.js)**
+
+Abra una **segunda terminal** y ejecute:
 
 ```bash
 npm run dev
 ```
 
-Esto iniciará el servidor de desarrollo en `http://localhost:9002`. Puede abrir esta URL en su navegador para ver la aplicación en funcionamiento. La aplicación se recargará automáticamente si realiza cambios en el código.
+Esto iniciará el servidor de desarrollo del frontend en `http://localhost:9003`. Puede abrir esta URL en su navegador para ver la aplicación.
 
 ## Despliegue
 
@@ -49,13 +70,3 @@ Este proyecto está configurado para desplegarse en **Firebase App Hosting**. El
 El archivo `apphosting.yaml` en la raíz del proyecto define la configuración de compilación y ejecución para el entorno de App Hosting.
 
 El proceso de despliegue se desencadena automáticamente en cada `push` a la rama `main` (o la rama que se haya configurado para el despliegue continuo).
-
-## Scripts Disponibles
-
-En el directorio del proyecto, puede ejecutar:
-
-- `npm run dev`: Inicia la aplicación en modo de desarrollo.
-- `npm run build`: Compila la aplicación para producción.
-- `npm run start`: Inicia un servidor de producción.
-- `npm run lint`: Ejecuta ESLint para analizar el código en busca de problemas.
-- `npm run typecheck`: Ejecuta el compilador de TypeScript para verificar los tipos sin emitir archivos.
