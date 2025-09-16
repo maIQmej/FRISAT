@@ -55,6 +55,7 @@ export const translations: Translations = {
     home: 'Inicio',
     stopAcq: 'Detener Adquisición',
     flowRegime: 'Régimen de Flujo',
+    flowRegimeTooltip: 'Muestra la predicción del modelo de IA en tiempo real sobre el tipo de flujo.',
     reconfigure: 'Reconfigurar',
 
     readyToStartTitle: 'Prueba Lista',
@@ -208,6 +209,7 @@ export const translations: Translations = {
     home: 'Home',
     stopAcq: 'Stop Acquisition',
     flowRegime: 'Flow Regime',
+    flowRegimeTooltip: 'Shows the real-time prediction from the AI model about the flow type.',
     reconfigure: 'Reconfigure',
 
     readyToStartTitle: 'Test Ready',
@@ -361,6 +363,7 @@ export const translations: Translations = {
     home: 'Accueil',
     stopAcq: 'Arrêter l\'Acquisition',
     flowRegime: 'Régime d\'Écoulement',
+    flowRegimeTooltip: 'Affiche la prédiction en temps réel du modèle d\'IA sur le type d\'écoulement.',
     reconfigure: 'Reconfigurer',
 
     readyToStartTitle: 'Test Prêt',
@@ -514,6 +517,7 @@ export const translations: Translations = {
     home: 'Startseite',
     stopAcq: 'Erfassung stoppen',
     flowRegime: 'Strömungsregime',
+    flowRegimeTooltip: 'Zeigt die Echtzeit-Vorhersage des KI-Modells über den Strömungstyp an.',
     reconfigure: 'Neu konfigurieren',
 
     readyToStartTitle: 'Test bereit',

@@ -18,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../components/ui/card';
-import { Wind, RotateCw, HardDrive, Database, Home, Sigma, FileText, Clock, Timer, PlayCircle, Settings, AlertCircle } from 'lucide-react';
+import { Wind, RotateCw, HardDrive, Database, Home, Sigma, FileText, Clock, Timer, PlayCircle, Settings, AlertCircle, HelpCircle } from 'lucide-react';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useToast } from '../../../hooks/use-toast';
 import { saveExportedFiles } from '../../../actions/saveExport';
@@ -26,6 +26,7 @@ import { generateCsvContent } from '../../../lib/csv-utils';
 import { Separator } from '../../../components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
 import { usePredictionWebSocket } from '../../../hooks/usePredictionWebSocket';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../components/ui/tooltip';
 
 export default function AdquisicionPage() {
   const router = useRouter();
@@ -51,14 +52,14 @@ export default function AdquisicionPage() {
       .map(([key]) => key), 
   [config.sensors]);
 
-  const { lastPrediction, connectionStatus, error: wsError } = usePredictionWebSocket({
+  const { lastPrediction, connectionStatus, error: wsError, send } = usePredictionWebSocket({
     n_sensors: activeSensors.length,
     hop: 30, // Make this configurable if needed
     enabled: acquisitionState === 'running'
   });
   
   useEffect(() => {
-    if (lastPrediction) {
+    if (lastPrediction?.label) {
       setRegimen(lastPrediction.label);
     }
   }, [lastPrediction, setRegimen]);
@@ -170,8 +171,8 @@ export default function AdquisicionPage() {
         values.push(sensorValue);
       });
       // Send data to WebSocket
-      if (lastPrediction.send) {
-        lastPrediction.send({ type: 'SAMPLES', values });
+      if (send) {
+        send({ type: 'SAMPLES', values });
       }
       return point;
     };
@@ -362,12 +363,24 @@ export default function AdquisicionPage() {
       <Card className="flex flex-col items-center justify-center min-h-[240px]">
         <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
           <Wind className="h-8 w-8 text-primary" />
-          <CardTitle className="mt-2">{t('flowRegime')}</CardTitle>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <CardTitle className="mt-2 flex items-center gap-2">
+                  {t('flowRegime')}
+                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('flowRegimeTooltip')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardHeader>
         <CardContent className="p-4 pt-0">
           <p className="text-2xl font-bold capitalize text-center">{t_regimen(regimen)}</p>
           <div className='text-center mt-2'>
-            <span className={`text-xs px-2 py-1 rounded-full ${connectionStatus === 'connected' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <span className={`text-xs px-2 py-1 rounded-full ${connectionStatus === 'connected' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`}>
               {t(connectionStatus)}
             </span>
             {wsError && <p className='text-xs text-destructive mt-1'>{wsError}</p>}
