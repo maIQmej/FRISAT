@@ -63,7 +63,7 @@ export const generateCsvContent = (
             if (typeof value === 'number') {
                 return value.toFixed(2);
             }
-            return `"${value ?? ''}"`;
+            return `${value ?? ''}`;
         });
         const fullRow = [index + 1, ...rowData];
         csv += `${fullRow.join(',')}\n`;
@@ -71,5 +71,3 @@ export const generateCsvContent = (
 
     return csv;
 };
-
-    
