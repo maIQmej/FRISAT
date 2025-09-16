@@ -14,7 +14,7 @@ interface PredictionCardProps {
   wsError: string | null;
 }
 
-const LABELS: RegimenType[] = ['LAMINAR', 'TRANSITION', 'TURBULENT'];
+const LABELS: RegimenType[] = ['LAMINAR', 'TRANSITION', 'TURBULENT', 'INDETERMINADO'];
 
 export function PredictionCard({ prediction, connectionStatus, wsError }: PredictionCardProps) {
   const { t, t_regimen } = useTranslation();

@@ -13,11 +13,12 @@ export const useTranslation = () => {
   };
 
   const t_regimen = (regimen: RegimenType) => {
-    const keyMap: { [key in RegimenType]: string } = {
+    const keyMap: { [key in RegimenType]?: string } = {
       'LAMINAR': 'regimenLAMINAR',
       'TRANSITION': 'regimenTRANSITION',
       'TURBULENT': 'regimenTURBULENT',
-      'indeterminado': 'regimenIndeterminado'
+      'indeterminado': 'regimenIndeterminado',
+      'INDETERMINADO': 'regimenIndeterminado'
     };
     const key = keyMap[regimen] || 'regimenIndeterminado';
     return t(key);

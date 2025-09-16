@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 
 export type Language = 'es' | 'en' | 'fr' | 'de';
 
-export type RegimenType = 'LAMINAR' | 'TRANSITION' | 'TURBULENT' | 'indeterminado';
+export type RegimenType = 'LAMINAR' | 'TRANSITION' | 'TURBULENT' | 'indeterminado' | 'INDETERMINADO';
 
 export interface Configuration {
   acquisitionTime: number;
