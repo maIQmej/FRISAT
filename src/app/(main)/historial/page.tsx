@@ -9,7 +9,7 @@ import { Badge, type BadgeProps } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Checkbox } from '../../../components/ui/checkbox';
-import { ArrowLeft, Download, Search, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Download, Search, RefreshCw, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -18,6 +18,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import type { RegimenType } from '../../../lib/types';
 import { getHistory, type HistoryEntry } from '../../../actions/getHistory';
 import { Skeleton } from '../../../components/ui/skeleton';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { SlidersHorizontal } from 'lucide-react';
 
 const regimenTypes: RegimenType[] = ['LAMINAR', 'TRANSITION', 'TURBULENT', 'indeterminado'];
 
@@ -27,8 +30,13 @@ export default function HistorialPage() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  
+  // Filtros
   const [filterText, setFilterText] = useState('');
   const [regimeFilter, setRegimeFilter] = useState('all');
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [filesToExport, setFilesToExport] = useState<string[]>([]);
 
@@ -56,8 +64,27 @@ export default function HistorialPage() {
       )
       .filter(test => 
         regimeFilter === 'all' || test.regimen === regimeFilter
-      );
-  }, [history, filterText, regimeFilter]);
+      )
+      .filter(test => {
+        if (!startDate && !endDate) return true;
+        try {
+            const testDate = new Date(test.date);
+            if (startDate && testDate < startDate) {
+                return false;
+            }
+            if (endDate) {
+                const endOfDay = new Date(endDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                if (testDate > endOfDay) {
+                    return false;
+                }
+            }
+            return true;
+        } catch {
+            return false;
+        }
+      });
+  }, [history, filterText, regimeFilter, startDate, endDate]);
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
@@ -80,6 +107,13 @@ export default function HistorialPage() {
     setFilesToExport(selectedFileNames);
     setIsExportModalOpen(true);
   };
+
+  const clearFilters = () => {
+      setFilterText('');
+      setRegimeFilter('all');
+      setStartDate(undefined);
+      setEndDate(undefined);
+  }
 
   const numSelected = selectedRows.length;
   const numTotal = filteredHistory.length;
@@ -123,7 +157,7 @@ export default function HistorialPage() {
             </div>
           </div>
           <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex w-full flex-col sm:flex-row sm:w-auto sm:flex-grow gap-4">
+            <div className="flex w-full flex-col sm:flex-row sm:w-auto sm:flex-grow gap-2">
               <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -133,19 +167,42 @@ export default function HistorialPage() {
                   className="pl-10"
                 />
               </div>
-              <div className="w-full sm:w-[240px]">
-                <Select value={regimeFilter} onValueChange={setRegimeFilter}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t('filterByRegime')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('allRegimes')}</SelectItem>
-                    {regimenTypes.map(regimen => (
-                        <SelectItem key={regimen} value={regimen}>{t_regimen(regimen)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+
+               <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant="outline" className='w-full sm:w-auto shrink-0'>
+                        <SlidersHorizontal className="mr-2 h-4 w-4" />
+                        {t('filterByDate')}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-screen max-w-sm sm:w-[400px] p-4" align="start">
+                    <div className="space-y-4">
+                        <p className="font-medium text-sm">{t('filterByDate')}</p>
+                         <div className="grid gap-2">
+                            <DatePicker date={startDate} setDate={setStartDate} placeholder={t('startDate')} />
+                            <DatePicker date={endDate} setDate={setEndDate} placeholder={t('endDate')} />
+                        </div>
+                         <div className="w-full sm:w-[240px]">
+                            <Select value={regimeFilter} onValueChange={setRegimeFilter}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder={t('filterByRegime')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t('allRegimes')}</SelectItem>
+                                {regimenTypes.map(regimen => (
+                                    <SelectItem key={regimen} value={regimen}>{t_regimen(regimen)}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                        </div>
+                         <Button variant="ghost" size="sm" onClick={clearFilters} className='w-full'>
+                            <X className="mr-2 h-4 w-4" />
+                            Limpiar filtros
+                        </Button>
+                    </div>
+                </PopoverContent>
+               </Popover>
+
             </div>
             {numSelected > 0 && (
               <div className="flex items-center gap-4 shrink-0">
