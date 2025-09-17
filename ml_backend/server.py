@@ -11,7 +11,7 @@ model = load_model("Modelo_1500.h5", compile=False)
 mm = np.load("MaxiMini.npz")
 MINI, MAXI = float(mm["mini"]), float(mm["maxi"])
 
-LABELS = ["LAMINAR", "TRANSITION", "TURBULENT", "INDETERMINADO"]
+LABELS = ["LAMINAR", "TRANSITION", "TURBULENT"]
 
 def clip_norm(x):
     x = np.clip(x, MINI, MAXI)
@@ -31,6 +31,7 @@ async def ws_predict(ws: WebSocket):
     try:
         while True:
             msg = await ws.receive_json()
+            print("Mensaje recibido:", msg)  # <-- Agrega este print
             t = msg.get("type")
             if t == "CONFIG":
                 n_sensors = int(msg.get("n_sensors", 1))
@@ -46,6 +47,7 @@ async def ws_predict(ws: WebSocket):
 
             if t == "SAMPLES":
                 values = msg.get("values", [])
+                print("Valores recibidos:", values)  # <-- Agrega este print
                 # values: [s1, s2, ...] por muestra
                 if len(values) != n_sensors:
                     await ws.send_json({"type": "ERROR", "msg": "Número de sensores no coincide"})
@@ -72,12 +74,11 @@ async def ws_predict(ws: WebSocket):
                         win_matrix = win_matrix.reshape(1, WINDOW, n_sensors)
                         probs = model.predict(win_matrix, verbose=0)[0]
                         k = int(np.argmax(probs))
-
-                        label_to_send = LABELS[k] if 0 <= k < len(LABELS) -1 else LABELS[-1]
-
+                        label = LABELS[k]
+                        print("Predicción enviada:", label, probs)
                         await ws.send_json({
                             "type": "PREDICTION",
-                            "label": label_to_send,
+                            "label": label,
                             "probs": probs.tolist(),
                             "window": WINDOW
                         })
@@ -90,3 +91,4 @@ async def ws_predict(ws: WebSocket):
 
     except WebSocketDisconnect:
         return
+

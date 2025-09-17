@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e # Exit immediately if a command exits with a non-zero status.
 
-# Este es el script recomendado para iniciar el backend de Python en macOS o Linux.
-# Ejecútelo desde la raíz del proyecto: ./ml_backend/start-backend.sh
+# This script is the recommended way to start the Python backend manually.
+# Run this script from the project root directory: ./ml_backend/start-backend.sh
 
 echo "Attempting to start the Python backend..."
 

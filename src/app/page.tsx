@@ -39,7 +39,7 @@ export default function WelcomePage() {
         Your browser does not support the video tag.
       </video>
       <div className="absolute inset-0 bg-background opacity-80" />
-      <div className="absolute top-4 right-4 z-20 flex items-center gap-2 [&_button]:text-black dark:[&_button]:text-white [&_button:hover]:bg-black/10 dark:[&_button:hover]:bg-white/10 [&_svg]:h-6 [&_svg]:w-6">
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-2 [&_button]:text-foreground [&_svg]:h-6 [&_svg]:w-6">
         <LanguageSwitcher />
         <ThemeToggle />
       </div>
@@ -75,5 +75,3 @@ export default function WelcomePage() {
     </div>
   );
 }
-
-    
