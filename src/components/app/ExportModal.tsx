@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -41,6 +39,7 @@ interface ExportModalProps {
   regimen?: RegimenType;
 }
 
+// Define form schemas
 const singleFileFormSchema = z.object({
   fileName: z.string().min(1, 'El nombre es requerido').regex(/^[a-zA-Z0-9_-]+$/, 'Solo letras, números, guiones y guiones bajos'),
   includeDate: z.boolean(),
@@ -48,7 +47,9 @@ const singleFileFormSchema = z.object({
 
 type SingleFileFormValues = z.infer<typeof singleFileFormSchema>;
 
-const multiFileFormSchema = z.object({});
+const multiFileFormSchema = z.object({
+  // Add any fields needed for multi-file export
+});
 
 type MultiFileFormValues = z.infer<typeof multiFileFormSchema>;
 
@@ -61,8 +62,9 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
   const { toast } = useToast();
 
   const isMultiExport = filesToExport.length > 1;
-  const singleFileName = filesToExport.length > 0 ? filesToExport[0] : config.fileName;
+  const singleFileName = filesToExport.length > 0 ? filesToExport[0] : config?.fileName || 'export';
 
+  // Initialize forms with proper types
   const singleFileForm = useForm<SingleFileFormValues>({
     resolver: zodResolver(singleFileFormSchema),
     defaultValues: {
@@ -73,6 +75,7 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
 
   const multiFileForm = useForm<MultiFileFormValues>({
     resolver: zodResolver(multiFileFormSchema),
+    defaultValues: {},
   });
 
   const form = isMultiExport ? multiFileForm : singleFileForm;
@@ -86,9 +89,8 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
       multiFileForm.reset({});
       setExportState('idle');
     }
-  }, [open, singleFileName, filesToExport, singleFileForm, multiFileForm]);
+  }, [open, singleFileName, singleFileForm, multiFileForm]);
 
-  
   const watchedFileName = singleFileForm.watch('fileName');
   const watchedIncludeDate = singleFileForm.watch('includeDate');
 
@@ -140,16 +142,24 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
             URL.revokeObjectURL(link.href);
         } else {
             const fileName = getFinalFilename();
-            const currentConfig = { ...config, fileName: (values as SingleFileFormValues).fileName };
-            const csvContent = generateCsvContent(currentConfig, sensorData, startTimestamp, t, regimen);
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
+            
+            // Si hay datos de sensores en memoria, usar esos
+            if (sensorData && sensorData.length > 0) {
+                const currentConfig = { ...config, fileName: (values as SingleFileFormValues).fileName };
+                const csvContent = generateCsvContent(currentConfig, sensorData, startTimestamp, t, regimen);
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            } else {
+                // Si no hay datos en memoria, descargar desde la base de datos
+                // Esto se manejará en el historial
+                console.warn('No sensor data available for export');
+            }
         }
 
         setExportState('success');

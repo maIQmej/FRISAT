@@ -168,6 +168,11 @@ export const translations: Translations = {
     'connected': 'Conectado',
     'disconnected': 'Desconectado',
     'error': 'Error de Conexión',
+    
+    'measurementSaved': 'Medición Guardada',
+    'measurementSavedDesc': 'La medición se ha guardado automáticamente en la base de datos.',
+    'saveError': 'Error al Guardar',
+    'saveErrorDesc': 'No se pudo guardar la medición en la base de datos.',
   },
   en: {
     welcomeTitle: 'Welcome to FRISAT',
@@ -325,6 +330,11 @@ sampling: 'Sampling',
     'connected': 'Connected',
     'disconnected': 'Disconnected',
     'error': 'Connection Error',
+    
+    'measurementSaved': 'Measurement Saved',
+    'measurementSavedDesc': 'The measurement has been automatically saved to the database.',
+    'saveError': 'Save Error',
+    'saveErrorDesc': 'Could not save the measurement to the database.',
   },
   fr: {
     welcomeTitle: 'Bienvenue sur FRISAT',
@@ -482,6 +492,11 @@ sampling: 'Sampling',
     'connected': 'Connecté',
     'disconnected': 'Déconnecté',
     'error': 'Erreur de Connexion',
+    
+    'measurementSaved': 'Mesure Enregistrée',
+    'measurementSavedDesc': 'La mesure a été automatiquement enregistrée dans la base de données.',
+    'saveError': 'Erreur de Sauvegarde',
+    'saveErrorDesc': 'Impossible d\'enregistrer la mesure dans la base de données.',
   },
   de: {
     welcomeTitle: 'Willkommen bei FRISAT',
@@ -638,5 +653,10 @@ sampling: 'Sampling',
     'connected': 'Verbunden',
     'disconnected': 'Getrennt',
     'error': 'Verbindungsfehler',
+    
+    'measurementSaved': 'Messung Gespeichert',
+    'measurementSavedDesc': 'Die Messung wurde automatisch in der Datenbank gespeichert.',
+    'saveError': 'Speicherfehler',
+    'saveErrorDesc': 'Die Messung konnte nicht in der Datenbank gespeichert werden.',
   }
 };

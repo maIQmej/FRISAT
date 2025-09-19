@@ -1,6 +1,6 @@
 
 @echo off
-echo Attempting to start the Python backend for Windows...
+echo Starting FRISAT backend with database initialization...
 
 REM Navigate to the script's directory to ensure paths are correct
 cd /d "%~dp0"
@@ -12,8 +12,5 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Installing/updating Python dependencies from requirements.txt...
-python -m pip install -r requirements.txt
-
-echo Starting Uvicorn server for FastAPI...
-python -m uvicorn server:app --host 127.0.0.1 --port 8765 --reload
+echo Starting backend with database initialization...
+python start-backend-with-db.py

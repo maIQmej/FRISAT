@@ -6,12 +6,7 @@ import type { RegimenType } from '../lib/types';
 
 const WEBSOCKET_URL = 'ws://127.0.0.1:8765/ws';
 
-export type Prediction = {
-    label: RegimenType;
-    probs: number[];
-    window: number;
-    send?: (data: any) => void;
-};
+export type Prediction = any;
 
 type UsePredictionWebSocketProps = {
     n_sensors: number;

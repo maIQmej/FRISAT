@@ -14,9 +14,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { ExportModal } from '../../../components/app/ExportModal';
+import { DirectDownloadButton } from '../../../components/app/DirectDownloadButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import type { RegimenType } from '../../../lib/types';
-import { getHistory, type HistoryEntry } from '../../../actions/getHistory';
+import { useHistory } from '../../../hooks/useHistory';
+import type { HistoryEntry } from '../../../actions/getHistory';
 import { Skeleton } from '../../../components/ui/skeleton';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -27,8 +29,7 @@ const regimenTypes: RegimenType[] = ['LAMINAR', 'TRANSITION', 'TURBULENT', 'inde
 export default function HistorialPage() {
   const router = useRouter();
   const { t, t_regimen } = useTranslation();
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { history, loading, error, refetch } = useHistory();
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   
   // Filtros
@@ -41,21 +42,9 @@ export default function HistorialPage() {
   const [filesToExport, setFilesToExport] = useState<string[]>([]);
 
   const fetchHistory = async () => {
-    setLoading(true);
     setSelectedRows([]);
-    try {
-      const data = await getHistory();
-      setHistory(data);
-    } catch (error) {
-      console.error("Failed to fetch history:", error);
-    } finally {
-      setLoading(false);
-    }
+    await refetch();
   };
-  
-  useEffect(() => {
-    fetchHistory();
-  }, []);
 
   const filteredHistory = useMemo(() => {
     return history
@@ -233,6 +222,7 @@ export default function HistorialPage() {
                 <TableHead>{t('duration')}</TableHead>
                 <TableHead className="text-center">{t('sensors')}</TableHead>
                 <TableHead>{t('detectedRegime')}</TableHead>
+                <TableHead className="text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -247,6 +237,12 @@ export default function HistorialPage() {
                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                   </TableRow>
                 ))
+              ) : error ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center text-red-500">
+                    Error: {error}
+                  </TableCell>
+                </TableRow>
               ) : filteredHistory.length > 0 ? filteredHistory.map((test) => (
                 <TableRow key={test.id} data-state={selectedRows.includes(test.id) ? "selected" : ""}>
                   <TableCell>
@@ -272,10 +268,16 @@ export default function HistorialPage() {
                       {t_regimen(test.regimen)}
                     </Badge>
                   </TableCell>
+                  <TableCell className="text-center">
+                    <DirectDownloadButton 
+                      runId={test.id} 
+                      fileName={test.fileName}
+                    />
+                  </TableCell>
                 </TableRow>
               )) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     {t('noResults')}
                   </TableCell>
                 </TableRow>

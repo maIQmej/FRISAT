@@ -9,7 +9,7 @@ import { cn } from '../../lib/utils';
 import type { RegimenType } from '../../lib/types';
 
 interface PredictionCardProps {
-  prediction: Prediction | null;
+  prediction: any;
   connectionStatus: string;
   wsError: string | null;
 }

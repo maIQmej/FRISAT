@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e # Exit immediately if a command exits with a non-zero status.
 
-# This script is the recommended way to start the Python backend manually.
+# This script is the recommended way to start the Python backend with database initialization.
 # Run this script from the project root directory: ./ml_backend/start-backend.sh
 
-echo "Attempting to start the Python backend..."
+echo "Starting FRISAT backend with database initialization..."
 
 # Navigate to the script's directory to ensure paths are correct
 cd "$(dirname "$0")"
@@ -24,9 +24,6 @@ fi
 
 echo "Using $($PYTHON_CMD --version)"
 
-echo "Installing/updating Python dependencies from requirements.txt..."
-$PYTHON_CMD -m pip install -r requirements.txt
-
-echo "Starting Uvicorn server for FastAPI..."
+echo "Starting backend with database initialization..."
 # Use exec to replace the script process with the uvicorn process
-exec $PYTHON_CMD -m uvicorn server:app --host 127.0.0.1 --port 8765 --reload
+exec $PYTHON_CMD start-backend-with-db.py

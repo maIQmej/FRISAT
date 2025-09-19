@@ -1,8 +1,6 @@
 
 'use server';
 
-import fs from 'fs/promises';
-import path from 'path';
 import type { RegimenType, SensorDataPoint } from '@/lib/types';
 
 export interface HistoryEntry {
@@ -20,59 +18,39 @@ export interface HistoryDetail extends HistoryEntry {
     sensorData: SensorDataPoint[];
 }
 
-const parseCsvFile = async (filePath: string, fileName: string): Promise<HistoryDetail | null> => {
+// Función para obtener datos de sensores desde la API
+const getSensorDataFromAPI = async (runId: string): Promise<SensorDataPoint[]> => {
     try {
-        const content = await fs.readFile(filePath, 'utf-8');
-        const lines = content.split('\n');
+        const response = await fetch(`http://127.0.0.1:8765/runs/${runId}/download`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch data: ${response.statusText}`);
+        }
         
-        let date = '';
-        let duration = '0s';
-        let samplesPerSecond = 0;
-        let totalSamples = 0;
+        // El archivo viene comprimido, necesitamos descomprimirlo
+        const compressedData = await response.arrayBuffer();
+        const decompressedData = await import('pako').then(pako => pako.inflate(new Uint8Array(compressedData), { to: 'string' }));
+        
+        const lines = decompressedData.split('\n');
+        const sensorData: SensorDataPoint[] = [];
         let dataHeaders: string[] = [];
-        let dominantRegimen: RegimenType = 'indeterminado';
-
-        const metadataLines = lines.slice(0, 20);
-        for (const line of metadataLines) {
+        let inDataSection = false;
+        
+        for (const line of lines) {
             const cleanedLine = line.trim().replace(/"/g, '');
             if (!cleanedLine) continue;
             
             const parts = cleanedLine.split(',');
-
-            if (parts[0] === 'startTime') {
-                date = parts[1];
-            } else if (parts[0] === 'durationLabel') {
-                duration = parts[1];
-            } else if (parts[0] === 'samplesPerSecondLabel') {
-                samplesPerSecond = parseInt(parts[1]?.split(' ')[0] || '0', 10);
-            } else if (parts[0] === 'totalSamples') {
-                totalSamples = parseInt(parts[1] || '0', 10);
-            } else if (parts[0] === '#RAW_HEADERS') {
+            
+            if (parts[0] === '#RAW_HEADERS') {
                 dataHeaders = parts.slice(1);
-            } else if (parts[0] === 'dominantRegimen') {
-                dominantRegimen = parts[1] as RegimenType;
-            }
-        }
-        
-        if (dataHeaders.length === 0) {
-            console.warn("Could not find #RAW_HEADERS in", fileName);
-            return null;
-        }
-
-        const sensorData: SensorDataPoint[] = [];
-        let inDataSection = false;
-        
-        for (const line of lines) {
-            if (line.includes('"collectedData"')) {
+            } else if (line.includes('"collectedData"')) {
                 inDataSection = true;
                 continue;
             }
+            
             if (!inDataSection) continue;
+            if (cleanedLine.toLowerCase().includes('sample number') || cleanedLine.toLowerCase().includes('nº de muestra')) continue;
             
-            const cleanedLine = line.trim();
-            if (!cleanedLine || cleanedLine.toLowerCase().includes('sample number') || cleanedLine.toLowerCase().includes('nº de muestra')) continue;
-            
-            const parts = cleanedLine.replace(/"/g, '').split(',');
             if (parts.length < dataHeaders.length + 1) continue;
 
             const point: SensorDataPoint = { time: 0 };
@@ -86,69 +64,87 @@ const parseCsvFile = async (filePath: string, fileName: string): Promise<History
             });
             sensorData.push(point);
         }
-
-        const activeSensorsCount = dataHeaders.filter(h => h.startsWith('sensor')).length;
-        const cleanFileName = fileName.replace('.csv', '');
-
-        return {
-            id: fileName,
-            fileName: cleanFileName,
-            date,
-            duration,
-            sensors: activeSensorsCount,
-            regimen: dominantRegimen,
-            samplesPerSecond,
-            totalSamples: totalSamples > 0 ? totalSamples : sensorData.length,
-            sensorData
-        };
-
+        
+        return sensorData;
     } catch (error) {
-        console.error(`Failed to parse file ${fileName}:`, error);
-        return null;
+        console.error(`Failed to fetch sensor data for ${runId}:`, error);
+        return [];
     }
 }
 
 
 export async function getHistory(): Promise<HistoryEntry[]> {
-  const outputDir = path.join(process.cwd(), 'mediciones_guardadas');
   try {
-    await fs.access(outputDir);
+    // Usar la URL completa para evitar problemas de CORS
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://your-production-url.com' 
+      : 'http://127.0.0.1:8765';
+    
+    const response = await fetch(`${baseUrl}/historial`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      console.error(`HTTP Error: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch history: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('API Response:', data); // Debug log
+    const runs = data.runs || [];
+    
+    // Convertir formato de la API al formato esperado por el frontend
+    const historyEntries: HistoryEntry[] = runs.map((run: any) => ({
+      id: run.id,
+      fileName: run.id.substring(0, 8), // Usar primeros 8 caracteres del UUID
+      date: run.created_at,
+      duration: `${run.duration_sec}s`,
+      sensors: run.sensors.length,
+      regimen: run.preview?.dominant_regimen || 'indeterminado',
+      samplesPerSecond: run.sampling_hz,
+      totalSamples: run.rows
+    }));
+    
+    console.log('Processed history entries:', historyEntries); // Debug log
+    return historyEntries;
   } catch (error) {
+    console.error('Failed to fetch history from API:', error);
     return [];
   }
-
-  const files = await fs.readdir(outputDir);
-  const csvFiles = files.filter(file => file.endsWith('.csv'));
-
-  const historyPromises = csvFiles.map(file => {
-    const filePath = path.join(outputDir, file);
-    return parseCsvFile(filePath, file);
-  });
-  
-  const historyEntries = (await Promise.all(historyPromises))
-    .filter((entry): entry is HistoryDetail => entry !== null)
-    .map(({ sensorData, ...entry }) => entry);
-  
-  historyEntries.sort((a, b) => {
-    try {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-    } catch {
-        return 0;
-    }
-  });
-  
-  return historyEntries;
 }
 
-export async function getHistoryEntry(fileName: string): Promise<HistoryDetail | null> {
-    const outputDir = path.join(process.cwd(), 'mediciones_guardadas');
-    const filePath = path.join(outputDir, fileName);
-
+export async function getHistoryEntry(runId: string): Promise<HistoryDetail | null> {
     try {
-        await fs.access(filePath);
-        return await parseCsvFile(filePath, fileName);
+        // Obtener metadatos de la medición
+        const response = await fetch(`http://127.0.0.1:8765/runs/${runId}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch measurement details: ${response.statusText}`);
+        }
+        
+        const run = await response.json();
+        
+        // Obtener datos de sensores
+        const sensorData = await getSensorDataFromAPI(runId);
+        
+        // Convertir al formato esperado
+        const historyDetail: HistoryDetail = {
+            id: run.id,
+            fileName: run.id.substring(0, 8),
+            date: run.created_at,
+            duration: `${run.duration_sec}s`,
+            sensors: run.sensors.length,
+            regimen: run.preview?.dominant_regimen || 'indeterminado',
+            samplesPerSecond: run.sampling_hz,
+            totalSamples: run.rows,
+            sensorData
+        };
+        
+        return historyDetail;
     } catch (error) {
-        console.error(`File not found or could not be read: ${fileName}`, error);
+        console.error(`Failed to fetch measurement details for ${runId}:`, error);
         return null;
     }
 }

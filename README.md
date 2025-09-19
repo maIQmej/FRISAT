@@ -61,6 +61,7 @@ FRISAT se compone de dos partes principales que se comunican entre sí:
 | **ML/IA** | `TensorFlow/Keras` | Para cargar y ejecutar el modelo predictivo. |
 | **Cálculo Num.** | `NumPy` | Manipulación de datos de sensores. |
 | **Comunicación**| `WebSockets` | Para la comunicación en tiempo real con el frontend. |
+| **Base de Datos** | `SQLite` | Almacenamiento de mediciones con compresión gzip. |
 
 ### Entorno y Despliegue
 
@@ -171,6 +172,51 @@ frisat-app/
 
 ---
 
+## Base de Datos
+
+FRISAT utiliza SQLite para almacenar las mediciones de forma eficiente y comprimida:
+
+### Estructura de la Base de Datos
+
+- **Archivo**: `frisat.db` (ubicado en `frisat-data/` en Windows o `/home/pi/frisat-data/` en Linux)
+- **Tabla**: `measurements` con los siguientes campos:
+  - `id`: Identificador único (UUID) de la medición
+  - `created_at`: Timestamp de creación (ISO format)
+  - `sampling_hz`: Frecuencia de muestreo en Hz
+  - `duration_sec`: Duración de la medición en segundos
+  - `sensors`: Lista de sensores activos (JSON)
+  - `model_version`: Versión del modelo de ML utilizado
+  - `normalization_version`: Versión de normalización utilizada
+  - `rows`: Número de filas de datos
+  - `status`: Estado de la medición (`writing`, `ready`, `failed`)
+  - `preview_json`: Resumen de la medición (JSON)
+  - `data_gz`: Datos comprimidos en formato gzip
+  - `sha256`: Checksum SHA256 del archivo comprimido
+
+### Características
+
+- **Compresión**: Los datos se almacenan comprimidos con gzip para optimizar el espacio
+- **Integridad**: Verificación de integridad con checksum SHA256
+- **Transacciones**: Operaciones atómicas con `BEGIN IMMEDIATE` → `COMMIT`
+- **Optimización**: Configuración optimizada con WAL mode y índices apropiados
+- **Compatibilidad**: Funciona tanto en Windows como en Linux
+
+### Inicialización
+
+La base de datos se inicializa automáticamente al iniciar el backend. Si necesita inicializarla manualmente:
+
+```bash
+# Windows
+cd ml_backend
+python init_db.py
+
+# Linux
+cd ml_backend
+python3 init_db.py
+```
+
+---
+
 ## Flujo de Datos y Lógica de la Aplicación
 
 1.  **Configuración**: El usuario define los parámetros de la prueba (tiempo, frecuencia, sensores, nombre de archivo) en la página `/configuracion`.
@@ -183,9 +229,9 @@ frisat-app/
     *   La predicción se envía de vuelta al frontend y se muestra en la `PredictionCard`.
 4.  **Finalización y Resumen**:
     *   La adquisición termina cuando se alcanza el tiempo definido o el usuario la detiene. El estado cambia a `completed` o `stopped`.
-    *   El sistema guarda automáticamente los resultados en un archivo `.csv` en el directorio `mediciones_guardadas/`.
+    *   El sistema guarda automáticamente los resultados en una base de datos SQLite (`frisat.db`) con compresión gzip.
     *   Se muestra una vista de resumen con estadísticas clave y los gráficos completos.
-5.  **Historial**: La página `/historial` lee el directorio `mediciones_guardadas/`, parsea los archivos CSV para mostrar un resumen de todas las pruebas pasadas y permite ver los detalles de cada una.
+5.  **Historial**: La página `/historial` consulta la base de datos SQLite para mostrar un resumen de todas las pruebas pasadas y permite ver los detalles de cada una.
 
 ---
 

@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useEffect, useState, useRef, useMemo } from 'react';
@@ -21,7 +19,7 @@ import {
 import { Wind, RotateCw, HardDrive, Database, Home, Sigma, FileText, Clock, Timer, PlayCircle, Settings, AlertCircle, HelpCircle } from 'lucide-react';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useToast } from '../../../hooks/use-toast';
-import { saveExportedFiles } from '../../../actions/saveExport';
+import { startMeasurementRun, saveMeasurementToDatabase } from '../../../actions/saveExport';
 import { generateCsvContent } from '../../../lib/csv-utils';
 import { Separator } from '../../../components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
@@ -46,6 +44,7 @@ export default function AdquisicionPage() {
   const [selectedDataPointIndex, setSelectedDataPointIndex] = useState<number | null>(null);
   const [chartGroups, setChartGroups] = useState<string[][]>([]);
   const [isAutoSaved, setIsAutoSaved] = useState(false);
+  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
   const sensorDataRef = useRef<SensorDataPoint[]>([]);
   sensorDataRef.current = sensorData;
 
@@ -148,101 +147,240 @@ export default function AdquisicionPage() {
     });
   };
 
-  const finalizeAcquisition = (endState: 'completed' | 'stopped') => {
-    setAcquisitionState(endState);
-  };
-  
-  useEffect(() => {
-    if (acquisitionState !== 'running') {
+  const finalizeAcquisition = async (endState: 'completed' | 'stopped') => {
+    console.log(`Finalizando adquisición con estado: ${endState}`);
+    
+    // Si ya está finalizando o finalizado, no hacer nada
+    if (acquisitionState === 'completed' || acquisitionState === 'stopped') {
+      console.log('La adquisición ya está finalizada');
       return;
     }
     
+    // Actualizar el estado de la adquisición primero
+    setAcquisitionState(endState);
+    
+    // Asegurarse de que el progreso esté al 100% si se completó
+    if (endState === 'completed') {
+      setProgress(100);
+      setElapsedTime(config.acquisitionTime);
+    }
+    
+    // Guardar en la base de datos si hay un run activo y hay datos
+    if (currentRunId && sensorData.length > 0) {
+      try {
+        console.log('Guardando medición en la base de datos...');
+        
+        // Crear una copia de los datos para evitar problemas de referencia
+        const dataToSave = [...sensorData];
+        
+        // Preparar metadatos
+        const metadata = {
+          start_time: startTimestamp?.toISOString() || new Date().toISOString(),
+          duration_sec: config.acquisitionTime,
+          sampling_hz: config.samplesPerSecond,
+          total_samples: dataToSave.length,
+          dominant_regimen: regimen,
+          sensors: config.sensors,
+          classes: ['LAMINAR', 'TRANSITION', 'TURBULENT'],
+          min_timestamp: startTimestamp?.toISOString() || new Date().toISOString(),
+          max_timestamp: new Date().toISOString(),
+          status: endState,
+          sensor1: config.sensors.sensor1,
+          sensor2: config.sensors.sensor2,
+          sensor3: config.sensors.sensor3,
+          sensor4: config.sensors.sensor4,
+          sensor5: config.sensors.sensor5,
+          model_version: '1.0',
+          normalization_version: '1.0'
+        };
+        
+        // Preparar header
+        const header = ['time', ...activeSensors];
+        
+        console.log(`Enviando ${dataToSave.length} filas a la base de datos...`);
+        
+        // Guardar en la base de datos
+        const result = await saveMeasurementToDatabase({
+          runId: currentRunId,
+          rows: dataToSave,
+          header,
+          meta: metadata
+        });
+        
+        if (result.success) {
+          console.log('Medición guardada exitosamente');
+          
+          // Mostrar toast de éxito
+          toast({
+            title: '¡Éxito!',
+            description: 'La medición se ha guardado correctamente',
+            variant: 'default',
+          });
+          
+          // Actualizar el historial
+          const event = new CustomEvent('historyUpdate');
+          window.dispatchEvent(event);
+          
+          setIsAutoSaved(true);
+        } else {
+          throw new Error(result.message || 'No se pudo guardar la medición');
+        }
+      } catch (error) {
+        console.error('Error al guardar la medición:', error);
+        toast({
+          title: 'Error',
+          description: 'Ocurrió un error al guardar la medición: ' + (error instanceof Error ? error.message : 'Error desconocido'),
+          variant: 'destructive',
+        });
+      }
+    } else {
+      console.warn('No se pudo guardar la medición:', { 
+        currentRunId, 
+        dataLength: sensorData.length,
+        hasRunId: !!currentRunId
+      });
+    }
+  };
+  
+  useEffect(() => {
+    if (acquisitionState !== 'running') return;
+
+    console.log('Iniciando adquisición...');
+    
+    // Inicializar estado
     setChartGroups(activeSensors.length > 0 ? [activeSensors] : []);
     setSensorData([]);
     elapsedTimeRef.current = 0;
     setElapsedTime(0);
     setRegimen('indeterminado');
+    setIsAutoSaved(false);
+    
+    // Iniciar un nuevo run en la base de datos
+    const startRun = async () => {
+      try {
+        const metadata = {
+          sampling_hz: config.samplesPerSecond,
+          duration_sec: config.acquisitionTime,
+          sensor1: config.sensors.sensor1,
+          sensor2: config.sensors.sensor2,
+          sensor3: config.sensors.sensor3,
+          sensor4: config.sensors.sensor4,
+          sensor5: config.sensors.sensor5,
+          model_version: '1.0',
+          normalization_version: '1.0'
+        };
+        
+        const result = await startMeasurementRun(metadata);
+        if (result.success && result.runId) {
+          console.log('Run iniciado con ID:', result.runId);
+          setCurrentRunId(result.runId);
+          setStartTimestamp(new Date());
+          return true;
+        } else {
+          throw new Error(result.message || 'No se pudo iniciar la medición');
+        }
+      } catch (error) {
+        console.error('Error al iniciar la medición:', error);
+        toast({
+          title: 'Error',
+          description: 'No se pudo iniciar la medición: ' + (error instanceof Error ? error.message : 'Error desconocido'),
+          variant: 'destructive',
+        });
+        setAcquisitionState('ready');
+        return false;
+      }
+    };
 
+    // Función para generar un punto de datos
     const generateDataPoint = (time: number): SensorDataPoint => {
-      const point: SensorDataPoint = {
-        time: parseFloat(time.toFixed(2)),
-      };
+      const point: SensorDataPoint = { time: parseFloat(time.toFixed(2)) };
       const values: number[] = [];
+      
       activeSensors.forEach(sensorKey => {
-        const sensorValue = parseFloat((Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2));
+        const sensorValue = parseFloat(
+          (Math.random() * 5 + Math.sin(time * (activeSensors.indexOf(sensorKey) + 1))).toFixed(2)
+        );
         point[sensorKey] = sensorValue;
         values.push(sensorValue);
       });
-      // Send data to WebSocket
+      
+      // Enviar datos al WebSocket si está disponible
       if (lastPrediction?.send) {
         lastPrediction.send({ type: 'SAMPLES', values });
       }
+      
       return point;
     };
 
-    const dataIntervalTime = 1000 / config.samplesPerSecond;
-    dataAcquisitionIntervalRef.current = setInterval(() => {
-        const newTime = elapsedTimeRef.current + (1 / config.samplesPerSecond);
-        elapsedTimeRef.current = newTime;
+    let isRunning = true;
+    let intervalId: NodeJS.Timeout | null = null;
 
-        if (newTime >= config.acquisitionTime) {
-            clearInterval(dataAcquisitionIntervalRef.current!);
-            dataAcquisitionIntervalRef.current = null;
+    const startAcquisition = async () => {
+      const runStarted = await startRun();
+      if (!runStarted) return;
 
-            const finalPoint = generateDataPoint(config.acquisitionTime);
-            setSensorData(prev => [...prev, finalPoint]);
-            setElapsedTime(config.acquisitionTime);
-setProgress(100);
-
-            finalizeAcquisition('completed');
-        } else {
-            const newDataPoint = generateDataPoint(newTime);
-            setSensorData(prev => [...prev, newDataPoint]);
-            setElapsedTime(newTime);
-            setProgress((newTime / config.acquisitionTime) * 100);
-        }
-    }, dataIntervalTime);
-
-    return () => {
-      if (dataAcquisitionIntervalRef.current) clearInterval(dataAcquisitionIntervalRef.current);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [acquisitionState]);
-  
-  useEffect(() => {
-    const autoSave = async () => {
-      if (!isAutoSaved && (acquisitionState === 'completed' || acquisitionState === 'stopped') && sensorData.length > 0) {
-        setIsAutoSaved(true);
-        const csvContent = generateCsvContent(config, sensorData, startTimestamp, t, regimen);
-        const fileToSave = {
-          fileName: `${config.fileName}.csv`,
-          csvContent: csvContent
-        };
-
-        try {
-          const result = await saveExportedFiles([fileToSave]);
-          if (result.success) {
-            toast({
-              title: t('autoSaveSuccessTitle'),
-              description: t('autoSaveSuccessDesc').replace('{fileName}', fileToSave.fileName)
-            });
-          } else {
-            throw new Error(result.message);
+      const dataIntervalTime = 1000 / config.samplesPerSecond;
+      let currentTime = 0;
+      
+      intervalId = setInterval(() => {
+        if (!isRunning) return;
+        
+        currentTime += 1 / config.samplesPerSecond;
+        currentTime = parseFloat(currentTime.toFixed(6)); // Prevenir errores de punto flotante
+        
+        if (currentTime >= config.acquisitionTime) {
+          // Limpiar el intervalo
+          if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
           }
-        } catch (error) {
-          toast({
-            title: t('autoSaveErrorTitle'),
-            description: (error as Error).message,
-            variant: 'destructive',
+          
+          // Asegurarse de que el último punto se añada correctamente
+          const finalPoint = generateDataPoint(config.acquisitionTime);
+          
+          // Actualizar el estado con el último punto
+          setSensorData(prev => {
+            const newData = [...prev, finalPoint];
+            
+            // Llamar a finalizeAcquisition después de actualizar el estado
+            setTimeout(() => {
+              finalizeAcquisition('completed').catch(error => {
+                console.error('Error al finalizar la adquisición:', error);
+              });
+            }, 0);
+            
+            return newData;
           });
+          
+          setElapsedTime(config.acquisitionTime);
+          setProgress(100);
+        } else {
+          // Añadir nuevo punto de datos
+          const newDataPoint = generateDataPoint(currentTime);
+          setSensorData(prev => [...prev, newDataPoint]);
+          setElapsedTime(currentTime);
+          setProgress((currentTime / config.acquisitionTime) * 100);
         }
+      }, dataIntervalTime);
+
+      // Guardar referencia al intervalo
+      dataAcquisitionIntervalRef.current = intervalId;
+    };
+
+    startAcquisition();
+
+    // Limpieza cuando el componente se desmonte o cambie el estado de adquisición
+    return () => {
+      isRunning = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+      if (dataAcquisitionIntervalRef.current === intervalId) {
+        dataAcquisitionIntervalRef.current = null;
       }
     };
-    autoSave();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [acquisitionState, sensorData]);
-
-
+  }, [acquisitionState, config.samplesPerSecond, config.acquisitionTime, activeSensors]);
+  
   const handleStop = () => {
     if (dataAcquisitionIntervalRef.current) {
       clearInterval(dataAcquisitionIntervalRef.current);
@@ -304,7 +442,7 @@ setProgress(100);
 
   const renderAcquisitionReady = () => {
     const activeSensorsText = activeSensors
-      .map((key) => `${t('sensor')} ${parseInt(key.replace('sensor', '', 10))}`)
+      .map((key) => `${t('sensor')} ${parseInt(key.replace('sensor', ''))}`)
       .join(', ');
       
     return (
@@ -374,7 +512,7 @@ setProgress(100);
           />
         );
       })}
-      <PredictionCard prediction={lastPrediction} connectionStatus={connectionStatus} wsError={wsError} />
+      <PredictionCard prediction={lastPrediction || undefined} connectionStatus={connectionStatus} wsError={wsError} />
       <Card className="flex flex-col items-center justify-center min-h-[240px]">
         <CardHeader className="flex flex-col items-center justify-center p-4 text-center">
           <Sigma className="h-8 w-8 text-primary" />
