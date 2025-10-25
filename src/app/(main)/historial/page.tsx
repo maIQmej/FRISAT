@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -92,8 +90,8 @@ export default function HistorialPage() {
   };
 
   const handleDownloadSelected = () => {
-    const selectedFileNames = selectedRows.map(id => id.replace('.csv', ''));
-    setFilesToExport(selectedFileNames);
+    // selectedRows contains run IDs; pass them directly to ExportModal
+    setFilesToExport(selectedRows);
     setIsExportModalOpen(true);
   };
 

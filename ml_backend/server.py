@@ -181,7 +181,16 @@ async def download_measurement_file(run_id: str):
         
         # Generar nombre de archivo
         created_at = metadata["created_at"][:10]  # YYYY-MM-DD
-        filename = f"medicion_{run_id[:8]}_{created_at}.csv.gz"
+        user_file_name = metadata.get("file_name")
+        base_name = None
+        if isinstance(user_file_name, str) and user_file_name.strip():
+            # Sanitizar nombre básico (solo por seguridad básica)
+            safe_name = "".join(ch for ch in user_file_name if ch.isalnum() or ch in ("-", "_"))
+            base_name = safe_name or f"medicion_{run_id[:8]}_{created_at}"
+        else:
+            base_name = f"medicion_{run_id[:8]}_{created_at}"
+        
+        filename = f"{base_name}.csv.gz"
         
         return StreamingResponse(
             iter([file_data]),
@@ -215,4 +224,3 @@ async def get_database_statistics():
         return stats
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting statistics: {str(e)}")
-

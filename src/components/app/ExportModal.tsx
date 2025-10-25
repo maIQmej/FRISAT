@@ -25,7 +25,8 @@ import { ScrollArea } from '../ui/scroll-area';
 import type { Configuration, SensorDataPoint, RegimenType } from '../../lib/types';
 import { getHistoryEntry } from '../../actions/getHistory';
 import { generateCsvContent } from '../../lib/csv-utils';
-import JSZip from 'jszip';
+
+// JSZip removed: multi-file export now downloads individual .csv.gz files directly
 
 type ExportState = 'idle' | 'exporting' | 'success' | 'error';
 
@@ -110,36 +111,31 @@ export function ExportModal({ open, onOpenChange, filesToExport = [], sensorData
 
     try {
         if (isMultiExport) {
-            const zip = new JSZip();
-            for (const fileName of filesToExport) {
-                const entryData = await getHistoryEntry(`${fileName}.csv`);
-                if (entryData) {
-                    const activeSensors = Object.keys(entryData.sensorData[0] || {}).filter(k => k.startsWith('sensor'));
-                    const reconstructedConfig: Configuration = {
-                        fileName: entryData.fileName,
-                        acquisitionTime: parseInt(entryData.duration),
-                        samplesPerSecond: entryData.samplesPerSecond,
-                        sensors: {
-                            sensor1: activeSensors.includes('sensor1'),
-                            sensor2: activeSensors.includes('sensor2'),
-                            sensor3: activeSensors.includes('sensor3'),
-                            sensor4: activeSensors.includes('sensor4'),
-                            sensor5: activeSensors.includes('sensor5'),
-                        }
-                    };
-                    const fileStartTimestamp = new Date(entryData.date);
-                    const csvContent = generateCsvContent(reconstructedConfig, entryData.sensorData, fileStartTimestamp, t, entryData.regimen);
-                    zip.file(`${entryData.fileName}.csv`, csvContent);
+            // Download each selected run as a .csv.gz directly from backend
+            for (const runId of filesToExport) {
+                const response = await fetch(`http://127.0.0.1:8765/runs/${runId}/download`);
+                if (!response.ok) {
+                    throw new Error(`Failed to download run ${runId}: ${response.status} ${response.statusText}`);
                 }
+                const blob = await response.blob();
+                // Try to extract filename from Content-Disposition header
+                let filename = `${runId}.csv.gz`;
+                const cd = response.headers.get('Content-Disposition') || response.headers.get('content-disposition');
+                if (cd) {
+                    const match = cd.match(/filename="?([^";]+)"?/i);
+                    if (match && match[1]) {
+                        filename = match[1];
+                    }
+                }
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
             }
-            const zipBlob = await zip.generateAsync({ type: 'blob' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(zipBlob);
-            link.download = `FRISAT_Export_${new Date().toISOString().split('T')[0]}.zip`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
         } else {
             const fileName = getFinalFilename();
             

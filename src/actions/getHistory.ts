@@ -1,4 +1,3 @@
-
 'use server';
 
 import type { RegimenType, SensorDataPoint } from '@/lib/types';
@@ -99,10 +98,12 @@ export async function getHistory(): Promise<HistoryEntry[]> {
     // Convertir formato de la API al formato esperado por el frontend
     const historyEntries: HistoryEntry[] = runs.map((run: any) => ({
       id: run.id,
-      fileName: run.id.substring(0, 8), // Usar primeros 8 caracteres del UUID
+      fileName: run.file_name && typeof run.file_name === 'string' && run.file_name.trim() !== ''
+        ? run.file_name
+        : run.id.substring(0, 8),
       date: run.created_at,
       duration: `${run.duration_sec}s`,
-      sensors: run.sensors.length,
+      sensors: Array.isArray(run.sensors) ? run.sensors.length : 0,
       regimen: run.preview?.dominant_regimen || 'indeterminado',
       samplesPerSecond: run.sampling_hz,
       totalSamples: run.rows
@@ -132,10 +133,12 @@ export async function getHistoryEntry(runId: string): Promise<HistoryDetail | nu
         // Convertir al formato esperado
         const historyDetail: HistoryDetail = {
             id: run.id,
-            fileName: run.id.substring(0, 8),
+            fileName: run.file_name && typeof run.file_name === 'string' && run.file_name.trim() !== ''
+              ? run.file_name
+              : run.id.substring(0, 8),
             date: run.created_at,
             duration: `${run.duration_sec}s`,
-            sensors: run.sensors.length,
+            sensors: Array.isArray(run.sensors) ? run.sensors.length : 0,
             regimen: run.preview?.dominant_regimen || 'indeterminado',
             samplesPerSecond: run.sampling_hz,
             totalSamples: run.rows,

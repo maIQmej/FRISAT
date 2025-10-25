@@ -135,7 +135,8 @@ def finalize_run(run_id: str, rows_iterable: Iterator[Dict[str, Any]],
                 'min_timestamp': meta.get('min_timestamp', current_time),
                 'max_timestamp': meta.get('max_timestamp', current_time),
                 'sensor_count': len([s for s in meta.get('sensors', {}).values() if s]),
-                'dominant_regimen': meta.get('dominant_regimen', 'indeterminado')
+                'dominant_regimen': meta.get('dominant_regimen', 'indeterminado'),
+                'file_name': meta.get('file_name', ''),
             }
             
             # Actualizar registro
@@ -201,7 +202,8 @@ def list_runs(limit: int = 50, offset: int = 0) -> List[Dict[str, Any]]:
                 'normalization_version': row[6],
                 'rows': row[7],
                 'status': row[8],
-                'preview': preview
+                'preview': preview,
+                'file_name': preview.get('file_name', ''),
             })
         
         return results
@@ -262,7 +264,8 @@ def get_run_metadata(run_id: str) -> Optional[Dict[str, Any]]:
             'normalization_version': result[6],
             'rows': result[7],
             'status': result[8],
-            'preview': preview
+            'preview': preview,
+            'file_name': preview.get('file_name', ''),
         }
     finally:
         conn.close()

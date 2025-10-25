@@ -39,14 +39,16 @@ export function useHistory() {
       // Convertir formato de la API al formato esperado por el frontend
       const historyEntries: HistoryEntry[] = sortedRuns.map((run: any) => ({
         id: run.id,
-        fileName: run.id.substring(0, 8), // Usar primeros 8 caracteres del UUID
+        fileName: run.file_name && typeof run.file_name === 'string' && run.file_name.trim() !== ''
+          ? run.file_name
+          : run.id.substring(0, 8),
         date: run.created_at,
         duration: `${run.duration_sec}s`,
         sensors: Array.isArray(run.sensors) ? run.sensors.length : 0,
         regimen: run.preview?.dominant_regimen || 'indeterminado',
         samplesPerSecond: run.sampling_hz,
         totalSamples: run.rows || 0,
-        status: run.status || 'completed' // Asegurar que siempre haya un estado
+        status: run.status || 'completed'
       }));
       
       console.log('Processed history entries:', historyEntries);
